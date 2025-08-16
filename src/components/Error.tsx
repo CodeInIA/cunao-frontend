@@ -16,15 +16,15 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
   showHomeButton = true
 }) => {
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 px-4">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-900 px-4">
       <div className="text-center max-w-md">
-        <AlertTriangle className="w-24 h-24 text-viking-500 mx-auto mb-6" />
+        <AlertTriangle className="w-24 h-24 text-spanish-red mx-auto mb-6" />
         
-        <h1 className="text-3xl font-display font-bold text-gray-900 mb-4">
+        <h1 className="text-3xl font-patriot font-bold text-white mb-4">
           {title}
         </h1>
         
-        <p className="text-gray-600 mb-8">
+        <p className="text-slate-300 mb-8">
           {message}
         </p>
 
@@ -32,7 +32,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
           {onRetry && (
             <button
               onClick={onRetry}
-              className="inline-flex items-center px-6 py-3 bg-viking-600 text-white font-semibold rounded-lg hover:bg-viking-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-spanish-red text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Intentar de nuevo
@@ -42,7 +42,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
           {showHomeButton && (
             <Link
               to="/"
-              className="inline-flex items-center px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-slate-700 text-slate-200 font-semibold rounded-lg hover:bg-slate-600 transition-colors"
             >
               <Home className="w-4 h-4 mr-2" />
               Volver al inicio
@@ -50,7 +50,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
           )}
         </div>
 
-        <p className="mt-8 text-viking-600 font-vikingo italic">
+        <p className="mt-8 text-spanish-yellow font-bold italic">
           "En mi pueblo esto no pasaba"
         </p>
       </div>

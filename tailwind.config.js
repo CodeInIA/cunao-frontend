@@ -22,13 +22,11 @@ export default {
           950: '#0d0f11',
         },
         // Acentos patrióticos españoles
-        spanish: {
-          red: '#AA151B',
-          darkred: '#8B1117',
-          yellow: '#F1BF00',
-          gold: '#D1A000',
-          cream: '#FFF8DC',
-        },
+        'spanish-red': '#AA151B',
+        'spanish-darkred': '#8B1117', 
+        'spanish-yellow': '#F1BF00',
+        'spanish-gold': '#D1A000',
+        'spanish-cream': '#FFF8DC',
         // Colores neutros para el tema oscuro
         slate: {
           50: '#f8fafc',

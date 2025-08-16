@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, Shield, Heart } from 'lucide-react';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
-import { ProductCard } from '../components/ProductCard';
+import { FeaturedProductCard } from '../components/FeaturedProductCard';
 import type { Product } from '../types';
 
 export const HomePage: React.FC = () => {
   const { featuredProducts, fetchFeaturedProducts, loadingState } = useProductStore();
   const { addItem } = useCartStore();
+  const { navigateTo } = useSmartNavigation();
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -62,13 +64,19 @@ export const HomePage: React.FC = () => {
               Porque siempre hay algo que opinar.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/productos" className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-3 text-lg rounded-lg shadow-lg border-2 border-slate-700 hover:border-slate-600 transition-all duration-200 inline-flex items-center justify-center">
+              <button
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-3 text-lg rounded-lg shadow-lg border-2 border-slate-700 hover:border-slate-600 transition-all duration-200 inline-flex items-center justify-center"
+                onClick={() => navigateTo('/productos')}
+              >
                 Ver Productos
                 <ArrowRight className="ml-2" size={20} />
-              </Link>
-              <Link to="/destacados" className="bg-white hover:bg-gray-100 text-slate-900 font-bold px-8 py-3 text-lg rounded-lg shadow-lg border-2 border-gray-300 hover:border-gray-400 transition-all duration-200 inline-flex items-center justify-center">
+              </button>
+              <button
+                className="bg-white hover:bg-gray-100 text-slate-900 font-bold px-8 py-3 text-lg rounded-lg shadow-lg border-2 border-gray-300 hover:border-gray-400 transition-all duration-200 inline-flex items-center justify-center"
+                onClick={() => navigateTo('/destacados')}
+              >
                 Productos Destacados
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -80,46 +88,87 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* Productos Destacados */}
-      <section className="py-16 bg-slate-900">
+      <section className="py-20 bg-slate-900 overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-patriot font-bold text-white mb-4">
-              Productos Destacados
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-spanish-red px-4 py-2 rounded-full text-white font-semibold text-sm mb-4">
+              <Star className="w-4 h-4 fill-current" />
+              PRODUCTOS DESTACADOS
+              <Star className="w-4 h-4 fill-current" />
+            </div>
+            <h2 className="text-4xl font-patriot font-bold text-white mb-4">
+              Los Más Cuñaos del Mes
             </h2>
-            <p className="text-slate-300 max-w-2xl mx-auto">
-              Nuestras camisetas más populares con las frases que todo cuñao respeta
+            <p className="text-slate-300 max-w-2xl mx-auto text-lg">
+              Las camisetas que todo auténtico cuñao necesita en su armario. 
+              ¡Frases que marcan historia!
             </p>
           </div>
 
           {loadingState === 'loading' ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[...Array(4)].map((_, index) => (
-                <div key={index} className="bg-slate-700 animate-pulse rounded-lg h-96"></div>
+                <div key={index} className="bg-slate-700 animate-pulse rounded-xl h-96">
+                  <div className="h-48 bg-slate-600 rounded-t-xl mb-4"></div>
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-slate-600 rounded w-3/4"></div>
+                    <div className="h-4 bg-slate-600 rounded w-1/2"></div>
+                    <div className="h-8 bg-slate-600 rounded"></div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-              {featuredProducts.slice(0, 4).map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                {featuredProducts.slice(0, 4).map((product, index) => (
+                  <FeaturedProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                    featured={index === 0} // El primero es super destacado
+                  />
+                ))}
+              </div>
+              
+              {/* Estadísticas de productos destacados */}
+              <div className="bg-slate-800 rounded-2xl p-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                  <div>
+                    <div className="text-3xl font-bold text-spanish-yellow mb-2">2.547</div>
+                    <p className="text-slate-300">Cuñados satisfechos</p>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-spanish-yellow mb-2">4.9★</div>
+                    <p className="text-slate-300">Valoración media</p>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-spanish-yellow mb-2">15</div>
+                    <p className="text-slate-300">Frases legendarias</p>
+                  </div>
+                </div>
+              </div>
+            </>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">😢</div>
               <p className="text-slate-400 text-lg">
                 No hay productos destacados disponibles en este momento.
+              </p>
+              <p className="text-slate-500 text-sm mt-2">
+                Pero seguro que en el bar de tu pueblo sí hay opiniones...
               </p>
             </div>
           )}
 
           <div className="text-center">
-            <Link to="/productos" className="inline-block border-2 border-spanish-yellow text-spanish-yellow px-6 py-3 rounded-lg font-semibold hover:bg-spanish-yellow hover:text-slate-900 transition-colors">
-              Ver Todos los Productos
-              <ArrowRight className="inline ml-2" size={18} />
-            </Link>
+            <button
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              onClick={() => navigateTo('/productos')}
+            >
+              Ver Toda la Colección
+              <ArrowRight size={20} />
+            </button>
           </div>
         </div>
       </section>
@@ -201,10 +250,13 @@ export const HomePage: React.FC = () => {
           <p className="text-xl mb-8 opacity-90">
             Únete a miles de cuñados que ya visten nuestras camisetas
           </p>
-          <Link to="/productos" className="inline-block bg-white text-slate-900 hover:bg-slate-100 px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg">
-            Empezar a Comprar
-            <ArrowRight className="inline ml-2" size={20} />
-          </Link>
+            <button
+              className="inline-block bg-white text-slate-900 hover:bg-slate-100 px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
+              onClick={() => navigateTo('/productos')}
+            >
+              Empezar a Comprar
+              <ArrowRight className="inline ml-2" size={20} />
+            </button>
         </div>
       </section>
     </div>

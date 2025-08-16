@@ -2,32 +2,34 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Scale, ShoppingCart, Truck, AlertTriangle, Mail } from 'lucide-react';
 import config from '../config';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 export const TermsPage: React.FC = () => {
+  const { navigateTo } = useSmartNavigation();
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       {/* Hero section */}
-      <section className="bg-gradient-to-br from-viking-600 via-viking-500 to-viking-400 text-white py-20">
+      <section className="bg-gradient-to-br from-spanish-red via-slate-800 to-slate-900 text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <Scale className="w-16 h-16 mx-auto mb-6" />
-          <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">
+          <Scale className="w-16 h-16 mx-auto mb-6 text-spanish-yellow" />
+          <h1 className="text-4xl md:text-6xl font-patriot font-bold mb-6">
             Términos y Condiciones
           </h1>
-          <p className="text-xl md:text-2xl font-vikingo max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl max-w-3xl mx-auto text-slate-200">
             "En mi pueblo las reglas están claras desde el principio"
           </p>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-16 max-w-4xl">
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+        <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-8 mb-8">
           
           {/* Información general */}
           <div className="mb-8">
-            <p className="text-gray-600 mb-4">
-              <strong>Última actualización:</strong> 14 de agosto de 2025
+            <p className="text-slate-400 mb-4">
+              <strong>Última actualización:</strong> 16 de agosto de 2025
             </p>
-            <p className="text-gray-700">
+            <p className="text-slate-300">
               Bienvenido a <strong>Cuñadismo Ilustrado</strong>. Al utilizar nuestro sitio web y servicios, 
               aceptas estos términos y condiciones. Si no estás de acuerdo, pues "en tu pueblo será diferente", 
               pero aquí funcionamos así.
@@ -36,22 +38,22 @@ export const TermsPage: React.FC = () => {
 
           {/* Información de la empresa */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <FileText className="w-6 h-6 text-viking-600" />
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4 flex items-center gap-2">
+              <FileText className="w-6 h-6 text-spanish-red" />
               Información de la Empresa
             </h2>
             
-            <div className="bg-gray-50 p-6 rounded-lg">
+            <div className="bg-slate-700 p-6 rounded-lg">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-700"><strong>Nombre:</strong> Cuñadismo Ilustrado</p>
-                  <p className="text-gray-700"><strong>Email:</strong> {config.EMAILS.main}</p>
-                  <p className="text-gray-700"><strong>Teléfono:</strong> +34 666 123 456</p>
+                  <p className="text-slate-300"><strong>Nombre:</strong> Cuñadismo Ilustrado</p>
+                  <p className="text-slate-300"><strong>Email:</strong> {config.EMAILS.main}</p>
+                  <p className="text-slate-300"><strong>Teléfono:</strong> +34 666 123 456</p>
                 </div>
                 <div>
-                  <p className="text-gray-700"><strong>País:</strong> España</p>
-                  <p className="text-gray-700"><strong>Actividad:</strong> Venta de camisetas temáticas</p>
-                  <p className="text-gray-700"><strong>Web:</strong> {config.DOMAIN}</p>
+                  <p className="text-slate-300"><strong>País:</strong> España</p>
+                  <p className="text-slate-300"><strong>Actividad:</strong> Venta de camisetas temáticas</p>
+                  <p className="text-slate-300"><strong>Web:</strong> {config.DOMAIN}</p>
                 </div>
               </div>
             </div>
@@ -59,37 +61,37 @@ export const TermsPage: React.FC = () => {
 
           {/* Uso del sitio web */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">
               Uso del Sitio Web
             </h2>
             
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-viking-500 rounded-full mt-2 flex-shrink-0"></span>
-                <p className="text-gray-700">
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <p className="text-slate-300">
                   <strong>Uso autorizado:</strong> Puedes navegar, comprar productos y compartir contenido de forma personal y no comercial.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-viking-500 rounded-full mt-2 flex-shrink-0"></span>
-                <p className="text-gray-700">
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <p className="text-slate-300">
                   <strong>Edad mínima:</strong> Debes ser mayor de 18 años o tener autorización de tus padres.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-viking-500 rounded-full mt-2 flex-shrink-0"></span>
-                <p className="text-gray-700">
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <p className="text-slate-300">
                   <strong>Cuenta responsable:</strong> Eres responsable de mantener segura tu información de acceso.
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
-              <h3 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
+            <div className="mt-6 bg-red-900 border border-red-700 rounded-lg p-4">
+              <h3 className="font-semibold text-red-400 mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Usos Prohibidos
               </h3>
-              <ul className="text-red-700 text-sm space-y-1">
+              <ul className="text-red-300 text-sm space-y-1">
                 <li>• Usar el sitio para actividades ilegales o fraudulentas</li>
                 <li>• Intentar acceder a áreas restringidas o dañar el sistema</li>
                 <li>• Copiar o reproducir contenido sin autorización</li>
@@ -101,15 +103,15 @@ export const TermsPage: React.FC = () => {
 
           {/* Productos y pedidos */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <ShoppingCart className="w-6 h-6 text-viking-600" />
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4 flex items-center gap-2">
+              <ShoppingCart className="w-6 h-6 text-spanish-red" />
               Productos y Pedidos
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="font-semibold text-viking-600">Productos</h3>
-                <ul className="space-y-2 text-gray-700 text-sm">
+                <h3 className="font-semibold text-spanish-red">Productos</h3>
+                <ul className="space-y-2 text-slate-300 text-sm">
                   <li>• Todas las camisetas son de alta calidad y diseño original</li>
                   <li>• Las imágenes son representativas, puede haber ligeras variaciones</li>
                   <li>• Los precios incluyen IVA y están en euros (€)</li>
@@ -118,8 +120,8 @@ export const TermsPage: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                <h3 className="font-semibold text-viking-600">Pedidos</h3>
-                <ul className="space-y-2 text-gray-700 text-sm">
+                <h3 className="font-semibold text-spanish-red">Pedidos</h3>
+                <ul className="space-y-2 text-slate-300 text-sm">
                   <li>• Confirmación automática por email tras el pago</li>
                   <li>• Procesamiento en 1-2 días laborables</li>
                   <li>• Derecho a cancelar antes del envío</li>
@@ -131,15 +133,15 @@ export const TermsPage: React.FC = () => {
 
           {/* Precios y pagos */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">
               Precios y Pagos
             </h2>
             
-            <div className="bg-viking-50 p-6 rounded-lg">
+            <div className="bg-slate-700 p-6 rounded-lg">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-semibold text-viking-700 mb-3">Métodos de Pago</h3>
-                  <ul className="space-y-1 text-gray-700">
+                  <h3 className="font-semibold text-spanish-yellow mb-3">Métodos de Pago</h3>
+                  <ul className="space-y-1 text-slate-300">
                     <li>✓ Tarjetas de crédito/débito (Visa, Mastercard)</li>
                     <li>✓ PayPal</li>
                     <li>✓ Apple Pay / Google Pay</li>
@@ -147,8 +149,8 @@ export const TermsPage: React.FC = () => {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-viking-700 mb-3">Política de Precios</h3>
-                  <ul className="space-y-1 text-gray-700">
+                  <h3 className="font-semibold text-spanish-yellow mb-3">Política de Precios</h3>
+                  <ul className="space-y-1 text-slate-300">
                     <li>• Precios finales con IVA incluido</li>
                     <li>• Gastos de envío calculados al finalizar</li>
                     <li>• Sin cargos ocultos ni sorpresas</li>
@@ -161,15 +163,15 @@ export const TermsPage: React.FC = () => {
 
           {/* Envíos y entregas */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Truck className="w-6 h-6 text-viking-600" />
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4 flex items-center gap-2">
+              <Truck className="w-6 h-6 text-spanish-red" />
               Envíos y Entregas
             </h2>
             
             <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">Plazos de Entrega</h3>
-                <ul className="space-y-1 text-gray-700">
+              <div className="bg-slate-700 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">Plazos de Entrega</h3>
+                <ul className="space-y-1 text-slate-300">
                   <li>• <strong>España peninsular:</strong> 2-4 días laborables</li>
                   <li>• <strong>Islas Baleares:</strong> 3-5 días laborables</li>
                   <li>• <strong>Islas Canarias:</strong> 5-7 días laborables</li>
@@ -177,7 +179,7 @@ export const TermsPage: React.FC = () => {
                 </ul>
               </div>
               
-              <p className="text-gray-700 text-sm">
+              <p className="text-slate-300 text-sm">
                 <strong>Nota:</strong> Los plazos son orientativos y pueden variar en épocas de alta demanda 
                 o circunstancias excepcionales (como cuando todo el mundo quiere opinar sobre algo).
               </p>
@@ -186,20 +188,20 @@ export const TermsPage: React.FC = () => {
 
           {/* Devoluciones */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">
               Derecho de Desistimiento
             </h2>
             
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <p className="text-gray-700 mb-4">
+            <div className="bg-green-900 border border-green-700 rounded-lg p-6">
+              <p className="text-green-300 mb-4">
                 Tienes <strong>14 días naturales</strong> desde la recepción del producto para desistir 
                 de tu compra sin necesidad de justificación.
               </p>
               
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-green-700 mb-2">Condiciones</h4>
-                  <ul className="text-sm text-gray-700 space-y-1">
+                  <h4 className="font-semibold text-green-400 mb-2">Condiciones</h4>
+                  <ul className="text-sm text-green-300 space-y-1">
                     <li>• Producto en estado original</li>
                     <li>• Con etiquetas y embalaje</li>
                     <li>• Sin usar ni lavar</li>
@@ -207,8 +209,8 @@ export const TermsPage: React.FC = () => {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-green-700 mb-2">Proceso</h4>
-                  <ul className="text-sm text-gray-700 space-y-1">
+                  <h4 className="font-semibold text-green-400 mb-2">Proceso</h4>
+                  <ul className="text-sm text-green-300 space-y-1">
                     <li>1. Contacta con nosotros</li>
                     <li>2. Envía el producto (gastos a tu cargo)</li>
                     <li>3. Reembolso en 14 días tras recepción</li>
@@ -221,20 +223,20 @@ export const TermsPage: React.FC = () => {
 
           {/* Propiedad intelectual */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">
               Propiedad Intelectual
             </h2>
             
             <div className="space-y-4">
-              <p className="text-gray-700">
+              <p className="text-slate-300">
                 Todos los diseños, textos, logotipos y contenido de esta web son propiedad de 
                 <strong> Cuñadismo Ilustrado</strong> o de sus colaboradores, y están protegidos 
                 por derechos de autor y propiedad intelectual.
               </p>
               
-              <div className="bg-viking-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-viking-700 mb-2">Lo que NO puedes hacer:</h3>
-                <ul className="text-gray-700 text-sm space-y-1">
+              <div className="bg-slate-700 p-4 rounded-lg">
+                <h3 className="font-semibold text-spanish-yellow mb-2">Lo que NO puedes hacer:</h3>
+                <ul className="text-slate-300 text-sm space-y-1">
                   <li>• Copiar nuestros diseños para uso comercial</li>
                   <li>• Reproducir las frases vikingo sin autorización</li>
                   <li>• Usar nuestro logo o marca en otros productos</li>
@@ -246,16 +248,16 @@ export const TermsPage: React.FC = () => {
 
           {/* Limitación de responsabilidad */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">
               Limitación de Responsabilidad
             </h2>
             
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <p className="text-gray-700 mb-4">
-                Aunque ponemos todo nuestro empeño vikingo en ofrecer el mejor servicio:
+            <div className="bg-slate-700 border border-slate-600 rounded-lg p-6">
+              <p className="text-white font-medium mb-4">
+                Aunque ponemos todo nuestro empeño cuñao en ofrecer el mejor servicio:
               </p>
               
-              <ul className="space-y-2 text-gray-700 text-sm">
+              <ul className="space-y-2 text-white font-medium text-sm">
                 <li>• No garantizamos disponibilidad 24/7 del sitio web</li>
                 <li>• No somos responsables de retrasos por causas de fuerza mayor</li>
                 <li>• No respondemos por daños indirectos o lucro cesante</li>
@@ -267,11 +269,11 @@ export const TermsPage: React.FC = () => {
 
           {/* Ley aplicable */}
           <section className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">
               Ley Aplicable y Jurisdicción
             </h2>
             
-            <p className="text-gray-700">
+            <p className="text-slate-300">
               Estos términos se rigen por la <strong>legislación española</strong>. 
               Para cualquier disputa, las partes se someten a los Juzgados y Tribunales 
               de España, renunciando expresamente a cualquier otro fuero que pudiera corresponder.
@@ -280,16 +282,16 @@ export const TermsPage: React.FC = () => {
 
           {/* Contacto */}
           <section className="border-t pt-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Mail className="w-5 h-5 text-viking-600" />
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Mail className="w-5 h-5 text-spanish-red" />
               ¿Dudas sobre estos Términos?
             </h2>
             
-            <div className="bg-viking-50 border border-viking-200 rounded-lg p-4">
-              <p className="text-gray-700 mb-3">
+            <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+              <p className="text-slate-300 mb-3">
                 Si tienes preguntas sobre estos términos y condiciones, no dudes en contactarnos:
               </p>
-              <p className="text-gray-700">
+              <p className="text-slate-300">
                 <strong>Email:</strong> {config.EMAILS.legal}<br />
                 <strong>Teléfono:</strong> +34 666 123 456
               </p>
@@ -297,25 +299,25 @@ export const TermsPage: React.FC = () => {
           </section>
         </div>
 
-        {/* Frase vikingo final */}
-        <div className="bg-viking-50 border border-viking-200 rounded-lg p-6 text-center">
-          <p className="text-viking-700 font-vikingo italic text-lg">
+        {/* Frase cuñao final */}
+        <div className="bg-slate-800 border border-spanish-yellow rounded-lg p-6 text-center">
+          <p className="text-spanish-yellow italic text-lg">
             "En mi pueblo siempre cumplimos lo que prometemos"
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/privacidad"
-              className="inline-flex items-center px-6 py-3 bg-white text-viking-600 border-2 border-viking-600 font-semibold rounded-lg hover:bg-viking-600 hover:text-white transition-colors"
+            <button
+              onClick={() => navigateTo('/privacidad')}
+              className="inline-flex items-center px-6 py-3 bg-slate-700 text-spanish-yellow border-2 border-spanish-red font-semibold rounded-lg hover:bg-spanish-red hover:text-white transition-colors border-none cursor-pointer"
             >
               Ver Política de Privacidad
-            </Link>
-            <Link
-              to="/envios"
-              className="inline-flex items-center px-6 py-3 bg-viking-600 text-white font-semibold rounded-lg hover:bg-viking-700 transition-colors"
+            </button>
+            <button
+              onClick={() => navigateTo('/envios')}
+              className="inline-flex items-center px-6 py-3 bg-spanish-red text-white font-semibold rounded-lg hover:bg-red-700 transition-colors border-none cursor-pointer"
             >
               <Truck className="w-4 h-4 mr-2" />
               Info de Envíos
-            </Link>
+            </button>
           </div>
         </div>
       </div>

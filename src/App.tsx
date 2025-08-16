@@ -7,6 +7,7 @@ import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/Error';
 import { HomePage } from './pages/HomePage';
 import { ProductsPage } from './pages/ProductsPage';
+import { FeaturedPage } from './pages/FeaturedPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { PrivacyPage } from './pages/PrivacyPage';
@@ -18,14 +19,19 @@ import './App.css';
 function App() {
   return (
     <ErrorBoundary>
-      <Router>
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
+        <div className="min-h-screen bg-slate-900 flex flex-col">
           <Header />
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/productos" element={<ProductsPage />} />
-              <Route path="/destacados" element={<ProductsPage />} />
+              <Route path="/destacados" element={<FeaturedPage />} />
               <Route path="/sobre-nosotros" element={<AboutPage />} />
               <Route path="/contacto" element={<ContactPage />} />
               <Route path="/privacidad" element={<PrivacyPage />} />
@@ -41,8 +47,8 @@ function App() {
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#363636',
-                color: '#fff',
+                background: '#1e293b',
+                color: '#f1f5f9',
               },
               success: {
                 style: {

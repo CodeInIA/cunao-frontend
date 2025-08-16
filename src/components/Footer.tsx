@@ -2,10 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin } from 'lucide-react';
 import { SocialIcon } from 'react-social-icons';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import BrandLogo from './BrandLogo';
 import config from '../config';
 
 export const Footer: React.FC = () => {
+  const { navigateTo } = useSmartNavigation();
+
   return (
     <footer className="footer-dark text-white">
       {/* Barra superior patriótica */}
@@ -55,29 +58,44 @@ export const Footer: React.FC = () => {
             <h4 className="text-lg font-semibold mb-4 text-white">Enlaces Rápidos</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300">
+                <button 
+                  onClick={() => navigateTo('/')}
+                  className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300 bg-transparent border-none text-left p-0"
+                >
                   Inicio
-                </Link>
+                </button>
               </li>
               <li>
-                <Link to="/productos" className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300">
+                <button 
+                  onClick={() => navigateTo('/productos')}
+                  className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300 bg-transparent border-none text-left p-0"
+                >
                   Productos
-                </Link>
+                </button>
               </li>
               <li>
-                <Link to="/destacados" className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300">
+                <button 
+                  onClick={() => navigateTo('/destacados')}
+                  className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300 bg-transparent border-none text-left p-0"
+                >
                   Destacados
-                </Link>
+                </button>
               </li>
               <li>
-                <Link to="/sobre-nosotros" className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300">
+                <button 
+                  onClick={() => navigateTo('/sobre-nosotros')}
+                  className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300 bg-transparent border-none text-left p-0"
+                >
                   Sobre Nosotros
-                </Link>
+                </button>
               </li>
               <li>
-                <Link to="/contacto" className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300">
+                <button 
+                  onClick={() => navigateTo('/contacto')}
+                  className="nav-link hover:text-spanish-yellow hover:translate-x-1 transition-all duration-300 bg-transparent border-none text-left p-0"
+                >
                   Contacto
-                </Link>
+                </button>
               </li>
             </ul>
           </div>
@@ -129,15 +147,24 @@ export const Footer: React.FC = () => {
             </div>
             
             <div className="flex space-x-6 text-sm">
-              <Link to="/privacidad" className="nav-link hover:text-spanish-yellow hover:underline transition-all duration-300">
+              <button 
+                onClick={() => navigateTo('/privacidad')}
+                className="nav-link hover:text-spanish-yellow hover:underline transition-all duration-300 bg-transparent border-none p-0"
+              >
                 Política de Privacidad
-              </Link>
-              <Link to="/terminos" className="nav-link hover:text-spanish-yellow hover:underline transition-all duration-300">
+              </button>
+              <button 
+                onClick={() => navigateTo('/terminos')}
+                className="nav-link hover:text-spanish-yellow hover:underline transition-all duration-300 bg-transparent border-none p-0"
+              >
                 Términos y Condiciones
-              </Link>
-              <Link to="/envios" className="nav-link hover:text-spanish-yellow hover:underline transition-all duration-300">
+              </button>
+              <button 
+                onClick={() => navigateTo('/envios')}
+                className="nav-link hover:text-spanish-yellow hover:underline transition-all duration-300 bg-transparent border-none p-0"
+              >
                 Envíos y Devoluciones
-              </Link>
+              </button>
             </div>
           </div>
         </div>
