@@ -14,6 +14,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
   const { getTotalItems, openCart } = useCartStore();
   const { navigateTo } = useSmartNavigation();
   const totalItems = getTotalItems();
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -29,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
   };
 
   return (
-    <header className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
+  <header className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
       {/* Barra superior patriótica */}
       <div className="brand-header h-1"></div>
       
@@ -40,53 +41,38 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
 
           {/* Navegación desktop */}
           <nav className="hidden md:flex items-center space-x-8">
-            <button 
-              onClick={() => handleNavClick('/')}
-              className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer"
-            >
-              Inicio
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span>
-            </button>
-            <button 
-              onClick={() => handleNavClick('/productos')}
-              className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer"
-            >
-              Productos
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span>
-            </button>
-            <button 
-              onClick={() => handleNavClick('/destacados')}
-              className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer"
-            >
-              Destacados
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span>
-            </button>
-            <button 
-              onClick={() => handleNavClick('/sobre-nosotros')}
-              className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer"
-            >
-              Sobre Nosotros
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span>
-            </button>
-            <button 
-              onClick={() => handleNavClick('/contacto')}
-              className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer"
-            >
-              Contacto
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span>
-            </button>
+            <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+            <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+            <button onClick={() => handleNavClick('/destacados')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Destacados<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+            <button onClick={() => handleNavClick('/sobre-nosotros')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Sobre Nosotros<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+            <button onClick={() => handleNavClick('/contacto')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Contacto<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
           </nav>
 
           {/* Acciones */}
           <div className="flex items-center space-x-4">
-            {/* Búsqueda */}
-            <button
-              onClick={onSearchClick}
-              className="p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110 hover:shadow-lg"
-              aria-label="Buscar"
-            >
-              <Search size={20} />
-            </button>
+            {/* Barra de búsqueda */}
+            <form onSubmit={e => {
+              e.preventDefault();
+              if (searchQuery.trim()) {
+                navigateTo(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
+                setSearchQuery('');
+              }
+            }} className="relative hidden md:block">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Buscar..."
+                className="bg-slate-800 border-2 border-slate-700 rounded-full py-2 pl-5 pr-10 text-white placeholder-slate-400 focus:ring-2 focus:ring-spanish-yellow focus:border-transparent transition-all duration-300 w-40 focus:w-64"
+              />
+              <button
+                type="submit"
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-spanish-yellow"
+                aria-label="Buscar"
+              >
+                <Search size={20} />
+              </button>
+            </form>
 
             {/* Carrito */}
             <button

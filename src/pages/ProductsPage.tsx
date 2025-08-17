@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
 import { ProductCard } from '../components/ProductCard';
@@ -12,10 +13,18 @@ export const ProductsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const { navigateTo } = useSmartNavigation();
+  const location = useLocation();
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    const params = new URLSearchParams(location.search);
+    const query = params.get('q') || '';
+    setSearchQuery(query);
+    if (query) {
+      searchProducts(query);
+    } else {
+      fetchProducts();
+    }
+  }, [location.search, fetchProducts, searchProducts]);
 
   const handleAddToCart = (product: Product) => {
     const cartItem = {
@@ -35,9 +44,9 @@ export const ProductsPage: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      searchProducts(searchQuery);
+      navigateTo(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      fetchProducts();
+      navigateTo('/productos');
     }
   };
 
