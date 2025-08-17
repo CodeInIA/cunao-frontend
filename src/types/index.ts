@@ -10,6 +10,7 @@ export interface Product {
   updated_at: string;
   visible: boolean;
   variants?: ProductVariant[];
+  gpsr?: string; // HTML GPSR
 }
 
 export interface ProductOption {

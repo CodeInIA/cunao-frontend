@@ -14,6 +14,7 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { ShippingPage } from './pages/ShippingPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
 import './App.css';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/productos" element={<ProductsPage />} />
+              <Route path="/producto/:id" element={<ProductDetailPage />} />
               <Route path="/destacados" element={<FeaturedPage />} />
               <Route path="/sobre-nosotros" element={<AboutPage />} />
               <Route path="/contacto" element={<ContactPage />} />
