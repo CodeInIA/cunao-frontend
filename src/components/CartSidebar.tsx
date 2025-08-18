@@ -1,10 +1,12 @@
 import React from 'react';
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
+import { useProductStore } from '../stores/productStore';
 import { Link } from 'react-router-dom';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 export const CartSidebar: React.FC = () => {
+  const { products } = useProductStore();
   const { navigateTo } = useSmartNavigation();
   const {
     items,
@@ -41,7 +43,7 @@ export const CartSidebar: React.FC = () => {
               onClick={closeCart}
               className="p-2 hover:bg-slate-800 rounded-md transition-colors"
             >
-              <X size={20} className="text-spanish-yellow" />
+              {/* Icono de cierre, puedes cambiarlo por otro si lo prefieres */}
             </button>
           </div>
 
@@ -68,24 +70,54 @@ export const CartSidebar: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {items.map((item) => (
+                {items.map((item) => {
+                  const product = products.find(p => p.id === item.productId);
+                  // Opciones disponibles para ese producto
+                  // Filtrar solo opciones disponibles en variantes habilitadas
+                  const enabledVariants = product?.variants?.filter(v => v.is_enabled) || [];
+                  const enabledOptionIds = new Set(enabledVariants.flatMap(v => v.options));
+                  const colorOptions = product?.options?.find(o => o.type === 'color')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
+                  const sizeOptions = product?.options?.find(o => o.type === 'size')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
+                  return (
                   <div key={`${item.productId}-${item.variantId}`} className="flex items-center space-x-4 p-4 bg-slate-800 rounded-lg border border-slate-800 shadow-md">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-16 h-16 object-cover rounded-md border-2 border-spanish-yellow shadow"
-                    />
+                    <div className="w-24 h-24 flex items-center justify-center rounded-md bg-slate-200/30">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover rounded-md border-2 border-spanish-yellow shadow"
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-base font-patriot font-bold text-spanish-yellow truncate">
                         {item.title}
                       </h4>
-                      {item.size && (
-                        <p className="text-xs text-slate-300">Talla: {item.size}</p>
-                      )}
-                      {item.color && (
-                        <p className="text-xs text-slate-300">Color: {item.color}</p>
-                      )}
-                      <p className="text-base font-bold text-spanish-red">
+                      {/* Selector de talla */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <label className="text-xs text-slate-300">Talla:</label>
+                        <select
+                          className="bg-slate-700 text-white text-xs rounded px-2 py-1 focus:outline-none"
+                          value={item.size}
+                          onChange={e => updateQuantity(item.productId, item.variantId, item.quantity)}
+                        >
+                          {sizeOptions.map(size => (
+                            <option key={size.id} value={size.title}>{size.title}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* Selector de color */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <label className="text-xs text-slate-300">Color:</label>
+                        <select
+                          className="bg-slate-700 text-white text-xs rounded px-2 py-1 focus:outline-none"
+                          value={item.color}
+                          onChange={e => updateQuantity(item.productId, item.variantId, item.quantity)}
+                        >
+                          {colorOptions.map(color => (
+                            <option key={color.id} value={color.title}>{color.title}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <p className="text-base font-bold text-spanish-yellow mt-2">
                         {item.price.toFixed(2)}€
                       </p>
                     </div>
@@ -107,16 +139,15 @@ export const CartSidebar: React.FC = () => {
                       >
                         <Plus size={16} className="text-spanish-yellow" />
                       </button>
-                      {/* Eliminar */}
                       <button
                         onClick={() => removeItem(item.productId, item.variantId)}
-                        className="p-1 text-spanish-yellow hover:bg-spanish-yellow/10 rounded-md transition-colors ml-2"
+                        className="p-1 hover:bg-red-600/20 rounded-md transition-colors"
                       >
-                        <X size={16} />
+                        <Trash2 size={18} className="text-red-600 group-hover:scale-110 transition-transform duration-200" />
                       </button>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             )}
           </div>
@@ -136,7 +167,7 @@ export const CartSidebar: React.FC = () => {
                 <Link
                   to="/checkout"
                   onClick={closeCart}
-                  className="w-full px-8 py-3 bg-spanish-yellow text-slate-900 font-patriot font-bold rounded-lg shadow-lg block text-center hover:bg-yellow-400 hover:text-spanish-red transition-all duration-300"
+                  className="w-full px-8 py-3 bg-yellow-400 text-slate-900 font-patriot font-bold rounded-lg shadow-lg block text-center transition-all duration-300 hover:bg-yellow-500 hover:text-black hover:[text-decoration-thickness:3px] hover:underline hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 >
                   Finalizar Compra
                 </Link>
@@ -154,7 +185,7 @@ export const CartSidebar: React.FC = () => {
                       }
                     }, 100);
                   }}
-                  className="w-full px-8 py-3 bg-slate-800 text-spanish-yellow font-patriot font-bold rounded-lg border border-spanish-yellow hover:bg-spanish-yellow hover:text-slate-900 transition-all duration-300"
+                  className="w-full px-2 py-1 text-sm bg-slate-800 text-spanish-yellow font-patriot font-bold rounded-md transition-colors duration-200 hover:bg-slate-700"
                 >
                   Seguir Comprando
                 </button>
