@@ -10,6 +10,7 @@ export const NotFoundPage: React.FC = () => {
   const { products, loadingState, fetchProducts } = useProductStore();
 
   React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
     if (products.length === 0) {
       fetchProducts();
     }
