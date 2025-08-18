@@ -239,14 +239,14 @@ export const ProductDetailPage: React.FC = () => {
           )}
 
           <div className="mb-8">
-            <h3 className="text-sm font-bold text-slate-300 uppercase mb-2">Cantidad</h3>
-            <div className="flex items-center gap-4 bg-slate-800 border border-slate-700 rounded-lg p-2 max-w-xs">
-              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-2 text-spanish-yellow hover:bg-slate-700 rounded-md">
-                <Minus size={16} />
+            <h3 className="text-sm font-patriot font-bold text-slate-300 uppercase mb-2 tracking-wider">Cantidad</h3>
+            <div className="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-lg p-1 max-w-[140px]">
+              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-2 text-spanish-yellow hover:bg-slate-700 rounded-md transition-colors">
+                <Minus size={20} />
               </button>
-              <span className="text-lg font-bold text-white w-8 text-center">{quantity}</span>
-              <button onClick={() => setQuantity(q => q + 1)} className="p-2 text-spanish-yellow hover:bg-slate-700 rounded-md">
-                <Plus size={16} />
+              <span className="text-xl font-bold text-white px-2">{quantity}</span>
+              <button onClick={() => setQuantity(q => q + 1)} className="p-2 text-spanish-yellow hover:bg-slate-700 rounded-md transition-colors">
+                <Plus size={20} />
               </button>
             </div>
           </div>
