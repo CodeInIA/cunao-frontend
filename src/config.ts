@@ -5,8 +5,8 @@ export const config = {
   DOMAIN: import.meta.env.VITE_APP_URL || 'http://localhost:5173',
   SOCIAL: {
     instagram: import.meta.env.VITE_INSTAGRAM_URL || 'https://instagram.com/cunadismo_ilustrado',
-    x: import.meta.env.VITE_TWITTER_URL || 'https://twitter.com/cunadismo_ilustrado',
-    tiktok: import.meta.env.VITE_FACEBOOK_URL || 'https://facebook.com/cunadismo.ilustrado',
+    x: import.meta.env.VITE_TWITTER_URL || 'https://x.com/cunadismo_ilustrado',
+    tiktok: import.meta.env.VITE_FACEBOOK_URL || 'https://tiktok.com/cunadismo.ilustrado',
   },
   EMAILS: {
     main: 'info@cunadismo-ilustrado.com',

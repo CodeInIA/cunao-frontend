@@ -53,18 +53,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
               >
                 <ShoppingCart size={18} />
               </button>
-              <button 
-                className="bg-slate-900 text-slate-300 p-2 rounded-full hover:bg-slate-700 hover:text-white transition-colors"
-                title="Vista rápida"
-              >
-                <Eye size={18} />
-              </button>
-              <button 
-                className="bg-slate-900 text-slate-300 p-2 rounded-full hover:bg-spanish-yellow hover:text-slate-900 transition-colors"
-                title="Añadir a favoritos"
-              >
-                <Heart size={18} />
-              </button>
             </div>
           </div>
         </div>
