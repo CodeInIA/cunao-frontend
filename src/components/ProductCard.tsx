@@ -10,7 +10,9 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   const defaultImage = product.images.find(img => img.is_default) || product.images[0];
-  const price = 19.99; // Precio por defecto, deberías obtenerlo de las variantes
+  const price = product.variants && product.variants[0] && typeof product.variants[0].price === 'number'
+    ? product.variants[0].price / 100
+    : 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
