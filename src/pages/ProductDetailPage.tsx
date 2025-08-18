@@ -15,6 +15,10 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
 
+  // NUEVO: Estado para gestionar la galería de imágenes
+  const [variantImages, setVariantImages] = useState<any[]>([]);
+  const [currentImage, setCurrentImage] = useState<any | null>(null);
+
   useEffect(() => {
     if (id) {
       fetchProduct(id);
@@ -22,7 +26,6 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [id, fetchProduct, fetchProductGPSR]);
 
-  // Extraer y organizar las opciones del producto (tallas, colores)
   const productOptions = useMemo(() => {
     if (!currentProduct?.options) return {};
     const optionsMap: { [key: string]: any[] } = {};
@@ -32,7 +35,6 @@ export const ProductDetailPage: React.FC = () => {
     return optionsMap;
   }, [currentProduct]);
 
-  // Establecer la variante por defecto al cargar el producto
   useEffect(() => {
     if (currentProduct?.variants) {
       const defaultVariant = currentProduct.variants.find(v => v.is_default) || currentProduct.variants[0];
@@ -52,7 +54,6 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [currentProduct, productOptions]);
 
-  // Actualizar la variante seleccionada cuando cambian las opciones
   useEffect(() => {
     if (currentProduct?.variants && Object.keys(selectedOptions).length > 0) {
       const variant = currentProduct.variants.find(v => 
@@ -61,6 +62,23 @@ export const ProductDetailPage: React.FC = () => {
       setSelectedVariant(variant || null);
     }
   }, [selectedOptions, currentProduct]);
+
+  // NUEVO: useEffect para actualizar las imágenes cuando cambia la variante
+  useEffect(() => {
+    if (currentProduct && selectedVariant) {
+      const imagesForVariant = currentProduct.images.filter(img => 
+        img.variant_ids.includes(selectedVariant.id)
+      );
+      setVariantImages(imagesForVariant);
+      
+      if (imagesForVariant.length > 0) {
+        setCurrentImage(imagesForVariant[0]);
+      } else {
+        // Fallback a la primera imagen del producto si no hay ninguna específica
+        setCurrentImage(currentProduct.images[0] || null);
+      }
+    }
+  }, [selectedVariant, currentProduct]);
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
@@ -78,7 +96,7 @@ export const ProductDetailPage: React.FC = () => {
       quantity: quantity,
       title: currentProduct!.title,
       price: selectedVariant.price / 100, // El precio de Printify viene en céntimos
-      image: currentProduct!.images[0]?.src || '',
+      image: currentImage?.src || currentProduct!.images[0]?.src || '',
       size: sizeTitle,
       color: colorTitle,
     };
@@ -108,13 +126,30 @@ export const ProductDetailPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900 py-12">
       <div className="container mx-auto px-4 flex flex-col md:flex-row gap-12">
-        {/* Imagen */}
-        <div className="flex-1 flex items-center justify-center">
-          <img
-            src={currentProduct.images[0]?.src}
-            alt={currentProduct.title}
-            className="max-w-md w-full rounded-xl shadow-lg border-4 border-slate-800"
-          />
+        {/* Imagen y Galería */}
+        <div className="flex-1 flex flex-col items-center">
+          <div className="w-full max-w-md mb-4">
+            <img
+              src={currentImage?.src}
+              alt={currentProduct.title}
+              className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
+            />
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {variantImages.map((image) => (
+              <button
+                key={image.src}
+                onClick={() => setCurrentImage(image)}
+                className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                  currentImage?.src === image.src
+                    ? 'border-spanish-yellow ring-2 ring-spanish-yellow'
+                    : 'border-slate-700 hover:border-spanish-yellow'
+                }`}
+              >
+                <img src={image.src} alt="thumbnail" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
         </div>
         {/* Info */}
         <div className="flex-1">
