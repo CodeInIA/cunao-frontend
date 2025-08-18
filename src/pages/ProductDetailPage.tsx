@@ -25,7 +25,6 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [id, fetchProduct, fetchProductGPSR]);
 
-  // Contiene TODAS las opciones posibles para este tipo de producto
   const allProductOptions = useMemo(() => {
     if (!currentProduct?.options) return { colors: [], sizes: [] };
     const optionsMap: { [key: string]: any[] } = { colors: [], sizes: [] };
@@ -39,7 +38,6 @@ export const ProductDetailPage: React.FC = () => {
     return optionsMap;
   }, [currentProduct]);
 
-  // NUEVO: Filtra las opciones para mostrar solo las que están en variantes habilitadas
   const availableOptions = useMemo(() => {
     if (!currentProduct?.variants) {
       return { colors: [], sizes: [] };
@@ -53,12 +51,10 @@ export const ProductDetailPage: React.FC = () => {
     return { colors: availableColors, sizes: availableSizes };
   }, [currentProduct?.variants, allProductOptions]);
 
-  // Derivar el nombre del color seleccionado (usa la lista completa para buscar)
   const selectedColorName = useMemo(() => {
     return allProductOptions.colors?.find(c => c.id === selectedOptions.color)?.title;
   }, [selectedOptions.color, allProductOptions.colors]);
 
-  // Establecer la variante por defecto al cargar el producto
   useEffect(() => {
     if (currentProduct?.variants && allProductOptions.colors.length > 0) {
       const defaultVariant = currentProduct.variants.find(v => v.is_default && v.is_enabled) || currentProduct.variants.find(v => v.is_enabled);
@@ -78,7 +74,6 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [currentProduct, allProductOptions]);
 
-  // Actualizar la variante seleccionada cuando cambian las opciones
   useEffect(() => {
     if (currentProduct?.variants && Object.keys(selectedOptions).length > 0) {
       const variant = currentProduct.variants.find(v => 
@@ -88,7 +83,6 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [selectedOptions, currentProduct]);
 
-  // Actualizar las imágenes cuando cambia la variante
   useEffect(() => {
     if (currentProduct && selectedVariant) {
       const imagesForVariant = currentProduct.images.filter(img => 
@@ -109,15 +103,22 @@ export const ProductDetailPage: React.FC = () => {
   };
 
   const handleAddToCart = () => {
-    if (!selectedVariant) return;
+    if (!selectedVariant || !currentProduct) return;
+
+    // CAMBIO CLAVE: Buscar la imagen principal de la variante para el carrito
+    const imagesForVariant = currentProduct.images.filter(img => 
+      img.variant_ids.includes(selectedVariant.id)
+    );
+    const cartImageSrc = (imagesForVariant.length > 0 ? imagesForVariant[0].src : currentProduct.images[0]?.src) || '';
+
     const sizeTitle = allProductOptions.sizes?.find(s => s.id === selectedOptions.size)?.title || '';
     const cartItem = {
-      productId: currentProduct!.id,
+      productId: currentProduct.id,
       variantId: selectedVariant.id,
       quantity: quantity,
-      title: currentProduct!.title,
+      title: currentProduct.title,
       price: selectedVariant.price / 100,
-      image: currentImage?.src || currentProduct!.images[0]?.src || '',
+      image: cartImageSrc, // Usar la imagen principal de la variante
       size: sizeTitle,
       color: selectedColorName || '',
     };
