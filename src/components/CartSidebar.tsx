@@ -141,7 +141,19 @@ export const CartSidebar: React.FC = () => {
                   Finalizar Compra
                 </Link>
                 <button
-                  onClick={closeCart}
+                  onClick={() => {
+                    closeCart();
+                    setTimeout(() => {
+                      if (window.location.pathname === '/productos' || window.location.pathname.startsWith('/producto/')) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        navigateTo('/productos');
+                        setTimeout(() => {
+                          window.scrollTo({ top: 0, behavior: 'auto' });
+                        }, 100);
+                      }
+                    }, 100);
+                  }}
                   className="w-full px-8 py-3 bg-slate-800 text-spanish-yellow font-patriot font-bold rounded-lg border border-spanish-yellow hover:bg-spanish-yellow hover:text-slate-900 transition-all duration-300"
                 >
                   Seguir Comprando
