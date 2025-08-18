@@ -1,40 +1,52 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShoppingCart, Heart, Eye } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Product } from '../types';
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart?: (product: Product) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
-  const defaultImage = product.images.find(img => img.is_default) || product.images[0];
+export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const [hoveredColorId, setHoveredColorId] = React.useState<number | null>(null);
+  const navigate = useNavigate();
+  const defaultImage = product.images.find((img: any) => img.is_default) || product.images[0];
   const price = product.variants && product.variants[0] && typeof product.variants[0].price === 'number'
     ? product.variants[0].price / 100
     : 0;
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onAddToCart) {
-      onAddToCart(product);
+  // Obtener colores disponibles en variantes activas
+  const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
+  const colorOptionIds = Array.from(new Set(enabledVariants.flatMap((v: any) => v.options.filter((optId: any) => {
+    const opt = product.options?.find((o: any) => o.type === 'color' && o.values.some((val: any) => val.id === optId));
+    return !!opt;
+  }))));
+  const colorOptions = product.options?.find((o: any) => o.type === 'color')?.values.filter((val: any) => colorOptionIds.includes(val.id)) || [];
+
+  // Imagen a mostrar (por defecto o por hover)
+  const imageToShow = React.useMemo(() => {
+    if (hoveredColorId) {
+      // Buscar variante con ese color
+      const variant = enabledVariants.find((v: any) => v.options.includes(hoveredColorId));
+      if (variant) {
+        const img = product.images.find((img: any) => img.variant_ids.includes(variant.id));
+        if (img) return img;
+      }
     }
-  };
+    return defaultImage;
+  }, [hoveredColorId, product, defaultImage, enabledVariants]);
 
   const getCunaoPhrase = (title: string) => {
-    // Extractar la frase cuñao del título
     return title.length > 50 ? title.substring(0, 50) + '...' : title;
   };
 
   return (
-  <div className="group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700">
+    <div className="group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700">
       <Link to={`/producto/${product.id}`}> 
         {/* Imagen del producto */}
         <div className="aspect-square bg-slate-700 overflow-hidden relative">
-          {defaultImage ? (
+          {imageToShow ? (
             <img
-              src={defaultImage.src}
+              src={imageToShow.src}
               alt={product.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -43,28 +55,59 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
               <span className="text-4xl">👕</span>
             </div>
           )}
-          {/* Overlay con acciones */}
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-            <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <button
-                onClick={handleAddToCart}
-                className="bg-spanish-red text-white p-2 rounded-full hover:bg-spanish-yellow hover:text-slate-900 transition-colors shadow"
-                title="Añadir al carrito"
-              >
-                <ShoppingCart size={18} />
-              </button>
+          
+        </div>
+
+        {/* Vista previa de colores */}
+        {colorOptions.length > 0 && (
+          <div className="py-3 px-4">
+            <div
+              className="flex flex-wrap justify-center items-center gap-2"
+              style={{ width: '100%' }}
+            >
+              {colorOptions.map((color: any) => {
+                // Tamaño dinámico: entre 18px y 32px según cantidad y ancho máximo de la tarjeta (aprox 240px)
+                const minSize = 18;
+                const maxSize = 32;
+                const cardWidth = 240; // px, ajusta según el diseño real
+                const count = colorOptions.length;
+                // Calcula el tamaño para que quepan todos en una fila, pero si son demasiados, se envuelven
+                const size = Math.max(minSize, Math.min(maxSize, Math.floor((cardWidth - (count - 1) * 8) / count)));
+                return (
+                  <div
+                    key={color.id}
+                    className={`rounded-full border-2 cursor-pointer transition-all ${hoveredColorId === color.id ? 'border-spanish-yellow scale-110' : 'border-slate-600'}`}
+                    style={{
+                      backgroundColor: color.colors?.[0] || '#fff',
+                      width: `${size}px`,
+                      height: `${size}px`,
+                      minWidth: `${size}px`,
+                      minHeight: `${size}px`,
+                      flex: '0 0 auto',
+                    }}
+                    title={color.title}
+                    onMouseEnter={() => setHoveredColorId(color.id)}
+                    onMouseLeave={() => setHoveredColorId(null)}
+                    onClick={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(`/producto/${product.id}?color=${color.title}`);
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Información del producto */}
         <div className="p-6">
-          <h3 className="font-display font-semibold text-white mb-2 line-clamp-2">
+          <h3 className="font-display font-semibold text-white mb-2 line-clamp-2 group-hover:underline transition-all duration-200">
             {getCunaoPhrase(product.title)}
           </h3>
           {/* Tags/categorías */}
           <div className="flex flex-wrap gap-1 mb-4">
-            {product.tags.slice(0, 2).map((tag, index) => (
+            {product.tags.slice(0, 2).map((tag: string, index: number) => (
               <span
                 key={index}
                 className="inline-block bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded-full border border-slate-600"
@@ -73,17 +116,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
               </span>
             ))}
           </div>
-          {/* Precio y botón */}
+          {/* Precio */}
           <div className="flex flex-col gap-4 mt-6">
             <span className="text-lg font-bold text-spanish-yellow">
               {price.toFixed(2)}€
             </span>
-            <button
-              onClick={handleAddToCart}
-              className="bg-spanish-yellow text-slate-900 font-bold text-sm px-6 py-2 rounded-lg shadow hover:bg-spanish-red hover:text-white transition-colors border-2 border-spanish-yellow"
-            >
-              Añadir
-            </button>
           </div>
         </div>
       </Link>

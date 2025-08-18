@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
+import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
 import { formatPrice } from '../utils/formatters';
 import type { ProductVariant } from '../types';
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { currentProduct, fetchProduct, loadingState, error, currentGPSR, fetchProductGPSR } = useProductStore();
   const { addItem } = useCartStore();
 
@@ -17,6 +20,14 @@ export const ProductDetailPage: React.FC = () => {
 
   const [variantImages, setVariantImages] = useState<any[]>([]);
   const [currentImage, setCurrentImage] = useState<any | null>(null);
+
+  // Leer color del query param
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return {
+      color: params.get('color') || '',
+    };
+  }, [location.search]);
 
   useEffect(() => {
     if (id) {
@@ -57,22 +68,56 @@ export const ProductDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (currentProduct?.variants && allProductOptions.colors.length > 0) {
-      const defaultVariant = currentProduct.variants.find(v => v.is_default && v.is_enabled) || currentProduct.variants.find(v => v.is_enabled);
-      if (defaultVariant) {
-        setSelectedVariant(defaultVariant);
-        const initialOptions: { [key: string]: number } = {};
-        defaultVariant.options.forEach(optId => {
-          if (allProductOptions.colors.some(c => c.id === optId)) {
-            initialOptions.color = optId;
+      let initialOptions: { [key: string]: number } = {};
+      let variantToSelect: ProductVariant | null = null;
+
+      // Si hay color en el query param, buscarlo y preseleccionarlo
+      if (queryParams.color) {
+        const colorObj = allProductOptions.colors.find(c => c.title.toLowerCase() === queryParams.color.toLowerCase());
+        if (colorObj) {
+          initialOptions.color = colorObj.id;
+          // Buscar variante con ese color y habilitada
+          const variant = currentProduct.variants.find(v => v.is_enabled && v.options.includes(colorObj.id));
+          if (variant) {
+            variantToSelect = variant;
+            // Preseleccionar talla si solo hay una
+            if (allProductOptions.sizes.length === 1) {
+              initialOptions.size = allProductOptions.sizes[0].id;
+            } else {
+              // Si la variante tiene talla, preseleccionarla
+              variant.options.forEach(optId => {
+                if (allProductOptions.sizes.some(s => s.id === optId)) {
+                  initialOptions.size = optId;
+                }
+              });
+            }
           }
-          if (allProductOptions.sizes.some(s => s.id === optId)) {
-            initialOptions.size = optId;
-          }
-        });
+        }
+      }
+
+      // Si no hay color en query param, usar variante por defecto
+      if (!variantToSelect) {
+        const foundDefault = currentProduct.variants.find(v => v.is_default && v.is_enabled);
+        const foundEnabled = currentProduct.variants.find(v => v.is_enabled);
+        variantToSelect = foundDefault || foundEnabled || null;
+        if (variantToSelect) {
+          variantToSelect.options.forEach(optId => {
+            if (allProductOptions.colors.some(c => c.id === optId)) {
+              initialOptions.color = optId;
+            }
+            if (allProductOptions.sizes.some(s => s.id === optId)) {
+              initialOptions.size = optId;
+            }
+          });
+        }
+      }
+
+      if (variantToSelect) {
+        setSelectedVariant(variantToSelect);
         setSelectedOptions(initialOptions);
       }
     }
-  }, [currentProduct, allProductOptions]);
+  }, [currentProduct, allProductOptions, queryParams.color]);
 
   useEffect(() => {
     if (currentProduct?.variants && Object.keys(selectedOptions).length > 0) {
@@ -100,6 +145,13 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
+    if (optionType === 'color') {
+      // Buscar el color seleccionado
+      const colorObj = availableOptions.colors.find((c: any) => c.id === valueId);
+      if (colorObj) {
+        navigate(`/producto/${id}?color=${encodeURIComponent(colorObj.title)}`, { replace: true });
+      }
+    }
   };
 
   const handleAddToCart = () => {
