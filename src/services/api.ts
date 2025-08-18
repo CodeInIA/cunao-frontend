@@ -45,6 +45,12 @@ export const apiService = {
     return response.data.data || [];
   },
 
+    // GPSR
+  async getProductGPSR(id: string): Promise<Array<{title: string, text: string}>> {
+    const response = await api.get<{ success: boolean; data: Array<{title: string, text: string}> }>(`/products/${id}/gpsr`);
+    return response.data.data || [];
+  },
+
   async searchProducts(query: string): Promise<Product[]> {
     const response = await api.get<ApiResponse<Product[]>>(`/products/search?q=${encodeURIComponent(query)}`);
     return response.data.data || [];

@@ -7,13 +7,14 @@ interface ProductStore {
   featuredProducts: Product[];
   currentProduct: Product | null;
   currentVariants: ProductVariant[];
+  currentGPSR: Array<{title: string, text: string}>;
   loadingState: LoadingState;
   error: string | null;
-  
   // Acciones
   fetchProducts: () => Promise<void>;
   fetchFeaturedProducts: () => Promise<void>;
   fetchProduct: (id: string) => Promise<void>;
+  fetchProductGPSR: (id: string) => Promise<void>;
   fetchProductVariants: (id: string) => Promise<void>;
   searchProducts: (query: string) => Promise<void>;
   clearError: () => void;
@@ -24,8 +25,17 @@ export const useProductStore = create<ProductStore>((set, get) => ({
   featuredProducts: [],
   currentProduct: null,
   currentVariants: [],
+  currentGPSR: [],
   loadingState: 'idle',
   error: null,
+  fetchProductGPSR: async (id: string) => {
+    try {
+      const gpsr = await apiService.getProductGPSR(id);
+      set({ currentGPSR: gpsr });
+    } catch (error) {
+      set({ currentGPSR: [] });
+    }
+  },
 
   fetchProducts: async () => {
     set({ loadingState: 'loading', error: null });

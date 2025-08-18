@@ -6,12 +6,15 @@ import { ShoppingCart } from 'lucide-react';
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams();
-  const { currentProduct, fetchProduct, loadingState, error } = useProductStore();
+  const { currentProduct, fetchProduct, loadingState, error, currentGPSR, fetchProductGPSR } = useProductStore();
   const { addItem } = useCartStore();
 
   useEffect(() => {
-    if (id) fetchProduct(id);
-  }, [id, fetchProduct]);
+    if (id) {
+      fetchProduct(id);
+      fetchProductGPSR(id);
+    }
+  }, [id, fetchProduct, fetchProductGPSR]);
 
   if (loadingState === 'loading') {
     return (
@@ -76,9 +79,16 @@ export const ProductDetailPage: React.FC = () => {
           </div>
           {/* Descripción HTML */}
           <div className="text-lg text-slate-300 mb-6" dangerouslySetInnerHTML={{ __html: currentProduct.description }} />
-          {/* GPSR HTML si existe */}
-          {currentProduct.gpsr && (
-            <div className="mt-6 text-base text-slate-400" dangerouslySetInnerHTML={{ __html: currentProduct.gpsr }} />
+          {/* GPSR info como secciones */}
+          {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
+            <div className="mt-6 space-y-4 mb-8">
+              {currentGPSR.map((section, idx) => (
+                <div key={idx} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                  <h3 className="text-lg font-bold text-white mb-2">{section.title}</h3>
+                  <p className="text-base text-slate-300 whitespace-pre-line">{section.text}</p>
+                </div>
+              ))}
+            </div>
           )}
           <div className="flex flex-wrap gap-2 mb-6">
             {currentProduct.tags.map((tag, idx) => (
