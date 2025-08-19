@@ -13,17 +13,25 @@ export const CheckoutPage: React.FC = () => {
   const { navigateTo } = useSmartNavigation();
   const [isLoading, setIsLoading] = useState(false);
   const [shippingRegion, setShippingRegion] = useState<ShippingRegion>('');
-  const [shippingCost, setShippingCost] = useState(0);
+  // Usar null para indicar que el coste no ha sido calculado
+  const [shippingCost, setShippingCost] = useState<number | null>(null);
 
   const subtotal = getTotalPrice();
-  const FREE_SHIPPING_THRESHOLD = Number(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD) || 50;
+  const FREE_SHIPPING_THRESHOLD = Number(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD) || 85;
   const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
   
-  const total = subtotal > 0 ? subtotal + shippingCost : 0;
+  // El total solo incluye el coste de envío si ha sido calculado (no es null)
+  const total = subtotal > 0 ? subtotal + (shippingCost ?? 0) : 0;
 
   useEffect(() => {
     if (isFreeShipping) {
       setShippingCost(0);
+      return;
+    }
+
+    // Si no hay envío gratis y no se ha seleccionado región, el coste es nulo (no calculado)
+    if (!shippingRegion) {
+      setShippingCost(null);
       return;
     }
 
@@ -36,10 +44,12 @@ export const CheckoutPage: React.FC = () => {
         cost = Number(import.meta.env.VITE_SHIPPING_COST_EUROPA) || 12.99;
         break;
       default:
-        cost = 0;
+        // Si hay una región pero no coincide, lo tratamos como no calculado
+        setShippingCost(null);
+        return;
     }
     setShippingCost(cost);
-  }, [shippingRegion, isFreeShipping]);
+  }, [shippingRegion, isFreeShipping, subtotal]); // Añadimos subtotal para mayor robustez
 
   const handleProceedToPayment = async () => {
     if (!shippingRegion) {
@@ -136,13 +146,21 @@ export const CheckoutPage: React.FC = () => {
               {isFreeShipping ? (
                 <span className="font-semibold text-green-400">Gratis</span>
               ) : (
-                <span>{shippingRegion ? formatPrice(shippingCost) : 'Selecciona una región'}</span>
+                <span>{shippingCost !== null ? formatPrice(shippingCost) : 'Selecciona una región'}</span>
               )}
             </div>
-            <div className="flex justify-between text-xl font-bold pt-2 border-t border-slate-700"><span>Total</span><span className="text-spanish-yellow">{formatPrice(total)}</span></div>
+            <div className="flex justify-between text-xl font-bold pt-2 border-t border-slate-700">
+              <span>Total</span>
+              <span className="text-spanish-yellow">
+                {/* Muestra un texto provisional si el coste de envío no se ha determinado */}
+                {!isFreeShipping && shippingCost === null 
+                  ? `${formatPrice(subtotal)} + envío` 
+                  : formatPrice(total)}
+              </span>
+            </div>
           </div>
 
-          <button onClick={handleProceedToPayment} disabled={isLoading || !shippingRegion} className="w-full py-4 bg-spanish-yellow text-slate-900 font-patriot font-bold text-lg rounded-lg shadow hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <button onClick={handleProceedToPayment} disabled={isLoading || (!isFreeShipping && shippingCost === null)} className="w-full py-4 bg-spanish-yellow text-slate-900 font-patriot font-bold text-lg rounded-lg shadow hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <Lock size={18} />
             {isLoading ? 'Procesando...' : 'Proceder al Pago'}
           </button>
