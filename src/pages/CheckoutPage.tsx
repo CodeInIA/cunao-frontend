@@ -13,7 +13,7 @@ type ShippingRegion = 'spain' | 'europa' | '';
 // Pequeño componente auxiliar para las opciones del Listbox para no repetir código
 const shippingOptions = [
   { id: 'spain', name: 'España' },
-  { id: 'europa', name: 'Europa (UE)' },
+  { id: 'europa', name: 'Resto de Europa (UE, no incluye España)' },
 ];
 
 export const CheckoutPage: React.FC = () => {
