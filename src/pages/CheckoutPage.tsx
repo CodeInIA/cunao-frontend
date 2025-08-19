@@ -203,7 +203,7 @@ export const CheckoutPage: React.FC = () => {
             </div>
           </div>
 
-          <button onClick={handleProceedToPayment} disabled={isLoading || (!isFreeShipping && shippingCost === null)} className="w-full py-4 bg-spanish-yellow text-slate-900 font-patriot font-bold text-lg rounded-lg shadow hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <button onClick={handleProceedToPayment} disabled={isLoading || !shippingRegion || (!isFreeShipping && shippingCost === null)} className="w-full py-4 bg-spanish-yellow text-slate-900 font-patriot font-bold text-lg rounded-lg shadow hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <Lock size={18} />
             {isLoading ? 'Procesando...' : 'Proceder al Pago'}
           </button>
