@@ -23,6 +23,10 @@ h1, h2, h3, h4, h5, h6 {
   animation: gradient-shift 6s ease infinite;
 }
 
+html {
+  @apply scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-spanish-yellow;
+}
+
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
