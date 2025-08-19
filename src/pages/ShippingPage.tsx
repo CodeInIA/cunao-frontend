@@ -86,26 +86,26 @@ export const ShippingPage: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-white font-medium">España Peninsular</span>
-                    <span className="font-semibold text-spanish-yellow">5,99€</span>
+                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_PENINSULA}€</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white font-medium">Islas Baleares</span>
-                    <span className="font-semibold text-spanish-yellow">7,99€</span>
+                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_BALEARES}€</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white font-medium">Islas Canarias</span>
-                    <span className="font-semibold text-spanish-yellow">9,99€</span>
+                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_CANARIAS}€</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white font-medium">Europa (UE)</span>
-                    <span className="font-semibold text-spanish-yellow">12,99€</span>
+                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_EUROPA}€</span>
                   </div>
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-slate-500">
                   <div className="flex items-center gap-2 text-green-400">
                     <CheckCircle className="w-5 h-5" />
-                    <span className="font-semibold">Envío GRATIS en pedidos superiores a 50€</span>
+                    <span className="font-semibold">Envío GRATIS en pedidos superiores a {import.meta.env.VITE_FREE_SHIPPING_THRESHOLD}€</span>
                   </div>
                 </div>
               </div>
