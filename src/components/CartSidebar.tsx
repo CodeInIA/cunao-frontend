@@ -22,7 +22,6 @@ export const CartSidebar: React.FC = () => {
   } = useCartStore();
 
   useEffect(() => {
-    // Si el carrito está abierto y no tenemos los productos cargados, los pedimos.
     if (isOpen && products.length === 0 && loadingState !== 'loading') {
       fetchProducts();
     }
@@ -32,7 +31,6 @@ export const CartSidebar: React.FC = () => {
   const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold;
   const remainingForFreeShipping = FREE_SHIPPING_THRESHOLD - total;
   const progressPercentage = FREE_SHIPPING_THRESHOLD > 0 ? Math.min((total / FREE_SHIPPING_THRESHOLD) * 100, 100) : 0;
-
   const totalItems = getTotalItems();
 
   if (!isOpen) return null;
@@ -45,8 +43,8 @@ export const CartSidebar: React.FC = () => {
         onClick={closeCart}
       />
 
-      {/* Sidebar */}
-  <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-slate-900 z-50 shadow-2xl flex flex-col border-l border-slate-800 animate-slide-in-right">
+      {/* Sidebar - Ancho responsivo: full en móvil, md en tablet, xl en PC */}
+      <div className="fixed right-0 top-0 h-full w-full sm:max-w-md lg:max-w-xl bg-slate-900 z-50 shadow-2xl flex flex-col border-l border-slate-800 animate-slide-in-right">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800 shadow-sm flex-shrink-0">
           <h2 className="text-xl font-patriot font-bold text-white">
@@ -62,7 +60,7 @@ export const CartSidebar: React.FC = () => {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-2 lg:p-4 scrollbar-thin scrollbar-thumb-spanish-yellow scrollbar-track-slate-700">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <ShoppingBag size={64} className="text-slate-600 mb-4" />
@@ -87,8 +85,7 @@ export const CartSidebar: React.FC = () => {
               {items.map((item) => {
                 const product = products.find(p => p.id === item.productId);
                 if (!product) {
-                  // Muestra un placeholder mientras cargan los datos del producto
-                  return <div key={item.variantId} className="h-36 bg-slate-800 rounded-lg animate-pulse"></div>;
+                  return <div key={item.variantId} className="h-28 lg:h-36 bg-slate-800 rounded-lg animate-pulse"></div>;
                 }
                 
                 const enabledVariants = product.variants?.filter(v => v.is_enabled) || [];
@@ -97,56 +94,60 @@ export const CartSidebar: React.FC = () => {
                 const sizeOptions = product.options?.find(o => o.type === 'size')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
                 
                 return (
-                <div key={item.variantId} className="flex space-x-6 p-4 bg-slate-800 rounded-lg border border-slate-700 items-center">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-40 h-40 object-cover rounded-md border-2"
-                  />
-                  <div className="flex-1 flex flex-col justify-between min-w-0">
-                    <div>
-                      <h4 className="font-patriot font-bold text-white mb-2 line-clamp-2">
-                        {item.title}
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <label className="text-xs text-slate-400 w-10">Talla:</label>
-                        <select
-                          className="bg-slate-700 text-white text-xs rounded px-2 py-1"
-                          value={item.size}
-                          onChange={e => updateVariant(item.productId, item.variantId, e.target.value, item.color || '')}
-                        >
-                          {sizeOptions.map(size => (
-                            <option key={size.id} value={size.title}>{size.title}</option>
-                          ))}
-                        </select>
+                  // Contenedor de item: espaciado responsivo
+                  <div key={item.variantId} className="flex space-x-4 lg:space-x-6 p-2 lg:p-4 bg-slate-800 rounded-lg border border-slate-700 items-start lg:items-center">
+                    {/* Imagen: tamaño responsivo */}
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-24 h-24 lg:w-40 lg:h-40 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
+                    />
+                    <div className="flex-1 flex flex-col justify-between min-w-0 h-full lg:h-auto">
+                      <div>
+                        {/* Título y selectores: mantienen su estilo original en PC */}
+                        <h4 className="font-patriot font-bold text-white mb-2 line-clamp-2">
+                          {item.title}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-slate-400 w-10">Talla:</label>
+                          <select
+                            className="bg-slate-700 text-white text-xs rounded px-2 py-1"
+                            value={item.size}
+                            onChange={e => updateVariant(item.productId, item.variantId, e.target.value, item.color || '')}
+                          >
+                            {sizeOptions.map(size => (
+                              <option key={size.id} value={size.title}>{size.title}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <label className="text-xs text-slate-400 w-10">Color:</label>
+                          <select
+                            className="bg-slate-700 text-white text-xs rounded px-2 py-1"
+                            value={item.color}
+                            onChange={e => updateVariant(item.productId, item.variantId, item.size || '', e.target.value)}
+                          >
+                            {colorOptions.map(color => (
+                              <option key={color.id} value={color.title}>{color.title}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <label className="text-xs text-slate-400 w-10">Color:</label>
-                        <select
-                          className="bg-slate-700 text-white text-xs rounded px-2 py-1"
-                          value={item.color}
-                          onChange={e => updateVariant(item.productId, item.variantId, item.size || '', e.target.value)}
-                        >
-                          {colorOptions.map(color => (
-                            <option key={color.id} value={color.title}>{color.title}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-lg font-bold text-spanish-yellow">
-                        {formatPrice(item.price)}
-                      </span>
-                      <div className="flex items-center space-x-2">
-                        <button onClick={() => updateQuantity(item.productId, item.variantId, item.quantity - 1)} disabled={item.quantity <= 1} className="p-1 text-slate-400 hover:text-white disabled:opacity-50"><Minus size={16} /></button>
-                        <span className="w-5 text-center font-bold text-white">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 1)} className="p-1 text-slate-400 hover:text-white"><Plus size={16} /></button>
-                        <button onClick={() => removeItem(item.productId, item.variantId)} className="p-1 text-red-500 hover:text-red-400"><Trash2 size={16} /></button>
+                      <div className="flex justify-between items-center mt-2">
+                        {/* Precio y controles de cantidad: mantienen su estilo original en PC */}
+                        <span className="text-lg font-bold text-spanish-yellow">
+                          {formatPrice(item.price)}
+                        </span>
+                        <div className="flex items-center space-x-2">
+                          <button onClick={() => updateQuantity(item.productId, item.variantId, item.quantity - 1)} disabled={item.quantity <= 1} className="p-1 text-slate-400 hover:text-white disabled:opacity-50"><Minus size={16} /></button>
+                          <span className="w-5 text-center font-bold text-white">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 1)} className="p-1 text-slate-400 hover:text-white"><Plus size={16} /></button>
+                          <button onClick={() => removeItem(item.productId, item.variantId)} className="p-1 text-red-500 hover:text-red-400"><Trash2 size={16} /></button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )})}
+                )})}
             </div>
           )}
         </div>
@@ -154,7 +155,6 @@ export const CartSidebar: React.FC = () => {
         {/* Footer */}
         {items.length > 0 && (
           <div className="border-t border-slate-800 p-4 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
-            {/* Barra de progreso para envío gratuito */}
             <div className="mb-4 text-center">
               {shippingConfig.loading ? (
                 <p className="text-sm text-slate-300 mb-2">Cargando umbral de envío gratuito...</p>
@@ -171,7 +171,7 @@ export const CartSidebar: React.FC = () => {
               )}
               <div className="h-2 rounded-full bg-slate-700 overflow-hidden">
                 <div
-                  className={`h-full ${remainingForFreeShipping > 0 ? 'bg-spanish-yellow' : 'bg-green-500'}`}
+                  className={`h-full ${remainingForFreeShipping > 0 ? 'bg-spanish-yellow' : 'bg-green-500'} transition-all duration-500`}
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
@@ -205,4 +205,3 @@ export const CartSidebar: React.FC = () => {
     </>
   );
 };
-
