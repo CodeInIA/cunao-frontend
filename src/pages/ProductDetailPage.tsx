@@ -306,7 +306,7 @@ export const ProductDetailPage: React.FC = () => {
           <button
             onClick={handleAddToCart}
             disabled={!selectedVariant}
-            className="w-full md:w-auto bg-spanish-yellow text-slate-900 font-bold px-8 py-4 rounded-lg shadow hover:bg-spanish-red hover:text-white transition-colors border-2 border-spanish-yellow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full md:w-auto bg-spanish-yellow text-slate-900 font-bold px-8 py-4 rounded-lg shadow border-2 border-spanish-yellow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:bg-yellow-400 hover:scale-105 hover:shadow-lg hover:text-slate-900"
           >
             <ShoppingCart size={20} />
             {selectedVariant ? 'Añadir al carrito' : 'Opción no disponible'}
