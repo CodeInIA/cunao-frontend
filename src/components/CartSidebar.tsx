@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useShippingConfig } from '../hooks/useShippingConfig';
 import { useProductStore } from '../stores/productStore';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useCartStore } from '../stores/cartStore';
@@ -6,6 +7,7 @@ import { X, ShoppingBag, Minus, Plus, Trash2, Truck } from 'lucide-react';
 import { formatPrice } from '../utils/formatters';
 
 export const CartSidebar: React.FC = () => {
+  const shippingConfig = useShippingConfig(import.meta.env.VITE_API_URL);
   const { products, fetchProducts, loadingState } = useProductStore();
   const { navigateTo } = useSmartNavigation();
   const {
@@ -27,9 +29,9 @@ export const CartSidebar: React.FC = () => {
   }, [isOpen, products.length, fetchProducts, loadingState]);
 
   const total = getTotalPrice();
-  const FREE_SHIPPING_THRESHOLD = Number(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD) || 50;
+  const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold;
   const remainingForFreeShipping = FREE_SHIPPING_THRESHOLD - total;
-  const progressPercentage = Math.min((total / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const progressPercentage = FREE_SHIPPING_THRESHOLD > 0 ? Math.min((total / FREE_SHIPPING_THRESHOLD) * 100, 100) : 0;
 
   const totalItems = getTotalItems();
 
@@ -154,7 +156,9 @@ export const CartSidebar: React.FC = () => {
           <div className="border-t border-slate-800 p-4 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
             {/* Barra de progreso para envío gratuito */}
             <div className="mb-4 text-center">
-              {remainingForFreeShipping > 0 ? (
+              {shippingConfig.loading ? (
+                <p className="text-sm text-slate-300 mb-2">Cargando umbral de envío gratuito...</p>
+              ) : remainingForFreeShipping > 0 ? (
                 <p className="text-sm text-slate-300 mb-2">
                   Añade <span className="font-bold text-spanish-yellow">{formatPrice(remainingForFreeShipping)}</span> más para envío gratuito
                 </p>
