@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
@@ -13,6 +13,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const { getTotalItems, openCart } = useCartStore();
   const { navigateTo } = useSmartNavigation();
+  const location = useLocation();
   const totalItems = getTotalItems();
   const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -35,66 +36,64 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
       <div className="brand-header h-1"></div>
       
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-18 py-3">
-          {/* Logo de marca */}
-          <BrandLogo size="md" showText={true} onClick={() => handleNavClick('/')} />
+        <div className="flex flex-wrap items-center justify-between h-18 py-3 gap-y-2">
+          {/* Logo y marca a la izquierda */}
+          <div className="flex items-center flex-shrink-0 min-w-[180px]">
+            <BrandLogo size="md" showText={true} onClick={() => handleNavClick('/')} />
+          </div>
 
-          {/* Navegación desktop */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-            <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-            <button onClick={() => handleNavClick('/destacados')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Destacados<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-            <button onClick={() => handleNavClick('/sobre-nosotros')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Sobre Nosotros<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-            <button onClick={() => handleNavClick('/contacto')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Contacto<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-          </nav>
+          {/* Navegación desktop centrada y adaptable */}
+          <div className="hidden md:flex flex-1 justify-center min-w-[220px]">
+            <nav className="flex items-center space-x-6">
+              <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/destacados')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Destacados<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/sobre-nosotros')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Sobre Nosotros<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/contacto')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Contacto<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+            </nav>
+          </div>
 
-          {/* Acciones */}
-          <div className="flex items-center space-x-4">
+          {/* Acciones a la derecha */}
+          <div className="flex items-center space-x-4 min-w-[120px] justify-end">
             {/* Barra de búsqueda */}
-            <form onSubmit={e => {
-              e.preventDefault();
-              if (searchQuery.trim()) {
-                navigateTo(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
-                setSearchQuery('');
-              }
-            }} className="relative hidden md:block">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Buscar..."
-                className="bg-slate-800 border-2 border-slate-700 rounded-full py-2 pl-5 pr-10 text-white placeholder-slate-400 focus:ring-2 focus:ring-spanish-yellow focus:border-transparent transition-all duration-300 w-40 focus:w-64"
-              />
-              <button
-                type="submit"
-                className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-spanish-yellow"
-                aria-label="Buscar"
-              >
-                <Search size={20} />
-              </button>
-            </form>
-
+            {location.pathname !== '/productos' && (
+              <form onSubmit={e => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  navigateTo(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
+                  setSearchQuery('');
+                }
+              }} className="relative hidden md:block">
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-48 pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-spanish-red focus:border-transparent"
+                />
+                <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              </form>
+            )}
             {/* Carrito */}
             <button
               onClick={openCart}
               className="relative p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110 hover:shadow-lg"
               aria-label="Carrito de compras"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={32} />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-spanish-red text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}
             </button>
-
             {/* Menú móvil toggle */}
             <button
               onClick={toggleMobileMenu}
               className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110"
               aria-label="Menú"
             >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMobileMenuOpen ? <X size={32} /> : <Menu size={32} />}
             </button>
           </div>
         </div>
@@ -104,40 +103,39 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
           <>
             {/* Overlay de fondo */}
             <div 
-              className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+              className="fixed inset-0 bg-black bg-opacity-50 z-30"
               onClick={() => setIsMobileMenuOpen(false)}
             ></div>
-            
             {/* Menú móvil */}
-            <div className="md:hidden absolute top-full left-0 right-0 bg-slate-800 border-t border-slate-700 shadow-xl z-40">
+            <div className="absolute top-full left-0 right-0 bg-slate-800 border-t border-slate-700 shadow-xl z-40">
               <nav className="flex flex-col py-2">
                 <button 
                   onClick={() => handleMobileNavClick('/')}
-                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold hover:translate-x-2 border-b border-slate-700 text-left bg-transparent border-none w-full"
+                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold border-b border-slate-700 text-left bg-transparent border-none w-full"
                 >
                   Inicio
                 </button>
                 <button 
                   onClick={() => handleMobileNavClick('/productos')}
-                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold hover:translate-x-2 border-b border-slate-700 text-left bg-transparent border-none w-full"
+                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold border-b border-slate-700 text-left bg-transparent border-none w-full"
                 >
                   Productos
                 </button>
                 <button 
                   onClick={() => handleMobileNavClick('/destacados')}
-                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold hover:translate-x-2 border-b border-slate-700 text-left bg-transparent border-none w-full"
+                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold border-b border-slate-700 text-left bg-transparent border-none w-full"
                 >
                   Destacados
                 </button>
                 <button 
                   onClick={() => handleMobileNavClick('/sobre-nosotros')}
-                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold hover:translate-x-2 border-b border-slate-700 text-left bg-transparent border-none w-full"
+                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold border-b border-slate-700 text-left bg-transparent border-none w-full"
                 >
                   Sobre Nosotros
                 </button>
                 <button 
                   onClick={() => handleMobileNavClick('/contacto')}
-                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold hover:translate-x-2 text-left bg-transparent border-none w-full"
+                  className="px-6 py-4 text-slate-300 hover:text-spanish-yellow hover:bg-slate-700 transition-all duration-300 font-semibold text-left bg-transparent border-none w-full"
                 >
                   Contacto
                 </button>
