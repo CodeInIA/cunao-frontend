@@ -46,7 +46,7 @@ export const CartSidebar: React.FC = () => {
       />
 
       {/* Sidebar */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-slate-900 z-50 shadow-2xl flex flex-col border-l border-slate-800 animate-slide-in-right">
+  <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-slate-900 z-50 shadow-2xl flex flex-col border-l border-slate-800 animate-slide-in-right">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800 shadow-sm flex-shrink-0">
           <h2 className="text-xl font-patriot font-bold text-white">
@@ -97,11 +97,11 @@ export const CartSidebar: React.FC = () => {
                 const sizeOptions = product.options?.find(o => o.type === 'size')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
                 
                 return (
-                <div key={item.variantId} className="flex space-x-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
+                <div key={item.variantId} className="flex space-x-6 p-4 bg-slate-800 rounded-lg border border-slate-700 items-center">
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-24 h-24 object-cover rounded-md border-2 border-spanish-yellow"
+                    className="w-40 h-40 object-cover rounded-md border-2"
                   />
                   <div className="flex-1 flex flex-col justify-between min-w-0">
                     <div>
