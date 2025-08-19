@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
               className="relative p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110 hover:shadow-lg"
               aria-label="Carrito de compras"
             >
-              <ShoppingCart size={32} />
+              <ShoppingCart size={25} />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-spanish-red text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
                   {totalItems > 99 ? '99+' : totalItems}
@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
               className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110"
               aria-label="Menú"
             >
-              {isMobileMenuOpen ? <X size={32} /> : <Menu size={32} />}
+              {isMobileMenuOpen ? <X size={25} /> : <Menu size={25} />}
             </button>
           </div>
         </div>
