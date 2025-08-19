@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CartItem } from '../types';
+import { useProductStore } from './productStore'; // Importar productStore
 
 interface CartStore {
   items: CartItem[];
@@ -10,6 +11,7 @@ interface CartStore {
   addItem: (item: CartItem) => void;
   removeItem: (productId: string, variantId: number) => void;
   updateQuantity: (productId: string, variantId: number, quantity: number) => void;
+  updateVariant: (productId: string, oldVariantId: number, newSize: string, newColor: string) => void; // Añadir la nueva acción
   clearCart: () => void;
   toggleCart: () => void;
   openCart: () => void;
@@ -66,6 +68,59 @@ export const useCartStore = create<CartStore>()(
               : item
           ),
         }));
+      },
+
+      // Implementación de updateVariant
+      updateVariant: (productId, oldVariantId, newSize, newColor) => {
+        const { products } = useProductStore.getState();
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        const sizeOption = product.options.find(o => o.type === 'size')?.values.find(v => v.title === newSize);
+        const colorOption = product.options.find(o => o.type === 'color')?.values.find(v => v.title === newColor);
+        if (!sizeOption || !colorOption) return;
+
+        const newVariant = product.variants?.find(v => 
+          v.is_enabled && v.options.includes(sizeOption.id) && v.options.includes(colorOption.id)
+        );
+
+        if (!newVariant || newVariant.id === oldVariantId) return;
+
+        const newImage = product.images?.find(img => img.variant_ids.includes(newVariant.id))?.src || product.images?.[0]?.src || '';
+
+        set(state => {
+          const existingItem = state.items.find(i => i.variantId === oldVariantId);
+          if (!existingItem) return state;
+
+          const itemWithNewVariant = state.items.find(i => i.variantId === newVariant.id);
+          
+          let newItems;
+          if (itemWithNewVariant) {
+            // Si la nueva variante ya existe, fusiona las cantidades y elimina la antigua
+            newItems = state.items
+              .map(item => 
+                item.variantId === newVariant.id 
+                  ? { ...item, quantity: item.quantity + existingItem.quantity } 
+                  : item
+              )
+              .filter(item => item.variantId !== oldVariantId);
+          } else {
+            // Si no existe, simplemente actualiza el item actual
+            newItems = state.items.map(item =>
+              item.variantId === oldVariantId
+                ? {
+                    ...item,
+                    variantId: newVariant.id,
+                    price: newVariant.price / 100,
+                    size: newSize,
+                    color: newColor,
+                    image: newImage,
+                  }
+                : item
+            );
+          }
+          return { items: newItems };
+        });
       },
 
       clearCart: () => {
