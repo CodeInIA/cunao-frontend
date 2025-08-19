@@ -14,7 +14,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? product.variants[0].price / 100
     : 0;
 
-  // Obtener colores disponibles en variantes activas
   const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
   const colorOptionIds = Array.from(new Set(enabledVariants.flatMap((v: any) => v.options.filter((optId: any) => {
     const opt = product.options?.find((o: any) => o.type === 'color' && o.values.some((val: any) => val.id === optId));
@@ -22,10 +21,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   }))));
   const colorOptions = product.options?.find((o: any) => o.type === 'color')?.values.filter((val: any) => colorOptionIds.includes(val.id)) || [];
 
-  // Imagen a mostrar (por defecto o por hover)
   const imageToShow = React.useMemo(() => {
     if (hoveredColorId) {
-      // Buscar variante con ese color
       const variant = enabledVariants.find((v: any) => v.options.includes(hoveredColorId));
       if (variant) {
         const img = product.images.find((img: any) => img.variant_ids.includes(variant.id));
@@ -34,10 +31,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
     return defaultImage;
   }, [hoveredColorId, product, defaultImage, enabledVariants]);
-
-  const getCunaoPhrase = (title: string) => {
-    return title.length > 50 ? title.substring(0, 50) + '...' : title;
-  };
 
   return (
     <div className="group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700">
@@ -62,23 +55,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="text-4xl">👕</span>
             </div>
           )}
-          
         </div>
 
         {/* Vista previa de colores */}
         {colorOptions.length > 0 && (
-          <div className="py-3 px-4">
+          <div className="pt-2 px-3"> {/* CAMBIO: de py-2 a pt-2 para eliminar padding inferior */}
             <div
               className="flex flex-wrap justify-center items-center gap-2"
               style={{ width: '100%' }}
             >
               {colorOptions.map((color: any) => {
-                // Tamaño dinámico: entre 18px y 32px según cantidad y ancho máximo de la tarjeta (aprox 240px)
                 const minSize = 18;
                 const maxSize = 32;
-                const cardWidth = 240; // px, ajusta según el diseño real
+                const cardWidth = 240;
                 const count = colorOptions.length;
-                // Calcula el tamaño para que quepan todos en una fila, pero si son demasiados, se envuelven
                 const size = Math.max(minSize, Math.min(maxSize, Math.floor((cardWidth - (count - 1) * 8) / count)));
                 return (
                   <div
@@ -111,12 +101,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
 
         {/* Información del producto */}
-        <div className="p-6">
-          <h3 className="font-display font-semibold text-white mb-2 line-clamp-2 group-hover:underline transition-all duration-200">
-            {getCunaoPhrase(product.title)}
+        <div className="px-3 pb-3 pt-2"> {/* CAMBIO: de p-3 a px-3 pb-3 pt-2 */}
+          <h3 className="font-display font-semibold text-white mb-2 line-clamp-2 group-hover:underline transition-all duration-200" title={product.title}>
+            {product.title}
           </h3>
+          
           {/* Tags/categorías */}
-          <div className="flex flex-wrap gap-1 mb-4">
+          <div className="flex flex-wrap gap-1 mb-2">
             {product.tags.slice(0, 2).map((tag: string, index: number) => (
               <span
                 key={index}
@@ -126,8 +117,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </span>
             ))}
           </div>
+          
           {/* Precio */}
-          <div className="flex flex-col gap-4 mt-6">
+          <div>
             <span className="text-lg font-bold text-spanish-yellow">
               {price.toFixed(2)}€
             </span>
@@ -149,4 +141,3 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     </div>
   );
 };
-
