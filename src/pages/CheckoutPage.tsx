@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useShippingConfig } from '../hooks/useShippingConfig';
 import { useCartStore } from '../stores/cartStore';
 import { apiService } from '../services/api';
 import { formatPrice } from '../utils/formatters';
@@ -9,6 +10,7 @@ import toast from 'react-hot-toast';
 type ShippingRegion = 'spain' | 'europa' | '';
 
 export const CheckoutPage: React.FC = () => {
+  const shippingConfig = useShippingConfig(import.meta.env.VITE_API_URL);
   const { items, getTotalPrice, getTotalItems } = useCartStore();
   const { navigateTo } = useSmartNavigation();
   const [isLoading, setIsLoading] = useState(false);
@@ -17,39 +19,36 @@ export const CheckoutPage: React.FC = () => {
   const [shippingCost, setShippingCost] = useState<number | null>(null);
 
   const subtotal = getTotalPrice();
-  const FREE_SHIPPING_THRESHOLD = Number(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD) || 85;
+  const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold;
   const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
   
   // El total solo incluye el coste de envío si ha sido calculado (no es null)
   const total = subtotal > 0 ? subtotal + (shippingCost ?? 0) : 0;
 
   useEffect(() => {
+    if (shippingConfig.loading) return;
     if (isFreeShipping) {
       setShippingCost(0);
       return;
     }
-
-    // Si no hay envío gratis y no se ha seleccionado región, el coste es nulo (no calculado)
     if (!shippingRegion) {
       setShippingCost(null);
       return;
     }
-
     let cost = 0;
     switch (shippingRegion) {
       case 'spain':
-        cost = Number(import.meta.env.VITE_SHIPPING_COST_SPAIN) || 5.99;
+        cost = shippingConfig.shippingCostSpain;
         break;
       case 'europa':
-        cost = Number(import.meta.env.VITE_SHIPPING_COST_EUROPA) || 12.99;
+        cost = shippingConfig.shippingCostEuropa;
         break;
       default:
-        // Si hay una región pero no coincide, lo tratamos como no calculado
         setShippingCost(null);
         return;
     }
     setShippingCost(cost);
-  }, [shippingRegion, isFreeShipping, subtotal]); // Añadimos subtotal para mayor robustez
+  }, [shippingRegion, isFreeShipping, subtotal, shippingConfig]);
 
   const handleProceedToPayment = async () => {
     if (!shippingRegion) {
@@ -143,7 +142,9 @@ export const CheckoutPage: React.FC = () => {
             <div className="flex justify-between text-slate-300"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
             <div className="flex justify-between text-slate-300">
               <span>Envío</span>
-              {isFreeShipping ? (
+              {shippingConfig.loading ? (
+                <span>Cargando...</span>
+              ) : isFreeShipping ? (
                 <span className="font-semibold text-green-400">Gratis</span>
               ) : (
                 <span>{shippingCost !== null ? formatPrice(shippingCost) : 'Selecciona una región'}</span>
@@ -152,10 +153,11 @@ export const CheckoutPage: React.FC = () => {
             <div className="flex justify-between text-xl font-bold pt-2 border-t border-slate-700">
               <span>Total</span>
               <span className="text-spanish-yellow">
-                {/* Muestra un texto provisional si el coste de envío no se ha determinado */}
-                {!isFreeShipping && shippingCost === null 
-                  ? `${formatPrice(subtotal)} + envío` 
-                  : formatPrice(total)}
+                {shippingConfig.loading
+                  ? 'Cargando...'
+                  : (!isFreeShipping && shippingCost === null 
+                    ? `${formatPrice(subtotal)} + envío` 
+                    : formatPrice(total))}
               </span>
             </div>
           </div>

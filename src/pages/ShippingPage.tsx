@@ -1,10 +1,12 @@
 import React from 'react';
+import { useShippingConfig } from '../hooks/useShippingConfig';
 import { Link } from 'react-router-dom';
 import { Truck, Package, Clock, MapPin, RefreshCw, Euro, AlertCircle, CheckCircle } from 'lucide-react';
 import config from '../config';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 
 export const ShippingPage: React.FC = () => {
+  const shippingConfig = useShippingConfig(config.API_URL);
   const { navigateTo } = useSmartNavigation();
   return (
     <div className="min-h-screen bg-slate-900">
@@ -70,18 +72,26 @@ export const ShippingPage: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-white font-medium">España</span>
-                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_SPAIN}€</span>
+                    <span className="font-semibold text-spanish-yellow">
+                      {shippingConfig.loading ? 'Cargando...' : `${shippingConfig.shippingCostSpain}€`}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white font-medium">Europa (UE)</span>
-                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_EUROPA}€</span>
+                    <span className="font-semibold text-spanish-yellow">
+                      {shippingConfig.loading ? 'Cargando...' : `${shippingConfig.shippingCostEuropa}€`}
+                    </span>
                   </div>
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-slate-500">
                   <div className="flex items-center gap-2 text-green-400">
                     <CheckCircle className="w-5 h-5" />
-                    <span className="font-semibold">Envío GRATIS en pedidos superiores a {import.meta.env.VITE_FREE_SHIPPING_THRESHOLD}€</span>
+                    <span className="font-semibold">
+                      {shippingConfig.loading
+                        ? 'Cargando...'
+                        : `Envío GRATIS en pedidos superiores a ${shippingConfig.freeShippingThreshold}€`}
+                    </span>
                   </div>
                 </div>
               </div>
