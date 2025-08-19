@@ -41,7 +41,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div className="group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700">
-      <Link to={`/producto/${product.id}`}> 
+      <Link
+        to={`/producto/${product.id}`}
+        onClick={() => {
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 100);
+        }}
+      >
         {/* Imagen del producto */}
         <div className="aspect-square bg-slate-700 overflow-hidden relative">
           {imageToShow ? (
@@ -92,6 +99,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                       e.preventDefault();
                       e.stopPropagation();
                       navigate(`/producto/${product.id}?color=${color.title}`);
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }, 100);
                     }}
                   />
                 );

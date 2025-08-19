@@ -180,6 +180,7 @@ export const ProductsPage: React.FC = () => {
                   <button
                     onClick={() => {
                       setSearchQuery('');
+                      window.history.replaceState({}, '', '/productos');
                       fetchProducts();
                     }}
                     className="px-4 py-2 border border-spanish-red text-spanish-red hover:bg-spanish-red hover:text-white transition-colors rounded-lg"
