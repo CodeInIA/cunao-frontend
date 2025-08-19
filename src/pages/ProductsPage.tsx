@@ -74,7 +74,16 @@ export const ProductsPage: React.FC = () => {
                   type="text"
                   placeholder="Buscar frases cuñao..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.trim() === '') {
+                      window.history.replaceState({}, '', '/productos');
+                      fetchProducts();
+                    } else {
+                      window.history.replaceState({}, '', `/productos?q=${encodeURIComponent(e.target.value)}`);
+                      searchProducts(e.target.value);
+                    }
+                  }}
                   className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-spanish-red focus:border-transparent"
                 />
               </div>
