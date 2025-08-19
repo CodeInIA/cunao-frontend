@@ -3,11 +3,18 @@ import { useShippingConfig } from '../hooks/useShippingConfig';
 import { useCartStore } from '../stores/cartStore';
 import { apiService } from '../services/api';
 import { formatPrice } from '../utils/formatters';
-import { Lock, ArrowLeft, MapPin } from 'lucide-react';
+import { Lock, ArrowLeft, MapPin, ChevronDown, Check } from 'lucide-react'; // Importaciones añadidas
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import toast from 'react-hot-toast';
+import { Listbox } from '@headlessui/react'; // Importación de Headless UI
 
 type ShippingRegion = 'spain' | 'europa' | '';
+
+// Pequeño componente auxiliar para las opciones del Listbox para no repetir código
+const shippingOptions = [
+  { id: 'spain', name: 'España' },
+  { id: 'europa', name: 'Europa (UE)' },
+];
 
 export const CheckoutPage: React.FC = () => {
   const shippingConfig = useShippingConfig(import.meta.env.VITE_API_URL);
@@ -15,14 +22,12 @@ export const CheckoutPage: React.FC = () => {
   const { navigateTo } = useSmartNavigation();
   const [isLoading, setIsLoading] = useState(false);
   const [shippingRegion, setShippingRegion] = useState<ShippingRegion>('');
-  // Usar null para indicar que el coste no ha sido calculado
   const [shippingCost, setShippingCost] = useState<number | null>(null);
 
   const subtotal = getTotalPrice();
   const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold;
   const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
   
-  // El total solo incluye el coste de envío si ha sido calculado (no es null)
   const total = subtotal > 0 ? subtotal + (shippingCost ?? 0) : 0;
 
   useEffect(() => {
@@ -115,27 +120,63 @@ export const CheckoutPage: React.FC = () => {
             ))}
           </div>
 
-          {/* Selector de Envío */}
+          {/* Selector de Envío con Headless UI */}
           <div className="mb-6">
             {isFreeShipping && (
               <div className="bg-green-900 border border-green-700 text-green-300 text-sm rounded-lg p-3 mb-4 text-center">
                 ¡Felicidades! Has conseguido <span className="font-bold">envío gratuito</span>.
               </div>
             )}
-            <label htmlFor="shipping-region" className="flex items-center gap-2 text-slate-300 mb-2 font-semibold">
+            <label className="flex items-center gap-2 text-slate-300 mb-2 font-semibold">
               <MapPin size={18} />
               {isFreeShipping ? 'Confirma tu región de envío' : 'Selecciona tu región de envío'}
             </label>
-            <select
-              id="shipping-region"
-              value={shippingRegion}
-              onChange={(e) => setShippingRegion(e.target.value as ShippingRegion)}
-              className="w-full p-3 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-red"
-            >
-              <option value="">-- Elige una opción --</option>
-              <option value="spain">España</option>
-              <option value="europa">Europa (UE)</option>
-            </select>
+            
+            <Listbox value={shippingRegion} onChange={setShippingRegion}>
+              <div className="relative">
+                <Listbox.Button 
+                  className={`relative w-full cursor-default rounded-md border-2 py-3 pl-4 pr-10 text-left transition-colors
+                    bg-slate-800 text-white border-slate-600
+                    focus:outline-none focus:border-spanish-yellow
+                  `}
+                >
+                  <span className="block truncate">
+                    {shippingOptions.find(opt => opt.id === shippingRegion)?.name || '-- Elige una opción --'}
+                  </span>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </span>
+                </Listbox.Button>
+                
+                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-slate-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm border border-slate-700">
+                  {shippingOptions.map((option) => (
+                    <Listbox.Option
+                      key={option.id}
+                      value={option.id}
+                      className={({ active }) =>
+                        `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                          active ? 'bg-spanish-yellow text-slate-900' : 'text-white'
+                        }`
+                      }
+                    >
+                      {({ selected }) => (
+                        <>
+                          <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                            {option.name}
+                          </span>
+                          {selected ? (
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                              <Check className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </div>
+            </Listbox>
+
           </div>
 
           <div className="space-y-2 mb-8">
