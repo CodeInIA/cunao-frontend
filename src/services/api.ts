@@ -70,18 +70,18 @@ export const apiService = {
     return response.data.data;
   },
 
-  async createCheckoutSession(items: CartItem[]): Promise<CheckoutSession> {
-    const response = await api.post<ApiResponse<CheckoutSession>>('/orders/checkout-session', {
-      items
-    });
+  // Crear sesión de checkout de Stripe
+  async createCheckoutSession(items: CartItem[], shippingRegion: string): Promise<CheckoutSession> {
+    const response = await api.post<ApiResponse<CheckoutSession>>('/orders/checkout-session', { items, shippingRegion });
     
     if (!response.data.success || !response.data.data) {
-      throw new Error(response.data.error || 'Error creating checkout session');
+      throw new Error(response.data.error || 'Error al crear la sesión de checkout');
     }
     
     return response.data.data;
   },
 
+  // Procesar pedido después del pago
   async processOrder(paymentIntentId?: string, sessionId?: string): Promise<any> {
     const response = await api.post<ApiResponse<any>>('/orders/process', {
       payment_intent_id: paymentIntentId,

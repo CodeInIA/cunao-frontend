@@ -44,25 +44,9 @@ export const ShippingPage: React.FC = () => {
                 <div className="flex justify-between items-center p-3 bg-slate-700 border border-slate-600 rounded-lg">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">🇪🇸</span>
-                    <span className="font-medium text-white">España Peninsular</span>
+                    <span className="font-medium text-white">España</span>
                   </div>
-                  <span className="text-spanish-red font-semibold">2-4 días</span>
-                </div>
-                
-                <div className="flex justify-between items-center p-3 bg-slate-700 border border-slate-600 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">🏝️</span>
-                    <span className="font-medium text-white">Islas Baleares</span>
-                  </div>
-                  <span className="text-spanish-red font-semibold">3-5 días</span>
-                </div>
-                
-                <div className="flex justify-between items-center p-3 bg-slate-700 border border-slate-600 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">🌴</span>
-                    <span className="font-medium text-white">Islas Canarias</span>
-                  </div>
-                  <span className="text-spanish-red font-semibold">5-7 días</span>
+                  <span className="text-spanish-red font-semibold">2-7 días laborables</span>
                 </div>
                 
                 <div className="flex justify-between items-center p-3 bg-slate-700 border border-slate-600 rounded-lg">
@@ -70,7 +54,7 @@ export const ShippingPage: React.FC = () => {
                     <span className="text-2xl">🇪🇺</span>
                     <span className="font-medium text-white">Europa (UE)</span>
                   </div>
-                  <span className="text-spanish-red font-semibold">5-10 días</span>
+                  <span className="text-spanish-red font-semibold">5-10 días laborables</span>
                 </div>
               </div>
             </div>
@@ -85,16 +69,8 @@ export const ShippingPage: React.FC = () => {
               <div className="bg-slate-700 border border-slate-600 rounded-lg p-6">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-white font-medium">España Peninsular</span>
-                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_PENINSULA}€</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-medium">Islas Baleares</span>
-                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_BALEARES}€</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-medium">Islas Canarias</span>
-                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_CANARIAS}€</span>
+                    <span className="text-white font-medium">España</span>
+                    <span className="font-semibold text-spanish-yellow">{import.meta.env.VITE_SHIPPING_COST_SPAIN}€</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white font-medium">Europa (UE)</span>

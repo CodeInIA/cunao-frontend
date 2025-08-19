@@ -1,27 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCartStore } from '../stores/cartStore';
 import { apiService } from '../services/api';
 import { formatPrice } from '../utils/formatters';
-import { Lock, ArrowLeft } from 'lucide-react';
+import { Lock, ArrowLeft, MapPin } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import toast from 'react-hot-toast';
+
+type ShippingRegion = 'spain' | 'europa' | '';
 
 export const CheckoutPage: React.FC = () => {
   const { items, getTotalPrice, getTotalItems } = useCartStore();
   const { navigateTo } = useSmartNavigation();
   const [isLoading, setIsLoading] = useState(false);
+  const [shippingRegion, setShippingRegion] = useState<ShippingRegion>('');
+  const [shippingCost, setShippingCost] = useState(0);
 
   const subtotal = getTotalPrice();
-  // El coste de envío final lo calculará Stripe. Mostramos uno estimado.
-  const estimatedShipping = 5.99; 
-  const total = subtotal + estimatedShipping;
+  const FREE_SHIPPING_THRESHOLD = Number(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD) || 50;
+  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+  
+  const total = subtotal > 0 ? subtotal + shippingCost : 0;
+
+  useEffect(() => {
+    if (isFreeShipping) {
+      setShippingCost(0);
+      return;
+    }
+
+    let cost = 0;
+    switch (shippingRegion) {
+      case 'spain':
+        cost = Number(import.meta.env.VITE_SHIPPING_COST_SPAIN) || 5.99;
+        break;
+      case 'europa':
+        cost = Number(import.meta.env.VITE_SHIPPING_COST_EUROPA) || 12.99;
+        break;
+      default:
+        cost = 0;
+    }
+    setShippingCost(cost);
+  }, [shippingRegion, isFreeShipping]);
 
   const handleProceedToPayment = async () => {
+    if (!shippingRegion) {
+      toast.error('Por favor, selecciona tu región de envío.');
+      return;
+    }
     setIsLoading(true);
     toast.loading('Redirigiendo a la pasarela de pago...');
 
     try {
-      const sessionData = await apiService.createCheckoutSession(items);
+      const sessionData = await apiService.createCheckoutSession(items, shippingRegion);
       if (sessionData.checkout_url) {
         window.location.href = sessionData.checkout_url;
       } else {
@@ -77,13 +106,43 @@ export const CheckoutPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="space-y-2 mb-8">
-            <div className="flex justify-between text-slate-300"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-            <div className="flex justify-between text-slate-300"><span>Envío (estimado)</span><span>{formatPrice(estimatedShipping)}</span></div>
-            <div className="flex justify-between text-xl font-bold pt-2 border-t border-slate-700"><span>Total (aprox.)</span><span className="text-spanish-yellow">{formatPrice(total)}</span></div>
+          {/* Selector de Envío */}
+          <div className="mb-6">
+            {isFreeShipping && (
+              <div className="bg-green-900 border border-green-700 text-green-300 text-sm rounded-lg p-3 mb-4 text-center">
+                ¡Felicidades! Has conseguido <span className="font-bold">envío gratuito</span>.
+              </div>
+            )}
+            <label htmlFor="shipping-region" className="flex items-center gap-2 text-slate-300 mb-2 font-semibold">
+              <MapPin size={18} />
+              {isFreeShipping ? 'Confirma tu región de envío' : 'Selecciona tu región de envío'}
+            </label>
+            <select
+              id="shipping-region"
+              value={shippingRegion}
+              onChange={(e) => setShippingRegion(e.target.value as ShippingRegion)}
+              className="w-full p-3 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-red"
+            >
+              <option value="">-- Elige una opción --</option>
+              <option value="spain">España</option>
+              <option value="europa">Europa (UE)</option>
+            </select>
           </div>
 
-          <button onClick={handleProceedToPayment} disabled={isLoading} className="w-full py-4 bg-spanish-yellow text-slate-900 font-patriot font-bold text-lg rounded-lg shadow hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <div className="space-y-2 mb-8">
+            <div className="flex justify-between text-slate-300"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
+            <div className="flex justify-between text-slate-300">
+              <span>Envío</span>
+              {isFreeShipping ? (
+                <span className="font-semibold text-green-400">Gratis</span>
+              ) : (
+                <span>{shippingRegion ? formatPrice(shippingCost) : 'Selecciona una región'}</span>
+              )}
+            </div>
+            <div className="flex justify-between text-xl font-bold pt-2 border-t border-slate-700"><span>Total</span><span className="text-spanish-yellow">{formatPrice(total)}</span></div>
+          </div>
+
+          <button onClick={handleProceedToPayment} disabled={isLoading || !shippingRegion} className="w-full py-4 bg-spanish-yellow text-slate-900 font-patriot font-bold text-lg rounded-lg shadow hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <Lock size={18} />
             {isLoading ? 'Procesando...' : 'Proceder al Pago'}
           </button>
