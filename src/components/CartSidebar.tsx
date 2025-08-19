@@ -159,12 +159,14 @@ export const CartSidebar: React.FC = () => {
               {shippingConfig.loading ? (
                 <p className="text-sm text-slate-300 mb-2">Cargando umbral de envío gratuito...</p>
               ) : remainingForFreeShipping > 0 ? (
-                <p className="text-sm text-slate-300 mb-2">
+                <p className="text-sm text-slate-300 mb-2 flex items-center justify-center gap-2">
                   Añade <span className="font-bold text-spanish-yellow">{formatPrice(remainingForFreeShipping)}</span> más para envío gratuito
+                  <Truck size={18} className="text-spanish-yellow" />
                 </p>
               ) : (
-                <p className="text-sm text-green-400 mb-2">
-                  ¡Eres elegible para envío gratuito!
+                <p className="text-sm text-green-400 mb-2 flex items-center justify-center gap-2">
+                  ¡Tienes envío gratuito!
+                  <Truck size={18} className="text-green-400" />
                 </p>
               )}
               <div className="h-2 rounded-full bg-slate-700 overflow-hidden">
