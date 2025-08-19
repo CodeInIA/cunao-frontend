@@ -15,6 +15,9 @@ import { TermsPage } from './pages/TermsPage';
 import { ShippingPage } from './pages/ShippingPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
+import { CheckoutPage } from './pages/CheckoutPage'; // Importar
+import { SuccessPage } from './pages/SuccessPage';   // Importar
+import { CancelPage } from './pages/CancelPage';     // Importar
 import './App.css';
 
 function App() {
@@ -39,6 +42,9 @@ function App() {
               <Route path="/privacidad" element={<PrivacyPage />} />
               <Route path="/terminos" element={<TermsPage />} />
               <Route path="/envios" element={<ShippingPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/success" element={<SuccessPage />} />
+              <Route path="/cancel" element={<CancelPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
