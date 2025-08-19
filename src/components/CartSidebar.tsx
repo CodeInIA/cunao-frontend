@@ -168,10 +168,10 @@ export const CartSidebar: React.FC = () => {
                 </p>
               )}
               <div className="h-2 rounded-full bg-slate-700 overflow-hidden">
-                <div 
-                  className="h-full bg-spanish-yellow"
+                <div
+                  className={`h-full ${remainingForFreeShipping > 0 ? 'bg-spanish-yellow' : 'bg-green-500'}`}
                   style={{ width: `${progressPercentage}%` }}
-                 />
+                />
               </div>
             </div>
             <div className="flex items-center justify-between mb-4">
