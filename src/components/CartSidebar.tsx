@@ -22,9 +22,20 @@ export const CartSidebar: React.FC = () => {
   } = useCartStore();
 
   useEffect(() => {
+    // Si el carrito está abierto y no tenemos los productos cargados, los pedimos.
     if (isOpen && products.length === 0 && loadingState !== 'loading') {
       fetchProducts();
     }
+    // Bloquear scroll del body cuando el carrito está abierto
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Limpiar al desmontar
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen, products.length, fetchProducts, loadingState]);
 
   const total = getTotalPrice();
