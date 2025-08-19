@@ -216,167 +216,17 @@ html {
   animation: fadeIn 0.6s ease-out;
 }
 
-/* Scrollbar personalizado tema oscuro */
-::-webkit-scrollbar {
-  width: 10px;
+/* Animación para el icono del carrito */
+@keyframes cart-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0) scale(1.1); }
+  20%, 80% { transform: translate3d(2px, 0, 0) scale(1.1); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0) scale(1.1); }
+  40%, 60% { transform: translate3d(3px, 0, 0) scale(1.1); }
+  100% { transform: scale(1); }
 }
 
-::-webkit-scrollbar-track {
-  background: #1e293b;
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #475569, #334155);
-  border-radius: 5px;
-  border: 1px solid #64748b;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #64748b, #475569);
-}
-
-/* Botones con estilo de barril */
-.btn-primary {
-  background: linear-gradient(135deg, #8b5f42 0%, #a6754e 50%, #8b5f42 100%);
-  color: white;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  border: 2px solid #714e3a;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(139, 95, 66, 0.3);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #714e3a 0%, #8b5f42 50%, #714e3a 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px -1px rgba(139, 95, 66, 0.4);
-}
-
-.btn-secondary {
-  background: linear-gradient(135deg, #f1ebe2 0%, #e8d7c2 100%);
-  color: #5d4232;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  border: 2px solid #d0b89e;
-  transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-  background: linear-gradient(135deg, #e8d7c2 0%, #d8bc9a 100%);
-  border-color: #bc9a76;
-}
-
-.btn-patriot {
-  background: linear-gradient(135deg, #AA151B 0%, #F1BF00 50%, #AA151B 100%);
-  color: white;
-  font-weight: 700;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.3s ease;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  box-shadow: 0 4px 6px -1px rgba(170, 21, 27, 0.3);
-}
-
-.btn-patriot:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px -1px rgba(170, 21, 27, 0.4);
-}
-
-.btn-outline {
-  border: 2px solid #8b5f42;
-  color: #8b5f42;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.3s ease;
-  background: transparent;
-}
-
-.btn-outline:hover {
-  background-color: #8b5f42;
-  color: white;
-}
-
-/* Tarjetas con estilo de madera */
-.card {
-  background: linear-gradient(135deg, #faf7f2 0%, #f4ede1 100%);
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(139, 95, 66, 0.2), 0 2px 4px -1px rgba(139, 95, 66, 0.06);
-  padding: 1.5rem;
-  border: 1px solid #e8d7c2;
-}
-
-.card:hover {
-  box-shadow: 0 10px 15px -3px rgba(139, 95, 66, 0.3), 0 4px 6px -2px rgba(139, 95, 66, 0.05);
-  transform: translateY(-2px);
-  transition: all 0.3s ease;
-}
-
-/* Gradientes temáticos */
-.cunao-gradient {
-  background: linear-gradient(135deg, #8b5f42 0%, #a6754e 100%);
-}
-
-.patriot-gradient {
-  background: linear-gradient(135deg, #AA151B 0%, #F1BF00 50%, #AA151B 100%);
-}
-
-/* Patrones decorativos */
-.cunao-pattern {
-  background-image: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 15px,
-      rgba(139, 95, 66, 0.1) 15px,
-      rgba(139, 95, 66, 0.1) 30px
-    );
-}
-
-.spanish-pattern {
-  background-image: 
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 20px,
-      rgba(170, 21, 27, 0.05) 20px,
-      rgba(170, 21, 27, 0.05) 40px,
-      rgba(241, 191, 0, 0.05) 40px,
-      rgba(241, 191, 0, 0.05) 60px
-    );
-}
-
-/* Efectos de texto */
-.text-shadow {
-  text-shadow: 2px 2px 4px rgba(45, 35, 24, 0.3);
-}
-
-.text-patriot {
-  background: linear-gradient(45deg, #AA151B, #F1BF00, #AA151B);
-  background-size: 200% auto;
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: gradient-shift 3s ease infinite;
-}
-
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.6s ease-out;
+.animate-cart-shake {
+  animation: cart-shake 0.6s ease-in-out both;
 }
 
 @keyframes woodGrain {

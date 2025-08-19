@@ -6,9 +6,11 @@ import { useProductStore } from './productStore'; // Importar productStore
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
+  cartShake: boolean; // <-- AÑADIR ESTADO DE ANIMACIÓN
   
   // Acciones
   addItem: (item: CartItem) => void;
+  triggerCartShake: () => void; // <-- AÑADIR ACCIÓN PARA ACTIVAR
   removeItem: (productId: string, variantId: number) => void;
   updateQuantity: (productId: string, variantId: number, quantity: number) => void;
   updateVariant: (productId: string, oldVariantId: number, newSize: string, newColor: string) => void; // Añadir la nueva acción
@@ -28,6 +30,7 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      cartShake: false, // <-- INICIALIZAR ESTADO
 
       addItem: (newItem: CartItem) => {
         set((state) => {
@@ -45,6 +48,14 @@ export const useCartStore = create<CartStore>()(
             return { items: [...state.items, newItem] };
           }
         });
+        get().triggerCartShake(); // <-- LLAMAR A LA ANIMACIÓN
+      },
+
+      triggerCartShake: () => {
+        set({ cartShake: true });
+        setTimeout(() => {
+          set({ cartShake: false });
+        }, 600); // Duración de la animación
       },
 
       removeItem: (productId: string, variantId: number) => {

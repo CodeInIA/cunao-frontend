@@ -5,17 +5,14 @@ import { useCartStore } from '../stores/cartStore';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import BrandLogo from './BrandLogo';
 
-interface HeaderProps {
-  onSearchClick?: () => void;
-}
-
-export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const { getTotalItems, openCart } = useCartStore();
-  const { navigateTo } = useSmartNavigation();
+export const Header: React.FC = () => {
+  const { openCart, getTotalItems } = useCartStore();
+  const cartShake = useCartStore(state => state.cartShake); // <-- OBTENER ESTADO DE ANIMACIÓN
   const location = useLocation();
+  const { navigateTo } = useSmartNavigation();
   const totalItems = getTotalItems();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -77,12 +74,14 @@ export const Header: React.FC<HeaderProps> = ({ onSearchClick }) => {
             {/* Carrito */}
             <button
               onClick={openCart}
-              className="relative p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110 hover:shadow-lg"
+              className={`relative p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110 hover:shadow-lg ${
+                cartShake ? 'animate-cart-shake' : ''
+              }`}
               aria-label="Carrito de compras"
             >
               <ShoppingCart size={25} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-spanish-red text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-spanish-red text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}

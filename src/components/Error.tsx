@@ -1,6 +1,5 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 interface ErrorPageProps {
   title?: string;
@@ -40,13 +39,13 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
           )}
           
           {showHomeButton && (
-            <Link
-              to="/"
+            <a
+              href="/"
               className="inline-flex items-center px-6 py-3 bg-slate-700 text-slate-200 font-semibold rounded-lg hover:bg-slate-600 transition-colors"
             >
               <Home className="w-4 h-4 mr-2" />
               Volver al inicio
-            </Link>
+            </a>
           )}
         </div>
 
