@@ -74,16 +74,7 @@ export const ProductsPage: React.FC = () => {
                   type="text"
                   placeholder="Buscar frases cuñao..."
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    if (e.target.value.trim() === '') {
-                      window.history.replaceState({}, '', '/productos');
-                      fetchProducts();
-                    } else {
-                      window.history.replaceState({}, '', `/productos?q=${encodeURIComponent(e.target.value)}`);
-                      searchProducts(e.target.value);
-                    }
-                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-spanish-red focus:border-transparent"
                 />
               </div>
@@ -107,7 +98,7 @@ export const ProductsPage: React.FC = () => {
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Categoría
                   </label>
-                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-red">
+                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow">
                     <option>Todas las categorías</option>
                     <option>Clásicos cuñao</option>
                     <option>Política</option>
@@ -119,18 +110,18 @@ export const ProductsPage: React.FC = () => {
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Precio
                   </label>
-                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-red">
+                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow">
                     <option>Todos los precios</option>
-                    <option>Menos de 20€</option>
-                    <option>20€ - 30€</option>
-                    <option>Más de 30€</option>
+                    <option>Menos de 35€</option>
+                    <option>35€ - 50€</option>
+                    <option>Más de 50€</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Ordenar por
                   </label>
-                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-red">
+                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow">
                     <option>Más populares</option>
                     <option>Precio: menor a mayor</option>
                     <option>Precio: mayor a menor</option>
