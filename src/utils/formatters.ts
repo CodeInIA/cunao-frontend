@@ -21,15 +21,20 @@ export function formatDate(date: string | Date): string {
 }
 
 /**
- * Convierte texto a formato slug
+ * Convierte texto a formato slug, manejando tildes y "ñ"
  */
 export function slugify(text: string): string {
+  if (!text) return '';
   return text
+    .toString()
     .toLowerCase()
+    .replace(/ñ/g, 'n') // Reemplazar ñ por n
+    .normalize('NFD') // Separar tildes de las letras
+    .replace(/[\u0300-\u036f]/g, '') // Eliminar los caracteres de tildes
     .trim()
-    .replace(/[^\w\s-]/g, '') // Remover caracteres especiales
-    .replace(/[\s_-]+/g, '-') // Reemplazar espacios con guiones
-    .replace(/^-+|-+$/g, ''); // Remover guiones al inicio y final
+    .replace(/[^\w\s-]/g, '') // Eliminar caracteres especiales
+    .replace(/[\s_-]+/g, '-') // Reemplazar espacios y guiones bajos por un solo guion
+    .replace(/^-+|-+$/g, ''); // Eliminar guiones al inicio y al final
 }
 
 /**

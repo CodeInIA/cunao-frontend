@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Product } from '../types';
+import { slugify } from '../utils/formatters'; // Importar la utilidad
 
 interface ProductCardProps {
   product: Product;
@@ -35,7 +36,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <div className="group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700">
       <Link
-        to={`/producto/${product.id}`}
+        to={`/producto/${slugify(product.title)}`}
         onClick={() => {
           setTimeout(() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -85,10 +86,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     title={color.title}
                     onMouseEnter={() => setHoveredColorId(color.id)}
                     onMouseLeave={() => setHoveredColorId(null)}
-                    onClick={e => {
+                    onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      navigate(`/producto/${product.id}?color=${color.title}`);
+                      navigate(`/producto/${slugify(product.title)}?color=${color.title}`);
                       setTimeout(() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       }, 100);

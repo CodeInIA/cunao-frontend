@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
-import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
-import { formatPrice } from '../utils/formatters';
+import { formatPrice, slugify } from '../utils/formatters';
 import type { ProductVariant } from '../types';
 
 export const ProductDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: slug } = useParams<{ id: string }>(); // El 'id' ahora es un 'slug'
   const location = useLocation();
   const navigate = useNavigate();
   const { currentProduct, fetchProduct, loadingState, error, currentGPSR, fetchProductGPSR } = useProductStore();
@@ -30,11 +29,11 @@ export const ProductDetailPage: React.FC = () => {
   }, [location.search]);
 
   useEffect(() => {
-    if (id) {
-      fetchProduct(id);
-      fetchProductGPSR(id);
+    if (slug) {
+      fetchProduct(slug);
+      fetchProductGPSR(slug);
     }
-  }, [id, fetchProduct, fetchProductGPSR]);
+  }, [slug, fetchProduct, fetchProductGPSR]);
 
   const allProductOptions = useMemo(() => {
     if (!currentProduct?.options) return { colors: [], sizes: [] };
@@ -145,11 +144,11 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
-    if (optionType === 'color') {
-      // Buscar el color seleccionado
+    if (optionType === 'color' && currentProduct) {
       const colorObj = availableOptions.colors.find((c: any) => c.id === valueId);
       if (colorObj) {
-        navigate(`/producto/${id}?color=${encodeURIComponent(colorObj.title)}`, { replace: true });
+        // Actualizar la URL con el slug correcto y el nuevo color
+        navigate(`/producto/${slugify(currentProduct.title)}?color=${encodeURIComponent(colorObj.title)}`, { replace: true });
       }
     }
   };
