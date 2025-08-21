@@ -11,11 +11,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [hoveredColorId, setHoveredColorId] = React.useState<number | null>(null);
   const navigate = useNavigate();
   const defaultImage = product.images.find((img: any) => img.is_default) || product.images[0];
-  const price = product.variants && product.variants[0] && typeof product.variants[0].price === 'number'
-    ? product.variants[0].price / 100
-    : 0;
-
   const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
+  const uniquePrices = Array.from(new Set(enabledVariants.map((v: any) => v.price)));
+  const price = uniquePrices.length === 1
+    ? uniquePrices[0] / 100
+    : Math.min(...uniquePrices) / 100;
+
   const colorOptionIds = Array.from(new Set(enabledVariants.flatMap((v: any) => v.options.filter((optId: any) => {
     const opt = product.options?.find((o: any) => o.type === 'color' && o.values.some((val: any) => val.id === optId));
     return !!opt;
