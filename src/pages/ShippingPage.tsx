@@ -205,7 +205,7 @@ export const ShippingPage: React.FC = () => {
                   <div>
                     <h4 className="font-semibold text-white">Contáctanos</h4>
                     <p className="text-slate-300 text-sm">
-                      Email: {config.EMAILS.returns}<br />
+                      Email: {config.EMAILS.pedidos}<br />
                       Incluye: número de pedido y motivo de devolución
                     </p>
                   </div>
@@ -408,11 +408,11 @@ export const ShippingPage: React.FC = () => {
               Contactar Sobre Envíos
             </button>
             
-            <a
-              href={`mailto:${config.EMAILS.shipping}`}
+              <a
+              href={`mailto:${config.EMAILS.pedidos}`}
               className="inline-flex items-center px-6 py-3 bg-slate-700 text-spanish-yellow border-2 border-spanish-red font-semibold rounded-lg hover:bg-spanish-red hover:text-white transition-colors"
             >
-              {config.EMAILS.shipping}
+              {config.EMAILS.pedidos}
             </a>
           </div>
         </div>

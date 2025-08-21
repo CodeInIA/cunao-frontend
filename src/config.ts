@@ -9,11 +9,10 @@ export const config = {
     tiktok: import.meta.env.VITE_FACEBOOK_URL || 'https://tiktok.com/cunadismo.ilustrado',
   },
   EMAILS: {
-    main: 'info@cunadismo-ilustrado.com',
-    privacy: 'privacidad@cunadismo-ilustrado.com',
-    returns: 'devoluciones@cunadismo-ilustrado.com',
-    shipping: 'envios@cunadismo-ilustrado.com',
-    legal: 'legal@cunadismo-ilustrado.com',
+    main: `info@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
+    privacy: `privacidad@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
+    pedidos: `pedidos@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
+    legal: `legal@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
   }
 };
 

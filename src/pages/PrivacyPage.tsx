@@ -220,9 +220,6 @@ export const PrivacyPage: React.FC = () => {
                   <strong>Email:</strong> {config.EMAILS.privacy}
                 </p>
                 <p className="text-slate-300">
-                  <strong>Teléfono:</strong> +34 666 123 456
-                </p>
-                <p className="text-slate-300">
                   <strong>Dirección:</strong> España (porque aquí hacemos las cosas bien)
                 </p>
               </div>

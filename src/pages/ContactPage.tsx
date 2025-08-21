@@ -70,20 +70,6 @@ export const ContactPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-spanish-yellow mb-1">
-                    Teléfono
-                  </h3>
-                  <p className="text-slate-300">+34 666 123 456</p>
-                  <p className="text-sm text-slate-400 mt-1">
-                    Lunes a Viernes, 9:00 - 18:00
-                  </p>
-                </div>
-              </div>
 
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center flex-shrink-0">
