@@ -11,9 +11,12 @@ export const config = {
   EMAILS: {
     main: `info@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
     privacy: `privacidad@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
-    pedidos: `pedidos@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
+    shipping: `envios@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
+    returns: `devoluciones@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
     legal: `legal@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
-  }
+    noreply: `noreply@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
+  },
+  EMAIL_INFO_TEXT: 'Los correos informativos y automáticos se envían desde la dirección noreply@' + (import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me') + '. Por favor, no respondas a estos mensajes.'
 };
 
 // Export default para compatibilidad
