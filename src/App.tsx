@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Header } from './components/Header';
@@ -21,6 +21,26 @@ import { CancelPage } from './pages/CancelPage';     // Importar
 import './App.css';
 
 function App() {
+
+  // =================================================================
+  // ▼▼▼ CÓDIGO DE REDIRECCIÓN AÑADIDO AQUÍ ▼▼▼
+  // =================================================================
+  useEffect(() => {
+    // Solo ejecutar en el navegador y en producción
+    if (typeof window !== 'undefined' && import.meta.env.PROD) {
+      const hostname = window.location.hostname;
+      const canonicalHostname = 'www.cunadismoilustrado.me';
+
+      // Si el hostname es el dominio raíz, redirige a la versión www
+      if (hostname === 'cunadismoilustrado.me') {
+        window.location.href = `https://${canonicalHostname}${window.location.pathname}${window.location.search}`;
+      }
+    }
+  }, []);
+  // =================================================================
+  // ▲▲▲ FIN DEL CÓDIGO DE REDIRECCIÓN ▲▲▲
+  // =================================================================
+
   return (
     <ErrorBoundary>
       <Router>
