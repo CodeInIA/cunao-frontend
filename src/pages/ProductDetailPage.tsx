@@ -35,6 +35,25 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [slug, fetchProduct, fetchProductGPSR]);
 
+  // =================================================================
+  // ▼▼▼ NUEVO HOOK PARA PRECARGAR IMÁGENES ▼▼▼
+  // =================================================================
+  useEffect(() => {
+    // Si tenemos un producto y tiene imágenes, empezamos a precargarlas.
+    if (currentProduct && currentProduct.images) {
+      console.log('Preloading images...');
+      currentProduct.images.forEach((image) => {
+        // Se crea un nuevo objeto de imagen en memoria.
+        // Al asignar el 'src', el navegador empieza a descargarla en segundo plano.
+        const img = new Image();
+        img.src = image.src;
+      });
+    }
+  }, [currentProduct]); // Este efecto se ejecuta solo cuando 'currentProduct' cambia.
+  // =================================================================
+  // ▲▲▲ FIN DEL NUEVO HOOK ▲▲▲
+  // =================================================================
+
   const allProductOptions = useMemo(() => {
     if (!currentProduct?.options) return { colors: [], sizes: [] };
     const optionsMap: { [key: string]: any[] } = { colors: [], sizes: [] };
@@ -70,20 +89,16 @@ export const ProductDetailPage: React.FC = () => {
       let initialOptions: { [key: string]: number } = {};
       let variantToSelect: ProductVariant | null = null;
 
-      // Si hay color en el query param, buscarlo y preseleccionarlo
       if (queryParams.color) {
         const colorObj = allProductOptions.colors.find(c => c.title.toLowerCase() === queryParams.color.toLowerCase());
         if (colorObj) {
           initialOptions.color = colorObj.id;
-          // Buscar variante con ese color y habilitada
           const variant = currentProduct.variants.find(v => v.is_enabled && v.options.includes(colorObj.id));
           if (variant) {
             variantToSelect = variant;
-            // Preseleccionar talla si solo hay una
             if (allProductOptions.sizes.length === 1) {
               initialOptions.size = allProductOptions.sizes[0].id;
             } else {
-              // Si la variante tiene talla, preseleccionarla
               variant.options.forEach(optId => {
                 if (allProductOptions.sizes.some(s => s.id === optId)) {
                   initialOptions.size = optId;
@@ -94,7 +109,6 @@ export const ProductDetailPage: React.FC = () => {
         }
       }
 
-      // Si no hay color en query param, usar variante por defecto
       if (!variantToSelect) {
         const foundDefault = currentProduct.variants.find(v => v.is_default && v.is_enabled);
         const foundEnabled = currentProduct.variants.find(v => v.is_enabled);
@@ -119,9 +133,11 @@ export const ProductDetailPage: React.FC = () => {
   }, [currentProduct, allProductOptions, queryParams.color]);
 
   useEffect(() => {
-    if (currentProduct?.variants && Object.keys(selectedOptions).length > 0) {
+    if (currentProduct?.variants && Object.keys(selectedOptions).length > 1) { // Asegurarse de que ambas opciones están seleccionadas
       const variant = currentProduct.variants.find(v => 
-        v.is_enabled && v.options.every(optId => Object.values(selectedOptions).includes(optId))
+        v.is_enabled && 
+        v.options.includes(selectedOptions.color) && 
+        v.options.includes(selectedOptions.size)
       );
       setSelectedVariant(variant || null);
     }
@@ -137,7 +153,9 @@ export const ProductDetailPage: React.FC = () => {
       if (imagesForVariant.length > 0) {
         setCurrentImage(imagesForVariant[0]);
       } else {
-        setCurrentImage(currentProduct.images[0] || null);
+        // Fallback a la imagen por defecto del producto si la variante no tiene una específica
+        const defaultImage = currentProduct.images.find(img => img.is_default) || currentProduct.images[0];
+        setCurrentImage(defaultImage || null);
       }
     }
   }, [selectedVariant, currentProduct]);
@@ -147,7 +165,6 @@ export const ProductDetailPage: React.FC = () => {
     if (optionType === 'color' && currentProduct) {
       const colorObj = availableOptions.colors.find((c: any) => c.id === valueId);
       if (colorObj) {
-        // Actualizar la URL con el slug correcto y el nuevo color
         navigate(`/producto/${slugify(currentProduct.title)}?color=${encodeURIComponent(colorObj.title)}`, { replace: true });
       }
     }
@@ -155,8 +172,6 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedVariant || !currentProduct) return;
-
-    // CAMBIO CLAVE: Buscar la imagen principal de la variante para el carrito
     const imagesForVariant = currentProduct.images.filter(img => 
       img.variant_ids.includes(selectedVariant.id)
     );
@@ -169,7 +184,7 @@ export const ProductDetailPage: React.FC = () => {
       quantity: quantity,
       title: currentProduct.title,
       price: selectedVariant.price / 100,
-      image: cartImageSrc, // Usar la imagen principal de la variante
+      image: cartImageSrc,
       size: sizeTitle,
       color: selectedColorName || '',
     };
@@ -278,8 +293,8 @@ export const ProductDetailPage: React.FC = () => {
                     onClick={() => handleOptionChange('size', size.id)}
                     className={`px-4 py-2 rounded-lg border-2 transition-colors ${
                       selectedOptions.size === size.id
-                        ? 'border-spanish-yellow ring-2 ring-spanish-yellow'
-                        : 'border-slate-600 hover:border-slate-400'
+                        ? 'border-spanish-yellow bg-slate-700 text-white' // Estilo para seleccionado
+                        : 'border-slate-600 bg-slate-800 text-slate-300 hover:border-slate-400' // Estilo normal
                     }`}
                   >
                     {size.title}
@@ -308,7 +323,7 @@ export const ProductDetailPage: React.FC = () => {
             className="w-full md:w-auto bg-spanish-yellow text-slate-900 font-bold px-8 py-4 rounded-lg shadow border-2 border-spanish-yellow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:bg-yellow-400 hover:scale-105 hover:shadow-lg hover:text-slate-900"
           >
             <ShoppingCart size={20} />
-            {selectedVariant ? 'Añadir al carrito' : 'Opción no disponible'}
+            {selectedVariant ? 'Añadir al carrito' : 'Selecciona Talla y Color'}
           </button>
           
           <div className="mt-8">
