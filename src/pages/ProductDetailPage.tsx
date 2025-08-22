@@ -4,10 +4,10 @@ import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
 import { formatPrice, slugify } from '../utils/formatters';
-import type { ProductVariant } from '../types';
+import type { ProductVariant, ProductImage } from '../types';
 
 export const ProductDetailPage: React.FC = () => {
-  const { id: slug } = useParams<{ id: string }>(); // El 'id' ahora es un 'slug'
+  const { id: slug } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { currentProduct, fetchProduct, loadingState, error, currentGPSR, fetchProductGPSR } = useProductStore();
@@ -16,16 +16,21 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: number }>({});
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [currentImage, setCurrentImage] = useState<ProductImage | null>(null);
 
-  const [variantImages, setVariantImages] = useState<any[]>([]);
-  const [currentImage, setCurrentImage] = useState<any | null>(null);
+  // Precarga de imágenes
+  useEffect(() => {
+    if (currentProduct && currentProduct.images) {
+      currentProduct.images.forEach((image) => {
+        const img = new Image();
+        img.src = image.src;
+      });
+    }
+  }, [currentProduct]);
 
-  // Leer color del query param
   const queryParams = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    return {
-      color: params.get('color') || '',
-    };
+    return { color: params.get('color') || '' };
   }, [location.search]);
 
   useEffect(() => {
@@ -35,48 +40,22 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [slug, fetchProduct, fetchProductGPSR]);
 
-  // =================================================================
-  // ▼▼▼ NUEVO HOOK PARA PRECARGAR IMÁGENES ▼▼▼
-  // =================================================================
-  useEffect(() => {
-    // Si tenemos un producto y tiene imágenes, empezamos a precargarlas.
-    if (currentProduct && currentProduct.images) {
-      console.log('Preloading images...');
-      currentProduct.images.forEach((image) => {
-        // Se crea un nuevo objeto de imagen en memoria.
-        // Al asignar el 'src', el navegador empieza a descargarla en segundo plano.
-        const img = new Image();
-        img.src = image.src;
-      });
-    }
-  }, [currentProduct]); // Este efecto se ejecuta solo cuando 'currentProduct' cambia.
-  // =================================================================
-  // ▲▲▲ FIN DEL NUEVO HOOK ▲▲▲
-  // =================================================================
-
   const allProductOptions = useMemo(() => {
     if (!currentProduct?.options) return { colors: [], sizes: [] };
     const optionsMap: { [key: string]: any[] } = { colors: [], sizes: [] };
     currentProduct.options.forEach(option => {
-      if (option.type === 'color') {
-        optionsMap.colors = option.values;
-      } else if (option.type === 'size') {
-        optionsMap.sizes = option.values;
-      }
+      if (option.type === 'color') optionsMap.colors = option.values;
+      else if (option.type === 'size') optionsMap.sizes = option.values;
     });
     return optionsMap;
   }, [currentProduct]);
 
   const availableOptions = useMemo(() => {
-    if (!currentProduct?.variants) {
-      return { colors: [], sizes: [] };
-    }
+    if (!currentProduct?.variants) return { colors: [], sizes: [] };
     const enabledVariants = currentProduct.variants.filter(v => v.is_enabled);
     const availableOptionIds = new Set(enabledVariants.flatMap(v => v.options));
-
     const availableColors = allProductOptions.colors.filter(color => availableOptionIds.has(color.id));
     const availableSizes = allProductOptions.sizes.filter(size => availableOptionIds.has(size.id));
-
     return { colors: availableColors, sizes: availableSizes };
   }, [currentProduct?.variants, allProductOptions]);
 
@@ -84,59 +63,54 @@ export const ProductDetailPage: React.FC = () => {
     return allProductOptions.colors?.find(c => c.id === selectedOptions.color)?.title;
   }, [selectedOptions.color, allProductOptions.colors]);
 
-  useEffect(() => {
-    if (currentProduct?.variants && allProductOptions.colors.length > 0) {
-      let initialOptions: { [key: string]: number } = {};
-      let variantToSelect: ProductVariant | null = null;
-
-      if (queryParams.color) {
-        const colorObj = allProductOptions.colors.find(c => c.title.toLowerCase() === queryParams.color.toLowerCase());
-        if (colorObj) {
-          initialOptions.color = colorObj.id;
-          const variant = currentProduct.variants.find(v => v.is_enabled && v.options.includes(colorObj.id));
-          if (variant) {
-            variantToSelect = variant;
-            if (allProductOptions.sizes.length === 1) {
-              initialOptions.size = allProductOptions.sizes[0].id;
-            } else {
-              variant.options.forEach(optId => {
-                if (allProductOptions.sizes.some(s => s.id === optId)) {
-                  initialOptions.size = optId;
-                }
-              });
-            }
-          }
-        }
-      }
-
-      if (!variantToSelect) {
-        const foundDefault = currentProduct.variants.find(v => v.is_default && v.is_enabled);
-        const foundEnabled = currentProduct.variants.find(v => v.is_enabled);
-        variantToSelect = foundDefault || foundEnabled || null;
-        if (variantToSelect) {
-          variantToSelect.options.forEach(optId => {
-            if (allProductOptions.colors.some(c => c.id === optId)) {
-              initialOptions.color = optId;
-            }
-            if (allProductOptions.sizes.some(s => s.id === optId)) {
-              initialOptions.size = optId;
-            }
-          });
-        }
-      }
-
-      if (variantToSelect) {
-        setSelectedVariant(variantToSelect);
-        setSelectedOptions(initialOptions);
-      }
+  const galleryImages = useMemo(() => {
+    if (!currentProduct || !selectedOptions.color) {
+      const defaultImg = currentProduct?.images.find(i => i.is_default) || currentProduct?.images[0];
+      return defaultImg ? [defaultImg] : [];
     }
-  }, [currentProduct, allProductOptions, queryParams.color]);
+    const variantsForColor = currentProduct.variants
+      ? currentProduct.variants.filter(v => v.options.includes(selectedOptions.color))
+      : [];
+    const variantIdsForColor = new Set(variantsForColor.map(v => v.id));
+    const images = currentProduct.images.filter(img => 
+      img.variant_ids.some(id => variantIdsForColor.has(id))
+    );
+    if (images.length === 0) {
+      const defaultImg = currentProduct.images.find(i => i.is_default) || currentProduct.images[0];
+      return defaultImg ? [defaultImg] : [];
+    }
+    return images;
+  }, [currentProduct, selectedOptions.color]);
+  
+  useEffect(() => {
+    if (currentProduct) {
+        let initialOptions: { [key: string]: number } = {};
+        if (queryParams.color) {
+            const colorObj = allProductOptions.colors.find(c => c.title.toLowerCase() === queryParams.color.toLowerCase());
+            if (colorObj) initialOptions.color = colorObj.id;
+        }
+        if (!initialOptions.color) {
+            const defaultVariant = currentProduct.variants?.find(v => v.is_default && v.is_enabled);
+            if (defaultVariant) {
+                const colorOption = defaultVariant.options.find(optId => allProductOptions.colors.some(c => c.id === optId));
+                if (colorOption) initialOptions.color = colorOption;
+            }
+        }
+        if (!initialOptions.color && availableOptions.colors.length > 0) {
+            initialOptions.color = availableOptions.colors[0].id;
+        }
+        if (availableOptions.sizes.length > 0) {
+            initialOptions.size = availableOptions.sizes[0].id;
+        }
+        setSelectedOptions(initialOptions);
+    }
+  }, [currentProduct, allProductOptions, availableOptions, queryParams.color]);
 
   useEffect(() => {
-    if (currentProduct?.variants && Object.keys(selectedOptions).length > 1) { // Asegurarse de que ambas opciones están seleccionadas
+    if (currentProduct?.variants && selectedOptions.color && selectedOptions.size) {
       const variant = currentProduct.variants.find(v => 
-        v.is_enabled && 
-        v.options.includes(selectedOptions.color) && 
+        v.is_enabled &&
+        v.options.includes(selectedOptions.color) &&
         v.options.includes(selectedOptions.size)
       );
       setSelectedVariant(variant || null);
@@ -144,21 +118,12 @@ export const ProductDetailPage: React.FC = () => {
   }, [selectedOptions, currentProduct]);
 
   useEffect(() => {
-    if (currentProduct && selectedVariant) {
-      const imagesForVariant = currentProduct.images.filter(img => 
-        img.variant_ids.includes(selectedVariant.id)
-      );
-      setVariantImages(imagesForVariant);
-      
-      if (imagesForVariant.length > 0) {
-        setCurrentImage(imagesForVariant[0]);
-      } else {
-        // Fallback a la imagen por defecto del producto si la variante no tiene una específica
-        const defaultImage = currentProduct.images.find(img => img.is_default) || currentProduct.images[0];
-        setCurrentImage(defaultImage || null);
+    if (galleryImages.length > 0) {
+      if (!galleryImages.some(img => img.src === currentImage?.src)) {
+        setCurrentImage(galleryImages[0]);
       }
     }
-  }, [selectedVariant, currentProduct]);
+  }, [galleryImages, currentImage]);
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
@@ -172,11 +137,6 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedVariant || !currentProduct) return;
-    const imagesForVariant = currentProduct.images.filter(img => 
-      img.variant_ids.includes(selectedVariant.id)
-    );
-    const cartImageSrc = (imagesForVariant.length > 0 ? imagesForVariant[0].src : currentProduct.images[0]?.src) || '';
-
     const sizeTitle = allProductOptions.sizes?.find(s => s.id === selectedOptions.size)?.title || '';
     const cartItem = {
       productId: currentProduct.id,
@@ -184,7 +144,7 @@ export const ProductDetailPage: React.FC = () => {
       quantity: quantity,
       title: currentProduct.title,
       price: selectedVariant.price / 100,
-      image: cartImageSrc,
+      image: currentImage?.src || currentProduct.images[0]?.src || '',
       size: sizeTitle,
       color: selectedColorName || '',
     };
@@ -213,33 +173,38 @@ export const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 py-12">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row gap-12">
-        {/* Imagen y Galería */}
-        <div className="flex-1 flex flex-col items-center">
-          <div className="w-full max-w-md mb-4">
-            <img
-              src={currentImage?.src}
-              alt={currentProduct.title}
-              className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
-            />
-          </div>
-          <div className="flex flex-wrap justify-center gap-2">
-            {variantImages.map((image) => (
-              <button
-                key={image.src}
-                onClick={() => setCurrentImage(image)}
-                className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                  currentImage?.src === image.src
-                    ? 'border-spanish-yellow ring-2 ring-spanish-yellow'
-                    : 'border-slate-700 hover:border-spanish-yellow'
-                }`}
-              >
-                <img src={image.src} alt="thumbnail" className="w-full h-full object-cover" />
-              </button>
-            ))}
+      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="md:sticky md:top-28 h-max">
+          <div className="flex flex-row-reverse md:flex-row gap-4">
+            <div className="flex-1">
+              <img
+                src={currentImage?.src}
+                alt={currentProduct.title}
+                className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
+              />
+            </div>
+            {/* ▼▼▼ CAMBIO 2: AÑADIMOS LAS CLASES DE SCROLLBAR ▼▼▼ */}
+            <div className="flex md:flex-col gap-2 overflow-y-auto max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-spanish-yellow scrollbar-track-slate-700">
+              {galleryImages.map((image) => (
+                <button
+                  key={image.src}
+                  onClick={() => setCurrentImage(image)}
+                  // ▼▼▼ CAMBIO 1: AJUSTE DE CLASES PARA EL BORDE ▼▼▼
+                  className={`w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200
+                    ${
+                      currentImage?.src === image.src
+                        ? 'border-4 border-spanish-yellow' // Borde más grueso y amarillo
+                        : 'border-2 border-slate-700 hover:border-spanish-yellow' // Borde normal
+                    }`
+                  }
+                >
+                  <img src={image.src} alt="thumbnail" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        {/* Info */}
+
         <div className="flex-1">
           <h1 className="text-4xl font-display font-bold text-white mb-4">
             {currentProduct.title}
@@ -251,7 +216,6 @@ export const ProductDetailPage: React.FC = () => {
             </span>
           </div>
 
-          {/* Selector de Color con Muestras */}
           {availableOptions.colors && availableOptions.colors.length > 0 && (
             <div className="mb-6">
               <h3 className="text-sm font-bold text-slate-300 uppercase mb-2">
@@ -282,7 +246,6 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Selector de Talla */}
           {availableOptions.sizes && availableOptions.sizes.length > 0 && (
             <div className="mb-6">
               <h3 className="text-sm font-bold text-slate-300 uppercase mb-2">Talla</h3>
@@ -291,10 +254,10 @@ export const ProductDetailPage: React.FC = () => {
                   <button
                     key={size.id}
                     onClick={() => handleOptionChange('size', size.id)}
-                    className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                    className={`px-4 py-2 rounded-lg border-2 transition-colors font-semibold ${
                       selectedOptions.size === size.id
-                        ? 'border-spanish-yellow bg-slate-700 text-white' // Estilo para seleccionado
-                        : 'border-slate-600 bg-slate-800 text-slate-300 hover:border-slate-400' // Estilo normal
+                        ? 'bg-spanish-yellow text-slate-900 border-spanish-yellow'
+                        : 'bg-slate-800 text-slate-300 border-slate-600 hover:border-slate-400'
                     }`}
                   >
                     {size.title}
@@ -327,7 +290,7 @@ export const ProductDetailPage: React.FC = () => {
           </button>
           
           <div className="mt-8">
-            <div className="text-lg text-slate-300 mb-6" dangerouslySetInnerHTML={{ __html: currentProduct.description }} />
+            <div className="text-lg text-slate-300 mb-6 prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: currentProduct.description }} />
             {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
               <div className="space-y-4 mb-8">
                 {currentGPSR.map((section, idx) => (
