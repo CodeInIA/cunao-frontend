@@ -25,15 +25,26 @@ function App() {
   // =================================================================
   // ▼▼▼ CÓDIGO DE REDIRECCIÓN AÑADIDO AQUÍ ▼▼▼
   // =================================================================
-  useEffect(() => {
+useEffect(() => {
     // Solo ejecutar en el navegador y en producción
     if (typeof window !== 'undefined' && import.meta.env.PROD) {
-      const hostname = window.location.hostname;
-      const canonicalHostname = 'www.cunadismoilustrado.me';
+      const currentHostname = window.location.hostname;
+      const canonicalUrl = import.meta.env.VITE_APP_URL; // -> https://www.cunadismoilustrado.me
 
-      // Si el hostname es el dominio raíz, redirige a la versión www
-      if (hostname === 'cunadismoilustrado.me') {
-        window.location.href = `https://${canonicalHostname}${window.location.pathname}${window.location.search}`;
+      if (canonicalUrl) {
+        try {
+          const canonicalHostname = new URL(canonicalUrl).hostname; // -> www.cunadismoilustrado.me
+          const rootHostname = canonicalHostname.startsWith('www.') 
+            ? canonicalHostname.substring(4) 
+            : null; // -> cunadismoilustrado.me
+
+          // Si el hostname actual es el dominio raíz, redirige a la versión canónica (www)
+          if (rootHostname && currentHostname === rootHostname) {
+            window.location.href = `${canonicalUrl}${window.location.pathname}${window.location.search}`;
+          }
+        } catch (error) {
+          console.error('Error al parsear VITE_APP_URL:', error);
+        }
       }
     }
   }, []);
