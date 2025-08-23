@@ -20,33 +20,63 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
     onAddToCart(product);
   };
 
+  // Determinar categoría visual
+  const tagsLower = product.tags.map(t => t.toLowerCase());
+  const isDestacado = tagsLower.includes('destacado');
+  const isPopular = tagsLower.includes('popular');
+  const isClasico = tagsLower.includes('clásico');
+
+  // Color y badge según categoría
+  let cardColor = 'bg-slate-800 border border-slate-600';
+  let badge = null;
+  let starColor = 'text-slate-400';
+  let icon = null;
+  let label = '';
+  if (isDestacado) {
+    cardColor = 'bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-spanish-yellow shadow-xl';
+    badge = (
+      <div className="absolute -top-3 -right-3 z-20 bg-spanish-yellow text-slate-900 font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+        <Crown size={12} /> DESTACADO
+      </div>
+    );
+    starColor = 'text-spanish-yellow';
+    icon = <Zap size={14} />;
+    label = 'MÁS VENDIDO';
+  } else if (isPopular) {
+    cardColor = 'bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-spanish-red shadow-xl';
+    badge = (
+      <div className="absolute -top-3 -right-3 z-20 bg-spanish-red text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+        <Zap size={12} /> POPULAR
+      </div>
+    );
+    starColor = 'text-spanish-red';
+    icon = <Zap size={14} />;
+    label = 'MÁS POPULAR';
+  } else if (isClasico) {
+    cardColor = 'bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-green-500 shadow-xl';
+    badge = (
+      <div className="absolute -top-3 -right-3 z-20 bg-green-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+        <Star size={12} /> CLÁSICO
+      </div>
+    );
+    starColor = 'text-green-500';
+    icon = <Star size={14} />;
+    label = 'CLÁSICO';
+  }
+
   return (
     <div 
-      className={`relative group cursor-pointer transition-all duration-300 ${
-        featured 
-          ? 'transform hover:scale-105 hover:z-10' 
-          : 'transform hover:scale-102'
-      }`}
+      className={`relative group cursor-pointer transition-all duration-300 w-full max-w-[240px] min-w-[220px] flex flex-col items-stretch justify-between mx-auto`}
+      style={{ minHeight: '370px', height: '370px' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Badge de destacado */}
-      {featured && (
-        <div className="absolute -top-3 -right-3 z-20 bg-spanish-yellow text-slate-900 font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-          <Crown size={12} />
-          DESTACADO
-        </div>
-      )}
+      {/* Badge de categoría */}
+      {badge}
 
       {/* Card principal */}
-      <div className={`
-        relative overflow-hidden rounded-xl transition-all duration-300 
-        ${featured 
-          ? 'bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-spanish-yellow shadow-xl' 
-          : 'bg-slate-800 border border-slate-600 hover:border-spanish-red'
-        }
-        ${isHovered ? 'shadow-2xl' : 'shadow-lg'}
-      `}>
+      <div className={`relative overflow-hidden rounded-xl transition-all duration-300 ${cardColor} ${isHovered ? 'shadow-2xl' : 'shadow-lg'}`}
+        style={{ minHeight: '220px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         {/* Imagen del producto */}
         <div className="relative aspect-square overflow-hidden">
           {product.images && product.images.length > 0 ? (
@@ -88,61 +118,60 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
         </div>
 
         {/* Contenido del producto */}
-        <div className="p-6">
-          {/* Rating si está destacado */}
-          {featured && (
-            <div className="flex items-center gap-1 mb-2">
+        <div className="p-4 flex flex-col justify-between h-full">
+          {/* Estrellas */}
+          {(isDestacado || isPopular || isClasico) && (
+            <div className="flex items-center gap-1 mb-4">
               {[...Array(5)].map((_, i) => (
                 <Star 
                   key={i} 
-                  size={14} 
-                  className="text-spanish-yellow fill-current" 
+                  size={18} 
+                  className={starColor + ' fill-current'} 
                 />
               ))}
-              <span className="text-spanish-yellow text-xs ml-1 font-semibold">
+              <span className={starColor + " text-sm ml-2 font-semibold"}>
                 (4.9)
               </span>
             </div>
           )}
-
-          {/* Título */}
           <h3 className={`
-            font-semibold mb-2 transition-colors duration-200 line-clamp-2
+            font-semibold mb-4 transition-colors duration-200 text-lg break-words whitespace-normal leading-snug
             ${featured 
-              ? 'text-white text-lg group-hover:text-spanish-yellow' 
+              ? 'text-white group-hover:text-spanish-yellow' 
               : 'text-slate-200 group-hover:text-white'
             }
-          `}>
+          `} style={{ minHeight: '2.5em', maxHeight: '3.5em', overflow: 'visible' }}>
             {product.title}
           </h3>
 
-          {/* Descripción */}
-          {product.description && (
-            <p className="text-slate-400 text-sm mb-3 line-clamp-2">
-              {product.description.substring(0, 80)}...
-            </p>
-          )}
-
           {/* Precio y características */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex flex-col">
-              <span className={`
-                font-bold text-lg
-                ${featured ? 'text-spanish-yellow' : 'text-white'}
-              `}>
-                €19.99
-              </span>
-              {featured && (
-                <span className="text-slate-400 text-xs line-through">
-                  €24.99
-                </span>
-              )}
+              {(() => {
+                const enabledVariants = product.variants?.filter(v => v.is_enabled) || [];
+                const uniquePrices = Array.from(new Set(enabledVariants.map(v => v.price)));
+                const minPrice = uniquePrices.length > 0 ? Math.min(...uniquePrices) : undefined;
+                return (
+                  <>
+                    <span className={`
+                      font-bold text-lg
+                      ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : isClasico ? 'text-green-500' : 'text-white'}
+                    `}>
+                      {minPrice !== undefined ? `€${(minPrice / 100).toFixed(2)}` : 'Sin precio'}
+                    </span>
+                    {minPrice !== undefined && (
+                      <span className="text-slate-400 text-xs line-through">
+                        €{((minPrice * 1.5) / 100).toFixed(2)}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
             </div>
-            
-            {featured && (
-              <div className="flex items-center gap-1 text-spanish-yellow">
-                <Zap size={14} />
-                <span className="text-xs font-semibold">MÁS VENDIDO</span>
+            {(isDestacado || isPopular || isClasico) && (
+              <div className={`flex items-center gap-1 ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : 'text-green-500'}`}>
+                {icon}
+                <span className="text-xs font-semibold">{label}</span>
               </div>
             )}
           </div>
@@ -151,10 +180,14 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
           <button
             onClick={handleAddToCart}
             className={`
-              w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200
-              ${featured
+              w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200 mt-2
+              ${isDestacado
                 ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400 shadow-lg hover:shadow-xl'
-                : 'bg-spanish-red text-white hover:bg-red-600'
+                : isPopular
+                  ? 'bg-spanish-red text-white hover:bg-red-600'
+                  : isClasico
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : 'bg-slate-700 text-white hover:bg-slate-600'
               }
               transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spanish-yellow
             `}
