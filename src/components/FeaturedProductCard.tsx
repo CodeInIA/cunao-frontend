@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ShoppingCart, Star, Crown, Zap } from 'lucide-react';
 import type { Product } from '../types';
 
@@ -8,201 +8,212 @@ interface FeaturedProductCardProps {
   featured?: boolean;
 }
 
-export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({ 
-  product, 
-  onAddToCart, 
-  featured = false 
+export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
+  product,
+  onAddToCart,
+  featured = false
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAddToCart(product);
-  };
-
-  // Determinar categoría visual
-  const tagsLower = product.tags.map(t => t.toLowerCase());
+  // Categorías (busca 'destacado', 'popular', 'clásico' sin sensibilidad a mayúsculas)
+  const tagsLower = (product.tags || []).map(t => String(t).toLowerCase());
   const isDestacado = tagsLower.includes('destacado');
   const isPopular = tagsLower.includes('popular');
   const isClasico = tagsLower.includes('clásico');
 
-  // Color y badge según categoría
-  let cardColor = 'bg-slate-800 border border-slate-600';
-  let badge = null;
-  let starColor = 'text-slate-400';
-  let icon = null;
-  let label = '';
-  if (isDestacado) {
-    cardColor = 'bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-spanish-yellow shadow-xl';
-    badge = (
-      <div className="absolute -top-3 -right-3 z-20 bg-spanish-yellow text-slate-900 font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-        <Crown size={12} /> DESTACADO
-      </div>
-    );
-    starColor = 'text-spanish-yellow';
-    icon = <Zap size={14} />;
-    label = 'MÁS VENDIDO';
-  } else if (isPopular) {
-    cardColor = 'bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-spanish-red shadow-xl';
-    badge = (
-      <div className="absolute -top-3 -right-3 z-20 bg-spanish-red text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-        <Zap size={12} /> POPULAR
-      </div>
-    );
-    starColor = 'text-spanish-red';
-    icon = <Zap size={14} />;
-    label = 'MÁS POPULAR';
-  } else if (isClasico) {
-    cardColor = 'bg-gradient-to-br from-slate-800 to-slate-700 border-2 border-green-500 shadow-xl';
-    badge = (
-      <div className="absolute -top-3 -right-3 z-20 bg-green-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-        <Star size={12} /> CLÁSICO
-      </div>
-    );
-    starColor = 'text-green-500';
-    icon = <Star size={14} />;
-    label = 'CLÁSICO';
-  }
+  // Badge / color según categoría
+  const visual = useMemo(() => {
+    if (isDestacado) {
+      return {
+        ring: 'border-2 border-spanish-yellow',
+        badgeBg: 'bg-spanish-yellow text-slate-900',
+        starColor: 'text-spanish-yellow',
+        icon: <Crown size={14} />,
+        label: 'MÁS VENDIDO'
+      };
+    }
+    if (isPopular) {
+      return {
+        ring: 'border-2 border-spanish-red',
+        badgeBg: 'bg-spanish-red text-white',
+        starColor: 'text-spanish-red',
+        icon: <Zap size={14} />,
+        label: 'MÁS POPULAR'
+      };
+    }
+    if (isClasico) {
+      return {
+        ring: 'border-2 border-green-500',
+        badgeBg: 'bg-green-500 text-white',
+        starColor: 'text-green-500',
+        icon: <Star size={14} />,
+        label: 'CLÁSICO'
+      };
+    }
+    return {
+      ring: 'border border-slate-700',
+      badgeBg: 'bg-slate-700 text-white',
+      starColor: 'text-slate-400',
+      icon: null,
+      label: ''
+    };
+  }, [isDestacado, isPopular, isClasico]);
+
+  // Precio mínimo (si hay variantes)
+  const { minPriceFormatted, hasPrice } = useMemo(() => {
+    const enabledVariants = (product.variants || []).filter(v => v?.is_enabled);
+    const uniquePrices = Array.from(new Set(enabledVariants.map(v => v.price).filter(p => typeof p === 'number')));
+    if (uniquePrices.length === 0) return { minPriceFormatted: '', hasPrice: false };
+    const min = Math.min(...uniquePrices);
+    return { minPriceFormatted: `€${(min / 100).toFixed(2)}`, hasPrice: true };
+  }, [product.variants]);
+
+  const firstImage = product.images?.[0];
+
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToCart(product);
+  };
 
   return (
-    <div 
-      className={`relative group cursor-pointer transition-all duration-300 w-full max-w-[240px] min-w-[220px] flex flex-col items-stretch justify-between mx-auto`}
-      style={{ minHeight: '370px', height: '370px' }}
+    <article
+      className={`
+        relative group w-full max-w-[280px] min-w-[220px]
+        rounded-xl overflow-visible transform transition-all duration-300
+        ${isHovered ? 'scale-[1.02] z-10' : 'z-0'}
+      `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Badge de categoría */}
-      {badge}
+      {/* Contenedor con borde + sombra para dar consistencia */}
+      <div
+        className={`
+          h-full flex flex-col bg-gradient-to-br from-slate-900 to-slate-800
+          rounded-xl overflow-hidden shadow-lg transition-shadow duration-300
+          ${visual.ring}
+        `}
+        style={{ minHeight: 430 }} /* Mantener altura consistente en grid */
+      >
+        {/* Badge */}
+        {visual.label && (
+          <div className="absolute -top-3 right-3 z-30">
+            <span
+              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold shadow-md ${visual.badgeBg}`}
+              aria-hidden
+            >
+              {visual.icon}
+              {visual.label}
+            </span>
+          </div>
+        )}
 
-      {/* Card principal */}
-      <div className={`relative overflow-hidden rounded-xl transition-all duration-300 ${cardColor} ${isHovered ? 'shadow-2xl' : 'shadow-lg'}`}
-        style={{ minHeight: '220px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        {/* Imagen del producto */}
-        <div className="relative aspect-square overflow-hidden">
-          {product.images && product.images.length > 0 ? (
-            <img
-              src={product.images[0].src}
-              alt={product.title}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-            />
-          ) : (
-            <div className="w-full h-full bg-slate-600 flex items-center justify-center">
-              <span className="text-4xl">👕</span>
+        {/* IMAGEN: contenedor fijo responsive para que todas las tarjetas alineen */}
+        <div className="w-full h-56 md:h-64 lg:h-72 bg-slate-900 flex items-center justify-center relative">
+          {/* skeleton / placeholder mientras carga */}
+          {!imgLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900">
+              <div className="w-20 h-24 rounded-md bg-slate-700 animate-pulse" />
             </div>
           )}
-          
-          {/* Overlay con efectos */}
-          <div className={`
-            absolute inset-0 transition-opacity duration-300
-            ${isHovered 
-              ? 'bg-black bg-opacity-20' 
-              : 'bg-transparent'
-            }
-          `}>
-            {/* Botón de agregar al carrito flotante */}
+
+          {firstImage ? (
+            <img
+              src={firstImage.src}
+              alt={product.title || 'Producto'}
+              loading="lazy"
+              onLoad={() => setImgLoaded(true)}
+              className={`max-h-full w-auto object-contain transition-transform duration-400 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{ display: 'block' }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-700">
+              <span className="text-5xl">👕</span>
+            </div>
+          )}
+
+          {/* overlay simple para hover */}
+          <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isHovered ? 'bg-black/10' : 'bg-transparent'}`} />
+          {/* floating cart button (visible on hover and keyboard focus) */}
+          <button
+            onClick={handleAddClick}
+            aria-label={`Añadir ${product.title} al carrito`}
+            className={`
+              absolute bottom-3 right-3 p-3 rounded-full text-white shadow-lg
+              bg-spanish-red hover:bg-spanish-yellow focus:outline-none focus:ring-2 focus:ring-spanish-yellow
+              transition-all duration-200 transform
+              ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
+            `}
+          >
+            <ShoppingCart size={18} />
+          </button>
+        </div>
+
+        {/* Contenido textual */}
+        <div className="p-4 flex-1 flex flex-col justify-between">
+          <div>
+            {/* rating */}
+            {(isDestacado || isPopular || isClasico) && (
+              <div className="flex items-center gap-2 mb-2" aria-hidden>
+                <div className="flex items-center -space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} className={`${visual.starColor} fill-current`} />
+                  ))}
+                </div>
+                <span className={`${visual.starColor} text-sm font-semibold`}>{`(4.9)`}</span>
+              </div>
+            )}
+
+            {/* Título */}
+            <h3
+              className="text-lg font-semibold text-slate-100 leading-tight mb-2 line-clamp-3"
+              title={product.title}
+              style={{ minHeight: 56 }}
+            >
+              {product.title}
+            </h3>
+
+            {/* Precio */}
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <div className={`text-lg font-bold ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : 'text-white'}`}>
+                  {hasPrice ? minPriceFormatted : 'Sin precio'}
+                </div>
+                {hasPrice && (
+                  <div className="text-xs text-slate-400 line-through mt-1">
+                    €{((parseFloat(minPriceFormatted.replace('€', '')) * 1.5)).toFixed(2)}
+                  </div>
+                )}
+              </div>
+
+              {/* etiqueta pequeña */}
+              {(isDestacado || isPopular || isClasico) && (
+                <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                  {visual.icon}
+                  <span className="opacity-90">{visual.label}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="mt-4">
             <button
-              onClick={handleAddToCart}
+              onClick={handleAddClick}
+              aria-label={`Añadir ${product.title} al carrito`}
               className={`
-                absolute bottom-4 right-4 
-                bg-spanish-red hover:bg-spanish-yellow 
-                text-white hover:text-slate-900 
-                p-3 rounded-full shadow-lg 
-                transition-all duration-300 transform
-                ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
-                hover:scale-110 focus:outline-none focus:ring-2 focus:ring-spanish-yellow
+                w-full py-3 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-spanish-yellow
+                ${isDestacado ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400' : isPopular ? 'bg-spanish-red text-white hover:bg-red-600' : 'bg-slate-700 text-white hover:bg-slate-600'}
               `}
             >
-              <ShoppingCart size={20} />
+              Añadir al Carrito
             </button>
           </div>
         </div>
 
-        {/* Contenido del producto */}
-        <div className="p-4 flex flex-col justify-between h-full">
-          {/* Estrellas */}
-          {(isDestacado || isPopular || isClasico) && (
-            <div className="flex items-center gap-1 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  size={18} 
-                  className={starColor + ' fill-current'} 
-                />
-              ))}
-              <span className={starColor + " text-sm ml-2 font-semibold"}>
-                (4.9)
-              </span>
-            </div>
-          )}
-          <h3 className={`
-            font-semibold mb-4 transition-colors duration-200 text-lg break-words whitespace-normal leading-snug
-            ${featured 
-              ? 'text-white group-hover:text-spanish-yellow' 
-              : 'text-slate-200 group-hover:text-white'
-            }
-          `} style={{ minHeight: '2.5em', maxHeight: '3.5em', overflow: 'visible' }}>
-            {product.title}
-          </h3>
-
-          {/* Precio y características */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex flex-col">
-              {(() => {
-                const enabledVariants = product.variants?.filter(v => v.is_enabled) || [];
-                const uniquePrices = Array.from(new Set(enabledVariants.map(v => v.price)));
-                const minPrice = uniquePrices.length > 0 ? Math.min(...uniquePrices) : undefined;
-                return (
-                  <>
-                    <span className={`
-                      font-bold text-lg
-                      ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : isClasico ? 'text-green-500' : 'text-white'}
-                    `}>
-                      {minPrice !== undefined ? `€${(minPrice / 100).toFixed(2)}` : 'Sin precio'}
-                    </span>
-                    {minPrice !== undefined && (
-                      <span className="text-slate-400 text-xs line-through">
-                        €{((minPrice * 1.5) / 100).toFixed(2)}
-                      </span>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-            {(isDestacado || isPopular || isClasico) && (
-              <div className={`flex items-center gap-1 ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : 'text-green-500'}`}>
-                {icon}
-                <span className="text-xs font-semibold">{label}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Botón de acción */}
-          <button
-            onClick={handleAddToCart}
-            className={`
-              w-full py-2 px-4 rounded-lg font-semibold transition-all duration-200 mt-2
-              ${isDestacado
-                ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400 shadow-lg hover:shadow-xl'
-                : isPopular
-                  ? 'bg-spanish-red text-white hover:bg-red-600'
-                  : isClasico
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-slate-700 text-white hover:bg-slate-600'
-              }
-              transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spanish-yellow
-            `}
-          >
-            Añadir al Carrito
-          </button>
-        </div>
-
-        {/* Efecto de brillo para productos destacados */}
-        {featured && (
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-spanish-yellow to-transparent opacity-20 transform -skew-x-12 -translate-x-full animate-shimmer"></div>
-          </div>
-        )}
+        {/* pequeño footer decorativo */}
+        <div className="h-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent" aria-hidden />
       </div>
-    </div>
+    </article>
   );
 };
