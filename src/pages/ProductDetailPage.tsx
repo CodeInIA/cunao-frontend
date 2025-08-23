@@ -68,9 +68,7 @@ export const ProductDetailPage: React.FC = () => {
       const defaultImg = currentProduct?.images.find(i => i.is_default) || currentProduct?.images[0];
       return defaultImg ? [defaultImg] : [];
     }
-    const variantsForColor = currentProduct.variants
-      ? currentProduct.variants.filter(v => v.options.includes(selectedOptions.color))
-      : [];
+    const variantsForColor = currentProduct.variants?.filter(v => v.options.includes(selectedOptions.color)) || [];
     const variantIdsForColor = new Set(variantsForColor.map(v => v.id));
     const images = currentProduct.images.filter(img => 
       img.variant_ids.some(id => variantIdsForColor.has(id))
@@ -82,29 +80,61 @@ export const ProductDetailPage: React.FC = () => {
     return images;
   }, [currentProduct, selectedOptions.color]);
   
+  // =================================================================
+  // ▼▼▼ LÓGICA DE INICIALIZACIÓN CORREGIDA Y FINAL ▼▼▼
+  // =================================================================
   useEffect(() => {
-    if (currentProduct) {
-        let initialOptions: { [key: string]: number } = {};
+    if (currentProduct && currentProduct.variants && currentProduct.variants.length > 0) {
+        let variantToSelect: ProductVariant | null = null;
+
+        // Prioridad 1: Cargar variante según el color de la URL
         if (queryParams.color) {
             const colorObj = allProductOptions.colors.find(c => c.title.toLowerCase() === queryParams.color.toLowerCase());
-            if (colorObj) initialOptions.color = colorObj.id;
-        }
-        if (!initialOptions.color) {
-            const defaultVariant = currentProduct.variants?.find(v => v.is_default && v.is_enabled);
-            if (defaultVariant) {
-                const colorOption = defaultVariant.options.find(optId => allProductOptions.colors.some(c => c.id === optId));
-                if (colorOption) initialOptions.color = colorOption;
+            if (colorObj) {
+                const variantForColor = currentProduct.variants.find(v => v.is_enabled && v.options.includes(colorObj.id));
+                if (variantForColor) variantToSelect = variantForColor;
             }
         }
-        if (!initialOptions.color && availableOptions.colors.length > 0) {
-            initialOptions.color = availableOptions.colors[0].id;
+
+        // Prioridad 2: Cargar la variante marcada como "default" por Printify
+        if (!variantToSelect) {
+            const defaultVariant = currentProduct.variants.find(v => v.is_default && v.is_enabled);
+            if (defaultVariant) variantToSelect = defaultVariant;
         }
-        if (availableOptions.sizes.length > 0) {
-            initialOptions.size = availableOptions.sizes[0].id;
+
+        // Prioridad 3: Cargar la primera variante disponible como último recurso
+        if (!variantToSelect) {
+            const firstAvailableVariant = currentProduct.variants.find(v => v.is_enabled);
+            if (firstAvailableVariant) variantToSelect = firstAvailableVariant;
         }
-        setSelectedOptions(initialOptions);
+        
+        // Si hemos encontrado una variante, establecemos su estado
+        if (variantToSelect) {
+            const initialOptions: { [key: string]: number } = {};
+            variantToSelect.options.forEach(optId => {
+                if (allProductOptions.colors.some(c => c.id === optId)) {
+                    initialOptions.color = optId;
+                }
+                if (allProductOptions.sizes.some(s => s.id === optId)) {
+                    initialOptions.size = optId;
+                }
+            });
+
+            // Establecer el estado
+            setSelectedOptions(initialOptions);
+            setSelectedVariant(variantToSelect);
+
+            // Establecer la imagen principal inicial
+            const initialImage = currentProduct.images.find(img => img.variant_ids.includes(variantToSelect!.id)) 
+                                || currentProduct.images.find(img => img.is_default) 
+                                || currentProduct.images[0];
+            setCurrentImage(initialImage || null);
+        }
     }
-  }, [currentProduct, allProductOptions, availableOptions, queryParams.color]);
+  }, [currentProduct, allProductOptions, queryParams.color]);
+  // =================================================================
+  // ▲▲▲ FIN DE LA LÓGICA DE INICIALIZACIÓN ▲▲▲
+  // =================================================================
 
   useEffect(() => {
     if (currentProduct?.variants && selectedOptions.color && selectedOptions.size) {
@@ -118,12 +148,13 @@ export const ProductDetailPage: React.FC = () => {
   }, [selectedOptions, currentProduct]);
 
   useEffect(() => {
+    // Solo actualizar imagen si no es la inicialización
     if (galleryImages.length > 0) {
       if (!galleryImages.some(img => img.src === currentImage?.src)) {
         setCurrentImage(galleryImages[0]);
       }
     }
-  }, [galleryImages, currentImage]);
+  }, [galleryImages]);
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
@@ -173,34 +204,44 @@ export const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 py-12">
-      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+        
         <div className="md:sticky md:top-28 h-max">
-          <div className="flex flex-row-reverse md:flex-row gap-4">
-            <div className="flex-1">
-              <img
-                src={currentImage?.src}
-                alt={currentProduct.title}
-                className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
-              />
-            </div>
-            {/* ▼▼▼ CAMBIO 2: AÑADIMOS LAS CLASES DE SCROLLBAR ▼▼▼ */}
-            <div className="flex md:flex-col gap-2 overflow-y-auto max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-spanish-yellow scrollbar-track-slate-700">
+          <div className="flex flex-col md:flex-row gap-4">
+
+            <div className={`
+              flex flex-row md:flex-col gap-2
+              overflow-x-auto md:overflow-y-auto 
+              md:max-h-[500px] md:pr-2 
+              scrollbar-thin scrollbar-thumb-spanish-yellow scrollbar-track-slate-700
+              order-2 md:order-1
+            `}>
               {galleryImages.map((image) => (
                 <button
                   key={image.src}
                   onClick={() => setCurrentImage(image)}
-                  // ▼▼▼ CAMBIO 1: AJUSTE DE CLASES PARA EL BORDE ▼▼▼
-                  className={`w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200
+                  className={`
+                    w-16 h-16 flex-shrink-0
+                    md:w-20 md:h-20 
+                    rounded-lg overflow-hidden transition-all duration-200
                     ${
                       currentImage?.src === image.src
-                        ? 'border-4 border-spanish-yellow' // Borde más grueso y amarillo
-                        : 'border-2 border-slate-700 hover:border-spanish-yellow' // Borde normal
+                        ? 'border-4 border-spanish-yellow'
+                        : 'border-2 border-slate-700 hover:border-spanish-yellow'
                     }`
                   }
                 >
                   <img src={image.src} alt="thumbnail" className="w-full h-full object-cover" />
                 </button>
               ))}
+            </div>
+
+            <div className="flex-1 order-1 md:order-2">
+              <img
+                src={currentImage?.src}
+                alt={currentProduct.title}
+                className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
+              />
             </div>
           </div>
         </div>
@@ -215,7 +256,6 @@ export const ProductDetailPage: React.FC = () => {
               {selectedVariant ? formatPrice(selectedVariant.price / 100) : 'Selecciona una opción'}
             </span>
           </div>
-
           {availableOptions.colors && availableOptions.colors.length > 0 && (
             <div className="mb-6">
               <h3 className="text-sm font-bold text-slate-300 uppercase mb-2">
@@ -245,7 +285,6 @@ export const ProductDetailPage: React.FC = () => {
               </div>
             </div>
           )}
-
           {availableOptions.sizes && availableOptions.sizes.length > 0 && (
             <div className="mb-6">
               <h3 className="text-sm font-bold text-slate-300 uppercase mb-2">Talla</h3>
@@ -266,7 +305,6 @@ export const ProductDetailPage: React.FC = () => {
               </div>
             </div>
           )}
-
           <div className="mb-8">
             <h3 className="text-sm font-patriot font-bold text-slate-300 uppercase mb-2 tracking-wider">Cantidad</h3>
             <div className="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-lg p-1 max-w-[140px]">
@@ -279,7 +317,6 @@ export const ProductDetailPage: React.FC = () => {
               </button>
             </div>
           </div>
-
           <button
             onClick={handleAddToCart}
             disabled={!selectedVariant}
@@ -288,7 +325,6 @@ export const ProductDetailPage: React.FC = () => {
             <ShoppingCart size={20} />
             {selectedVariant ? 'Añadir al carrito' : 'Selecciona Talla y Color'}
           </button>
-          
           <div className="mt-8">
             <div className="text-lg text-slate-300 mb-6 prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: currentProduct.description }} />
             {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
