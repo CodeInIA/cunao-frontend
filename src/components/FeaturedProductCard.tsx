@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ShoppingCart, Star, Crown, Zap } from 'lucide-react';
+import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import type { Product } from '../types';
 
 interface FeaturedProductCardProps {
@@ -15,6 +16,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const { navigateTo } = useSmartNavigation();
 
   // Categorías (busca 'destacado', 'popular', 'clásico' sin sensibilidad a mayúsculas)
   const tagsLower = (product.tags || []).map(t => String(t).toLowerCase());
@@ -76,15 +78,19 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
     onAddToCart(product);
   };
 
+  const handleCardClick = () => {
+    navigateTo(`/producto/${product.id}`);
+  };
+
   return (
     <article
       className={`
         relative group w-full
-        rounded-xl overflow-visible transform transition-all duration-300
-        ${isHovered ? 'scale-[1.02] z-10' : 'z-0'}
+        rounded-xl overflow-visible cursor-pointer
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       {/* Contenedor con borde + sombra que se adapta al contenido */}
       <div
@@ -108,7 +114,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
         )}
 
         {/* IMAGEN: contenedor que se adapta a las proporciones de la imagen */}
-        <div className="w-full bg-slate-900 flex items-center justify-center relative">
+        <div className="w-full bg-slate-900 flex items-center justify-center relative overflow-hidden">
           {/* skeleton / placeholder mientras carga */}
           {!imgLoaded && (
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900 min-h-[200px]">
@@ -122,7 +128,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
               alt={product.title || 'Producto'}
               loading="lazy"
               onLoad={() => setImgLoaded(true)}
-              className={`w-full h-auto object-cover transition-transform duration-400 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`w-full h-auto object-cover transition-transform duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'} ${isHovered ? 'scale-105' : 'scale-100'}`}
               style={{ display: 'block' }}
             />
           ) : (
@@ -133,19 +139,6 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
 
           {/* overlay simple para hover */}
           <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isHovered ? 'bg-black/10' : 'bg-transparent'}`} />
-          {/* floating cart button (visible on hover and keyboard focus) */}
-          <button
-            onClick={handleAddClick}
-            aria-label={`Añadir ${product.title} al carrito`}
-            className={`
-              absolute bottom-3 right-3 p-3 rounded-full text-white shadow-lg
-              bg-spanish-red hover:bg-spanish-yellow focus:outline-none focus:ring-2 focus:ring-spanish-yellow
-              transition-all duration-200 transform
-              ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
-            `}
-          >
-            <ShoppingCart size={18} />
-          </button>
         </div>
 
         {/* Contenido textual - con padding compacto */}
@@ -164,7 +157,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
 
           {/* Título */}
           <h3
-            className="text-lg font-semibold text-slate-100 leading-tight mb-3 line-clamp-2"
+            className={`text-lg font-semibold text-slate-100 leading-tight mb-3 line-clamp-2 transition-all duration-200 ${isHovered ? 'underline decoration-white decoration-2 underline-offset-2' : ''}`}
             title={product.title}
           >
             {product.title}
@@ -198,9 +191,10 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
               onClick={handleAddClick}
               aria-label={`Añadir ${product.title} al carrito`}
               className={`
-                w-full py-3 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-spanish-yellow
+                w-full py-3 rounded-lg font-semibold transition-all duration-200 focus:outline-none outline-none
                 ${isDestacado ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400' : isPopular ? 'bg-spanish-red text-white hover:bg-red-600' : 'bg-slate-700 text-white hover:bg-slate-600'}
               `}
+              style={{ outline: 'none' }}
             >
               Añadir al Carrito
             </button>

@@ -17,13 +17,19 @@ export const HomePage: React.FC = () => {
   }, [fetchFeaturedProducts]);
 
   const handleAddToCart = (product: Product) => {
+    // Obtener el precio real del producto
+    const enabledVariants = (product.variants || []).filter(v => v?.is_enabled);
+    const minPrice = enabledVariants.length > 0 
+      ? Math.min(...enabledVariants.map(v => v.price).filter(p => typeof p === 'number'))
+      : 1999; // fallback en centavos
+    
     // Usar la primera variante disponible o crear una por defecto
     const cartItem = {
       productId: product.id,
       variantId: 1, // Usaríamos la primera variante disponible
       quantity: 1,
       title: product.title,
-      price: 19.99, // Precio por defecto
+      price: minPrice / 100, // Convertir de centavos a euros
       image: product.images[0]?.src || '',
       size: 'M', // Talla por defecto
       color: 'Negro' // Color por defecto

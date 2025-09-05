@@ -17,12 +17,18 @@ export const FeaturedPage: React.FC = () => {
   }, [fetchFeaturedProducts]);
 
   const handleAddToCart = (product: Product) => {
+    // Obtener el precio real del producto
+    const enabledVariants = (product.variants || []).filter(v => v?.is_enabled);
+    const minPrice = enabledVariants.length > 0 
+      ? Math.min(...enabledVariants.map(v => v.price).filter(p => typeof p === 'number'))
+      : 1999; // fallback en centavos
+    
     const cartItem = {
       productId: product.id,
       variantId: 1,
       quantity: 1,
       title: product.title,
-      price: 19.99,
+      price: minPrice / 100, // Convertir de centavos a euros
       image: product.images[0]?.src || '',
       size: 'M',
       color: 'Negro'
