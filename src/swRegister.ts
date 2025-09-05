@@ -29,6 +29,8 @@ export function registerServiceWorker() {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
+                // Solo mostrar toast si hay un SW controlando la página
+                // (esto indica que es una actualización, no primera instalación)
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   showUpdateToast();
                 }
@@ -42,7 +44,10 @@ export function registerServiceWorker() {
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data?.type === 'SW_UPDATED') {
           console.log('[SW] Nueva versión disponible:', event.data.version);
-          showUpdateToast();
+          // Solo mostrar si hay un service worker controlando (no es primera visita)
+          if (navigator.serviceWorker.controller) {
+            showUpdateToast();
+          }
         }
       });
     });

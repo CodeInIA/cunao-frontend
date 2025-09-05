@@ -1,5 +1,5 @@
 /* Enhanced service worker for Cuñadismo Ilustrado PWA */
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v1';
 const STATIC_CACHE = `cunao-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cunao-runtime-${CACHE_VERSION}`;
 const API_CACHE = `cunao-api-${CACHE_VERSION}`;
@@ -51,11 +51,15 @@ self.addEventListener('activate', (event) => {
       self.clients.claim()
     ]).then(() => {
       console.log('[SW] Activated and ready');
-      // Notificar a clientes sobre nueva versión
+      // Solo notificar si hay clientes existentes (actualización)
+      // En primera instalación no hay clientes, así que no notificamos
       self.clients.matchAll().then(clients => {
-        clients.forEach(client => {
-          client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
-        });
+        if (clients.length > 0) {
+          // Solo notificar si es una actualización real
+          clients.forEach(client => {
+            client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
+          });
+        }
       });
     })
   );
