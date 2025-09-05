@@ -312,7 +312,7 @@ export const Footer: React.FC = () => {
                     value={email}
                     onChange={handleEmailChange}
                     placeholder="tu@email.com"
-                    className={`flex-1 px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-l-md focus:outline-none focus:ring-2 transition-colors ${
+                    className={`flex-1 px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-l-md focus:outline-none transition-colors ${
                       emailError 
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
                         : 'border-slate-600 focus:ring-spanish-yellow focus:border-spanish-yellow'
