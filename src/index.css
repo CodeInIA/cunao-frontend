@@ -51,6 +51,26 @@ html {
   overflow: hidden;
 }
 
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Layout de masonry para tarjetas de diferentes alturas */
+.masonry-grid {
+  column-gap: 1.5rem;
+}
+
+.masonry-item {
+  margin-bottom: 1.5rem;
+  break-inside: avoid;
+  display: inline-block;
+  width: 100%;
+}
+
 /* Utility classes para efectos de sombra */
 .text-shadow {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);

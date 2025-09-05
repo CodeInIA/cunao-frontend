@@ -79,21 +79,20 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
   return (
     <article
       className={`
-        relative group w-full max-w-[280px] min-w-[220px]
+        relative group w-full
         rounded-xl overflow-visible transform transition-all duration-300
         ${isHovered ? 'scale-[1.02] z-10' : 'z-0'}
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Contenedor con borde + sombra para dar consistencia */}
+      {/* Contenedor con borde + sombra que se adapta al contenido */}
       <div
         className={`
-          h-full flex flex-col bg-gradient-to-br from-slate-900 to-slate-800
+          flex flex-col bg-gradient-to-br from-slate-900 to-slate-800
           rounded-xl overflow-hidden shadow-lg transition-shadow duration-300
           ${visual.ring}
         `}
-        style={{ minHeight: 430 }} /* Mantener altura consistente en grid */
       >
         {/* Badge */}
         {visual.label && (
@@ -108,11 +107,11 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
           </div>
         )}
 
-        {/* IMAGEN: contenedor fijo responsive para que todas las tarjetas alineen */}
-        <div className="w-full h-56 md:h-64 lg:h-72 bg-slate-900 flex items-center justify-center relative">
+        {/* IMAGEN: contenedor que se adapta a las proporciones de la imagen */}
+        <div className="w-full bg-slate-900 flex items-center justify-center relative">
           {/* skeleton / placeholder mientras carga */}
           {!imgLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900 min-h-[200px]">
               <div className="w-20 h-24 rounded-md bg-slate-700 animate-pulse" />
             </div>
           )}
@@ -123,11 +122,11 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
               alt={product.title || 'Producto'}
               loading="lazy"
               onLoad={() => setImgLoaded(true)}
-              className={`max-h-full w-auto object-contain transition-transform duration-400 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`w-full h-auto object-cover transition-transform duration-400 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
               style={{ display: 'block' }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-700">
+            <div className="w-full h-48 flex items-center justify-center bg-slate-700">
               <span className="text-5xl">👕</span>
             </div>
           )}
@@ -149,38 +148,38 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
           </button>
         </div>
 
-        {/* Contenido textual */}
-        <div className="p-4 flex-1 flex flex-col justify-between">
-          <div>
-            {/* rating */}
-            {(isDestacado || isPopular || isClasico) && (
-              <div className="flex items-center gap-2 mb-2" aria-hidden>
-                <div className="flex items-center -space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className={`${visual.starColor} fill-current`} />
-                  ))}
-                </div>
-                <span className={`${visual.starColor} text-sm font-semibold`}>{`(4.9)`}</span>
+        {/* Contenido textual - con padding compacto */}
+        <div className="p-4 flex flex-col">
+          {/* rating */}
+          {(isDestacado || isPopular || isClasico) && (
+            <div className="flex items-center gap-2 mb-3" aria-hidden>
+              <div className="flex items-center space-x-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={14} className={`${visual.starColor} fill-current`} />
+                ))}
               </div>
-            )}
+              <span className={`${visual.starColor} text-sm font-semibold`}>{`(4.9)`}</span>
+            </div>
+          )}
 
-            {/* Título */}
-            <h3
-              className="text-lg font-semibold text-slate-100 leading-tight mb-2 line-clamp-3"
-              title={product.title}
-              style={{ minHeight: 56 }}
-            >
-              {product.title}
-            </h3>
+          {/* Título */}
+          <h3
+            className="text-lg font-semibold text-slate-100 leading-tight mb-3 line-clamp-2"
+            title={product.title}
+          >
+            {product.title}
+          </h3>
 
+          {/* Precio y CTA en una sección compacta */}
+          <div className="space-y-3">
             {/* Precio */}
-            <div className="flex items-end justify-between gap-4">
+            <div className="flex items-center justify-between">
               <div>
-                <div className={`text-lg font-bold ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : 'text-white'}`}>
+                <div className={`text-xl font-bold ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : 'text-white'}`}>
                   {hasPrice ? minPriceFormatted : 'Sin precio'}
                 </div>
                 {hasPrice && (
-                  <div className="text-xs text-slate-400 line-through mt-1">
+                  <div className="text-sm text-slate-400 line-through">
                     €{((parseFloat(minPriceFormatted.replace('€', '')) * 1.5)).toFixed(2)}
                   </div>
                 )}
@@ -188,16 +187,13 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
 
               {/* etiqueta pequeña */}
               {(isDestacado || isPopular || isClasico) && (
-                <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                <div className="text-xs font-semibold text-slate-300 flex items-center gap-1">
                   {visual.icon}
-                  <span className="opacity-90">{visual.label}</span>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* CTA */}
-          <div className="mt-4">
+            {/* CTA */}
             <button
               onClick={handleAddClick}
               aria-label={`Añadir ${product.title} al carrito`}

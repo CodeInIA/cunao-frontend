@@ -147,13 +147,13 @@ export const FeaturedPage: React.FC = () => {
           </div>
 
           {loadingState === 'loading' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
               {[...Array(6)].map((_, index) => (
                 <div key={index} className="relative">
-                  <div className="bg-slate-700 animate-pulse rounded-xl h-96">
+                  <div className="bg-slate-700 animate-pulse rounded-xl">
                     <div className="absolute -top-3 -right-3 w-12 h-6 bg-slate-600 rounded-full"></div>
-                    <div className="h-48 bg-slate-600 rounded-t-xl mb-4"></div>
-                    <div className="p-4 space-y-3">
+                    <div className={`bg-slate-600 rounded-t-xl mb-4 ${index % 3 === 0 ? 'h-64' : index % 3 === 1 ? 'h-56' : 'h-72'}`}></div>
+                    <div className="p-4 space-y-3 pb-6">
                       <div className="h-4 bg-slate-600 rounded w-3/4"></div>
                       <div className="h-4 bg-slate-600 rounded w-1/2"></div>
                       <div className="h-8 bg-slate-600 rounded"></div>
@@ -163,7 +163,7 @@ export const FeaturedPage: React.FC = () => {
               ))}
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max mb-16">
               {featuredProducts.slice(0, 6).map((product, index) => (
                 <FeaturedProductCard
                   key={product.id}
