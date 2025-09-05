@@ -13,12 +13,133 @@ export const ContactPage: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case 'name':
+        if (!value.trim()) return 'El nombre es obligatorio';
+        if (value.trim().length < 2) return 'El nombre debe tener al menos 2 caracteres';
+        if (value.trim().length > 50) return 'El nombre no puede tener más de 50 caracteres';
+        if (!/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s'-]+$/.test(value.trim())) {
+          return 'El nombre solo puede contener letras y espacios';
+        }
+        break;
+      
+      case 'email':
+        if (!value.trim()) return 'El email es obligatorio';
+        if (value.length > 100) return 'El email es demasiado largo';
+        
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        if (!emailRegex.test(value.trim())) {
+          return 'Por favor, introduce un email válido';
+        }
+
+        // Validar dominio real
+        const emailParts = value.trim().toLowerCase().split('@');
+        if (emailParts.length !== 2) return 'Formato de email inválido';
+        
+        const domain = emailParts[1];
+        
+        // Dominios bloqueados (temporales/desechables)
+        const blockedDomains = [
+          '10minutemail.com', '10minutemail.net', 'tempmail.org', 'guerrillamail.com',
+          'mailinator.com', 'maildrop.cc', 'yopmail.com', 'temp-mail.org',
+          'throwaway.email', 'getnada.com', 'mohmal.com', 'sharklasers.com',
+          'trashmail.com', 'armyspy.com', 'cuvox.de', 'dayrep.com', 'einrot.com',
+          'fleckens.hu', 'gustr.com', 'jourrapide.com', 'mailcat.biz', 'superrito.com',
+          'teleworm.us', 'rhyta.com', 'emltmp.com', 'tempr.email', 'dropmail.me',
+          'example.com', 'test.com', 'fake.com', 'invalid.com', 'localhost.com',
+          'noexiste.com', 'falso.com', 'prueba.com', 'testing.com'
+        ];
+
+        if (blockedDomains.includes(domain)) {
+          return 'No se permiten emails temporales. Usa tu email personal.';
+        }
+
+        // Verificar extensiones válidas
+        const validTlds = [
+          'com', 'org', 'net', 'edu', 'gov', 'mil', 'es', 'eu', 'uk', 'de', 'fr', 'it',
+          'pt', 'br', 'ar', 'mx', 'co', 'info', 'biz', 'name', 'pro', 'cat', 'tel',
+          'travel', 'jobs', 'mobi', 'asia', 'post', 'xxx', 'aero', 'coop', 'museum',
+          'int', 'arpa', 'io', 'ai', 'app', 'dev', 'tech', 'online', 'site', 'store',
+          'blog', 'news', 'media', 'email', 'cloud', 'digital', 'global', 'world'
+        ];
+
+        const domainParts = domain.split('.');
+        if (domainParts.length < 2) {
+          return 'El dominio del email debe ser válido';
+        }
+
+        const tld = domainParts[domainParts.length - 1];
+        if (!validTlds.includes(tld)) {
+          return 'Extensión de dominio no válida';
+        }
+
+        // Verificar que el dominio principal tenga al menos 2 caracteres
+        if (domainParts[domainParts.length - 2].length < 2) {
+          return 'El dominio del email debe ser válido';
+        }
+
+        // Verificar dominios conocidos populares para sugerir correcciones
+        const popularDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'live.com', 'msn.com'];
+        const suggestions: { [key: string]: string } = {
+          'gmai.com': 'gmail.com',
+          'gmial.com': 'gmail.com',
+          'gmail.co': 'gmail.com',
+          'yahoo.co': 'yahoo.com',
+          'hotmial.com': 'hotmail.com',
+          'hotmai.com': 'hotmail.com',
+          'outlok.com': 'outlook.com'
+        };
+
+        if (suggestions[domain]) {
+          return `¿Quisiste decir ${suggestions[domain]}?`;
+        }
+
+        break;
+      
+      case 'subject':
+        if (!value.trim()) return 'El asunto es obligatorio';
+        if (value.trim().length < 5) return 'El asunto debe tener al menos 5 caracteres';
+        if (value.trim().length > 100) return 'El asunto no puede tener más de 100 caracteres';
+        break;
+      
+      case 'message':
+        if (!value.trim()) return 'El mensaje es obligatorio';
+        if (value.trim().length < 10) return 'El mensaje debe tener al menos 10 caracteres';
+        if (value.trim().length > 1000) return 'El mensaje no puede tener más de 1000 caracteres';
+        
+        // Detectar múltiples enlaces (posible spam)
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urls = value.match(urlRegex) || [];
+        if (urls.length > 2) {
+          return 'El mensaje no puede contener más de 2 enlaces';
+        }
+        break;
+    }
+    return '';
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Actualizar el valor
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+
+    // Validar el campo en tiempo real
+    const error = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      [name]: error
     }));
   };
 
@@ -27,21 +148,41 @@ export const ContactPage: React.FC = () => {
     
     if (isSubmitting) return;
 
-    // Validación básica
-    if (!formData.name.trim() || !formData.email.trim() || !formData.subject.trim() || !formData.message.trim()) {
-      toast.error('Por favor, completa todos los campos');
+    // Validar todos los campos
+    const newErrors = {
+      name: validateField('name', formData.name),
+      email: validateField('email', formData.email),
+      subject: validateField('subject', formData.subject),
+      message: validateField('message', formData.message)
+    };
+
+    setErrors(newErrors);
+
+    // Verificar si hay errores
+    const hasErrors = Object.values(newErrors).some(error => error !== '');
+    if (hasErrors) {
+      toast.error('Por favor, corrige los errores en el formulario');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await apiService.sendContactForm(formData);
+      await apiService.sendContactForm({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim()
+      });
+      
       toast.success('¡Mensaje enviado! Te responderemos pronto, cuñao.', {
         duration: 4000,
         icon: '🇪🇸',
       });
+      
+      // Limpiar formulario y errores
       setFormData({ name: '', email: '', subject: '', message: '' });
+      setErrors({ name: '', email: '', subject: '', message: '' });
     } catch (error: any) {
       console.error('Error enviando mensaje:', error);
       toast.error(error.message || 'Error al enviar el mensaje. Inténtalo de nuevo.');
@@ -182,12 +323,16 @@ export const ContactPage: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     disabled={isSubmitting}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                    className={`w-full px-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 
                              focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
                              transition-all duration-200 ease-in-out
-                             disabled:opacity-50 disabled:cursor-not-allowed"
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             ${errors.name ? 'border-red-500' : 'border-slate-600'}`}
                     placeholder="Escribe tu nombre"
                   />
+                  {errors.name && (
+                    <p className="text-red-400 text-sm mt-1">{errors.name}</p>
+                  )}
                 </div>
 
                 <div>
@@ -202,12 +347,16 @@ export const ContactPage: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     disabled={isSubmitting}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                    className={`w-full px-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 
                              focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
                              transition-all duration-200 ease-in-out
-                             disabled:opacity-50 disabled:cursor-not-allowed"
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             ${errors.email ? 'border-red-500' : 'border-slate-600'}`}
                     placeholder="tu@email.com"
                   />
+                  {errors.email && (
+                    <p className="text-red-400 text-sm mt-1">{errors.email}</p>
+                  )}
                 </div>
 
                 <div>
@@ -222,17 +371,21 @@ export const ContactPage: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     disabled={isSubmitting}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                    className={`w-full px-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 
                              focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
                              transition-all duration-200 ease-in-out
-                             disabled:opacity-50 disabled:cursor-not-allowed"
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             ${errors.subject ? 'border-red-500' : 'border-slate-600'}`}
                     placeholder="¿De qué quieres hablarnos?"
                   />
+                  {errors.subject && (
+                    <p className="text-red-400 text-sm mt-1">{errors.subject}</p>
+                  )}
                 </div>
 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-slate-300 mb-2">
-                    Mensaje *
+                    Mensaje * <span className="text-slate-400 text-xs">({formData.message.length}/1000)</span>
                   </label>
                   <textarea
                     id="message"
@@ -242,12 +395,16 @@ export const ContactPage: React.FC = () => {
                     required
                     rows={6}
                     disabled={isSubmitting}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                    className={`w-full px-4 py-3 bg-slate-700 border rounded-lg text-white placeholder-slate-400 
                              focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
                              transition-all duration-200 ease-in-out resize-none
-                             disabled:opacity-50 disabled:cursor-not-allowed"
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             ${errors.message ? 'border-red-500' : 'border-slate-600'}`}
                     placeholder="Cuéntanos tu historia, sugerencia o la frase cuñao que se te haya ocurrido..."
                   />
+                  {errors.message && (
+                    <p className="text-red-400 text-sm mt-1">{errors.message}</p>
+                  )}
                 </div>
 
                 <button
