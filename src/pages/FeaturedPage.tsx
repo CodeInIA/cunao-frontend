@@ -271,26 +271,20 @@ export const FeaturedPage: React.FC = () => {
                   </div>
 
                   {/* Frase */}
-                  <blockquote className="text-xl font-semibold text-white mb-4 italic">
+                  <blockquote className="text-xl font-semibold text-white mb-6 italic text-center">
                     "{item.phrase}"
                   </blockquote>
 
-                  {/* Estadísticas */}
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                      <div className="text-spanish-yellow">
-                        <span className="text-2xl font-bold">{item.popularity}</span>
-                        <span className="block text-xs text-white font-medium drop-shadow-sm">Popularidad</span>
-                      </div>
-                      <div className="text-spanish-red">
-                        <span className="text-2xl font-bold">{item.sales}</span>
-                        <span className="block text-xs text-white font-medium drop-shadow-sm">Ventas</span>
-                      </div>
+                  {/* Estadísticas centradas */}
+                  <div className="flex justify-center items-center gap-8">
+                    <div className="text-spanish-yellow text-center">
+                      <span className="text-2xl font-bold">{item.popularity}</span>
+                      <span className="block text-xs text-white font-medium drop-shadow-sm">Popularidad</span>
                     </div>
-                    <button className="bg-spanish-red hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
-                      {/* Si tienes la ruta de la camiseta, reemplaza '/productos' por la ruta específica */}
-                      Ver Camiseta
-                    </button>
+                    <div className="text-spanish-red text-center">
+                      <span className="text-2xl font-bold">{item.sales}</span>
+                      <span className="block text-xs text-white font-medium drop-shadow-sm">Ventas</span>
+                    </div>
                   </div>
                 </div>
               </div>
