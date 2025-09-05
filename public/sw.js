@@ -1,5 +1,6 @@
 /* Enhanced service worker for Cuñadismo Ilustrado PWA */
 const CACHE_VERSION = 'v1';
+let IS_FIRST_INSTALL = false; // Flag para evitar notificación en primera instalación
 const STATIC_CACHE = `cunao-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cunao-runtime-${CACHE_VERSION}`;
 const API_CACHE = `cunao-api-${CACHE_VERSION}`;
@@ -20,7 +21,11 @@ const OFFLINE_FALLBACK_PAGES = [
 ];
 
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing version', CACHE_VERSION);
+  // Si no existe un service worker activo previo, es primera instalación
+  if (!self.registration.active) {
+    IS_FIRST_INSTALL = true;
+  }
+  console.log('[SW] Installing version', CACHE_VERSION, 'firstInstall:', IS_FIRST_INSTALL);
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => cache.addAll(PRECACHE_URLS))
@@ -50,17 +55,15 @@ self.addEventListener('activate', (event) => {
       // Tomar control inmediato
       self.clients.claim()
     ]).then(() => {
-      console.log('[SW] Activated and ready');
-      // Solo notificar si hay clientes existentes (actualización)
-      // En primera instalación no hay clientes, así que no notificamos
-      self.clients.matchAll().then(clients => {
-        if (clients.length > 0) {
-          // Solo notificar si es una actualización real
+      console.log('[SW] Activated and ready. firstInstall:', IS_FIRST_INSTALL);
+      if (!IS_FIRST_INSTALL) {
+        // Notificar a clientes sobre nueva versión SOLO en actualización
+        self.clients.matchAll().then(clients => {
           clients.forEach(client => {
             client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
           });
-        }
-      });
+        });
+      }
     })
   );
 });

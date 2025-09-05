@@ -27,10 +27,14 @@ export function registerServiceWorker() {
           // Escuchar nuevas versiones
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
+            const hasController = Boolean(navigator.serviceWorker.controller);
+            console.log('[SW] updatefound. hasController:', hasController);
+            if (!hasController) {
+              // Primera instalación: no mostrar toast
+              return;
+            }
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
-                // Solo mostrar toast si hay un SW controlando la página
-                // (esto indica que es una actualización, no primera instalación)
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   showUpdateToast();
                 }
@@ -43,12 +47,12 @@ export function registerServiceWorker() {
       // Escuchar mensajes del Service Worker
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data?.type === 'SW_UPDATED') {
-          console.log('[SW] Nueva versión disponible:', event.data.version);
-          // Solo mostrar si hay un service worker controlando (no es primera visita)
-          if (navigator.serviceWorker.controller) {
-            showUpdateToast();
+          const hasController = Boolean(navigator.serviceWorker.controller);
+            console.log('[SW] message SW_UPDATED. hasController:', hasController);
+            if (hasController) {
+              showUpdateToast();
+            }
           }
-        }
       });
     });
   }
