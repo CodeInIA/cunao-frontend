@@ -22,7 +22,7 @@ export default defineConfig({
   },
   // Eliminamos console/debugger en producción (aplica al transform de esbuild - dependencias no swc)
   esbuild: {
-    drop: ['console', 'debugger']
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
   },
   build: {
     outDir: 'dist',
@@ -56,9 +56,10 @@ export default defineConfig({
     // Proxy para redirigir las peticiones de API al backend
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'http://localhost:3001',
         changeOrigin: true,
-        secure: false
+        secure: process.env.NODE_ENV === 'production', // true en producción, false en desarrollo
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   },
