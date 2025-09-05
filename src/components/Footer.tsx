@@ -1,13 +1,193 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin } from 'lucide-react';
 import { SocialIcon } from 'react-social-icons';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import BrandLogo from './BrandLogo';
 import config from '../config';
+import { apiService } from '../services/api';
+import toast from 'react-hot-toast';
 
 export const Footer: React.FC = () => {
   const { navigateTo } = useSmartNavigation();
+  const [email, setEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
+  // Dominios temporales/desechables bloqueados
+  const blockedDomains = [
+    '10minutemail.com', 'guerrillamail.com', 'mailinator.com', 'tempmail.org',
+    'yopmail.com', 'temp-mail.org', 'throwaway.email', 'getnada.com',
+    'maildrop.cc', 'mailnesia.com', 'trashmail.com', '33mail.com',
+    'dispostable.com', 'fake-mail.ml', 'mohmal.com', 'emailfake.com'
+  ];
+
+  // Lista de dominios conocidos y confiables
+  const trustedDomains = [
+    // Gmail y Google
+    'gmail.com', 'googlemail.com', 'google.com',
+    // Microsoft/Outlook
+    'outlook.com', 'outlook.es', 'hotmail.com', 'hotmail.es', 'live.com', 'live.es', 'msn.com',
+    // Yahoo
+    'yahoo.com', 'yahoo.es', 'yahoo.fr', 'yahoo.it', 'yahoo.de', 'yahoo.co.uk',
+    // Dominios españoles
+    'telefonica.es', 'movistar.es', 'orange.es', 'vodafone.es', 'jazztel.es',
+    // Otros proveedores conocidos
+    'icloud.com', 'me.com', 'mac.com',
+    'aol.com', 'protonmail.com', 'proton.me', 'tutanota.com',
+    // Dominios educativos y gubernamentales españoles
+    'uma.es', 'ucm.es', 'uam.es', 'upm.es', 'uc3m.es', 'urjc.es', 'uned.es',
+    'gov.es', 'junta-andalucia.es', 'madrid.org',
+    // Dominios empresariales comunes
+    'empresa.com', 'company.com', 'corp.com', 'group.com',
+    // Otros dominios internacionales comunes
+    'mail.com', 'gmx.com', 'gmx.de', 'web.de', 'freenet.de',
+    'libero.it', 'tin.it', 'alice.it',
+    'free.fr', 'orange.fr', 'wanadoo.fr', 'laposte.net',
+    'btinternet.com', 'sky.com', 'virgin.net', 'tiscali.co.uk'
+  ];
+
+  // Validar dominio de email
+  const validateEmailDomain = (email: string): { isValid: boolean; suggestion?: string } => {
+    const emailParts = email.toLowerCase().split('@');
+    
+    // Debe tener exactamente un @
+    if (emailParts.length !== 2) {
+      return { isValid: false };
+    }
+    
+    const [localPart, emailDomain] = emailParts;
+    
+    // Validar parte local (antes del @)
+    if (!localPart || localPart.length < 1 || localPart.length > 64) {
+      return { isValid: false };
+    }
+    
+    // Validar dominio (después del @)
+    if (!emailDomain || emailDomain.length < 3 || emailDomain.length > 255) {
+      return { isValid: false };
+    }
+    
+    // El dominio debe tener al menos un punto y una extensión válida
+    const domainParts = emailDomain.split('.');
+    if (domainParts.length < 2) {
+      return { isValid: false };
+    }
+    
+    // La extensión debe tener al menos 2 caracteres y no más de 6
+    const extension = domainParts[domainParts.length - 1];
+    if (extension.length < 2 || extension.length > 6) {
+      return { isValid: false };
+    }
+
+    // Validar que la extensión sea alfabética
+    if (!/^[a-zA-Z]+$/.test(extension)) {
+      return { isValid: false };
+    }
+
+    // Validar que cada parte del dominio tenga contenido válido
+    for (const part of domainParts) {
+      if (!part || part.length < 1 || !/^[a-zA-Z0-9-]+$/.test(part)) {
+        return { isValid: false };
+      }
+    }
+    
+    // Verificar si está en la lista de dominios bloqueados
+    if (blockedDomains.includes(emailDomain)) {
+      return { isValid: false };
+    }
+
+    // Verificar si el dominio está en la lista de dominios confiables
+    if (!trustedDomains.includes(emailDomain)) {
+      // Buscar sugerencias para dominios comunes mal escritos
+      const commonDomains: Record<string, string> = {
+        'gmial.com': 'gmail.com',
+        'gmai.com': 'gmail.com',
+        'gmeil.com': 'gmail.com',
+        'hotmial.com': 'hotmail.com',
+        'hotmeil.com': 'hotmail.com',
+        'yahooo.com': 'yahoo.com',
+        'yaho.com': 'yahoo.com',
+        'outlok.com': 'outlook.com',
+        'outlock.com': 'outlook.com',
+        'email.xom': 'gmail.com'
+      };
+      
+      if (commonDomains[emailDomain]) {
+        return { isValid: false, suggestion: email.replace(emailDomain, commonDomains[emailDomain]) };
+      }
+      
+      // Si no está en dominios confiables y no hay sugerencia, rechazar
+      return { isValid: false };
+    }
+    
+    return { isValid: true };
+  };
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Limpiar errores previos
+    setEmailError('');
+    
+    if (!email) {
+      setEmailError('Por favor, introduce tu email');
+      toast.error('Por favor, introduce tu email');
+      return;
+    }
+
+    // Validación básica de email - regex más estricto
+    const emailRegex = /^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
+    if (!emailRegex.test(email.trim()) || email.length > 100) {
+      setEmailError('El formato del email no es válido');
+      toast.error('El formato del email no es válido');
+      return;
+    }
+
+    // Validación adicional: no puede empezar con @ y debe tener contenido antes del @
+    const emailParts = email.trim().split('@');
+    if (emailParts.length !== 2 || emailParts[0].length < 1 || emailParts[1].length < 3) {
+      setEmailError('El formato del email no es válido');
+      toast.error('El formato del email no es válido');
+      return;
+    }
+
+    // Validar dominio
+    const domainValidation = validateEmailDomain(email.trim());
+    if (!domainValidation.isValid) {
+      if (domainValidation.suggestion) {
+        setEmailError(`¿Quisiste decir ${domainValidation.suggestion}?`);
+        toast.error(`¿Quisiste decir ${domainValidation.suggestion}?`);
+      } else {
+        setEmailError('Por favor, usa un proveedor de email conocido (Gmail, Outlook, Yahoo, etc.)');
+        toast.error('Por favor, usa un proveedor de email conocido (Gmail, Outlook, Yahoo, etc.)');
+      }
+      return;
+    }
+
+    setIsSubscribing(true);
+    
+    try {
+      await apiService.subscribeToNewsletter(email);
+      toast.success('¡Te has suscrito correctamente al newsletter!');
+      setEmail('');
+      setEmailError('');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Error al suscribirse';
+      setEmailError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  // Limpiar errores cuando el usuario empiece a escribir
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (emailError) {
+      setEmailError('');
+    }
+  };
 
   return (
     <footer className="footer-dark text-white">
@@ -125,16 +305,32 @@ export const Footer: React.FC = () => {
               <p className="text-sm text-slate-400 mb-3">
                 Recibe las últimas frases cuñao
               </p>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="tu@email.com"
-                  className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-l-md focus:outline-none focus:ring-2 focus:ring-spanish-yellow focus:border-spanish-yellow"
-                />
-                <button className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-r-md">
-                  Suscribirse
-                </button>
-              </div>
+              <form onSubmit={handleNewsletterSubmit} className="space-y-2">
+                <div className="flex">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="tu@email.com"
+                    className={`flex-1 px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-l-md focus:outline-none focus:ring-2 transition-colors ${
+                      emailError 
+                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-slate-600 focus:ring-spanish-yellow focus:border-spanish-yellow'
+                    }`}
+                    disabled={isSubscribing}
+                  />
+                  <button 
+                    type="submit"
+                    disabled={isSubscribing}
+                    className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-r-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubscribing ? 'Suscribiendo...' : 'Suscribirse'}
+                  </button>
+                </div>
+                {emailError && (
+                  <p className="text-red-400 text-xs mt-1">{emailError}</p>
+                )}
+              </form>
             </div>
           </div>
         </div>
