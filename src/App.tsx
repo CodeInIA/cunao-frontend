@@ -1,23 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Header } from './components/Header';
 import { CartSidebar } from './components/CartSidebar';
 import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/Error';
-import { HomePage } from './pages/HomePage';
-import { ProductsPage } from './pages/ProductsPage';
-import { FeaturedPage } from './pages/FeaturedPage';
-import { AboutPage } from './pages/AboutPage';
-import { ContactPage } from './pages/ContactPage';
-import { PrivacyPage } from './pages/PrivacyPage';
-import { TermsPage } from './pages/TermsPage';
-import { ShippingPage } from './pages/ShippingPage';
-import { NotFoundPage } from './pages/NotFoundPage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import { CheckoutPage } from './pages/CheckoutPage'; // Importar
-import { SuccessPage } from './pages/SuccessPage';   // Importar
-import { CancelPage } from './pages/CancelPage';     // Importar
+import { LoadingSpinner } from './components/Loading';
+
+// =============================================================
+// Lazy-loaded pages (code splitting por ruta)
+// =============================================================
+const HomePage = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
+const ProductsPage = lazy(() => import('./pages/ProductsPage').then(m => ({ default: m.ProductsPage })));
+const FeaturedPage = lazy(() => import('./pages/FeaturedPage').then(m => ({ default: m.FeaturedPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
+const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const ShippingPage = lazy(() => import('./pages/ShippingPage').then(m => ({ default: m.ShippingPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
+const SuccessPage = lazy(() => import('./pages/SuccessPage').then(m => ({ default: m.SuccessPage })));
+const CancelPage = lazy(() => import('./pages/CancelPage').then(m => ({ default: m.CancelPage })));
 import './App.css';
 
 function App() {
@@ -58,21 +63,27 @@ useEffect(() => {
         <div className="min-h-screen bg-slate-900 flex flex-col">
           <Header />
           <main className="flex-1">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/productos" element={<ProductsPage />} />
-              <Route path="/producto/:id" element={<ProductDetailPage />} />
-              <Route path="/destacados" element={<FeaturedPage />} />
-              <Route path="/sobre-nosotros" element={<AboutPage />} />
-              <Route path="/contacto" element={<ContactPage />} />
-              <Route path="/privacidad" element={<PrivacyPage />} />
-              <Route path="/terminos" element={<TermsPage />} />
-              <Route path="/envios" element={<ShippingPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/success" element={<SuccessPage />} />
-              <Route path="/cancel" element={<CancelPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="py-20 flex justify-center items-center">
+                <LoadingSpinner size="lg" />
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/productos" element={<ProductsPage />} />
+                <Route path="/producto/:id" element={<ProductDetailPage />} />
+                <Route path="/destacados" element={<FeaturedPage />} />
+                <Route path="/sobre-nosotros" element={<AboutPage />} />
+                <Route path="/contacto" element={<ContactPage />} />
+                <Route path="/privacidad" element={<PrivacyPage />} />
+                <Route path="/terminos" element={<TermsPage />} />
+                <Route path="/envios" element={<ShippingPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/success" element={<SuccessPage />} />
+                <Route path="/cancel" element={<CancelPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
           </main>
           <Footer />
           <CartSidebar />
