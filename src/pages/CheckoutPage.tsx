@@ -23,6 +23,7 @@ export const CheckoutPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [shippingRegion, setShippingRegion] = useState<ShippingRegion>('');
   const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const [emailMarketing, setEmailMarketing] = useState(true); // Activado por defecto
 
   const subtotal = getTotalPrice();
   const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold;
@@ -64,7 +65,7 @@ export const CheckoutPage: React.FC = () => {
     toast.loading('Redirigiendo a la pasarela de pago...');
 
     try {
-      const sessionData = await apiService.createCheckoutSession(items, shippingRegion);
+      const sessionData = await apiService.createCheckoutSession(items, shippingRegion, emailMarketing);
       if (sessionData.checkout_url) {
         window.location.href = sessionData.checkout_url;
       } else {
@@ -201,6 +202,60 @@ export const CheckoutPage: React.FC = () => {
                     : formatPrice(total))}
               </span>
             </div>
+          </div>
+
+          {/* Checkbox de email marketing */}
+          <div className="mb-6 p-5 bg-gradient-to-r from-slate-700 to-slate-600 rounded-xl border border-slate-500 shadow-lg">
+            <label className="flex items-start gap-4 cursor-pointer">
+              <div className="relative mt-0.5">
+                <input
+                  type="checkbox"
+                  checked={emailMarketing}
+                  onChange={(e) => setEmailMarketing(e.target.checked)}
+                  className="sr-only"
+                />
+                <div className={`
+                  w-6 h-6 rounded-lg border-2 transition-all duration-300 ease-in-out
+                  ${emailMarketing 
+                    ? 'bg-gradient-to-br from-spanish-yellow to-yellow-400 border-spanish-yellow shadow-lg shadow-yellow-400/30' 
+                    : 'bg-slate-800 border-slate-400'
+                  }
+                  relative overflow-hidden
+                `}>
+                  {emailMarketing && (
+                    <Check className="absolute inset-0 w-4 h-4 text-slate-900 m-auto animate-in zoom-in-50 duration-200" />
+                  )}
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-base font-semibold text-white">
+                    Acepto recibir ofertas y promociones exclusivas por email
+                  </span>
+                  <div className="px-2 py-0.5 bg-spanish-yellow/20 text-spanish-yellow text-xs font-medium rounded-full border border-spanish-yellow/30">
+                    Recomendado
+                  </div>
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  Te enviaremos descuentos, nuevas camisetas cuñao y ofertas especiales. 
+                  Puedes cancelar tu suscripción en cualquier momento.
+                </p>
+                <div className="flex items-center gap-4 mt-3 text-xs text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    Sin spam
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                    Cancelación fácil
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                    Ofertas exclusivas
+                  </span>
+                </div>
+              </div>
+            </label>
           </div>
 
           <button onClick={handleProceedToPayment} disabled={isLoading || !shippingRegion || (!isFreeShipping && shippingCost === null)} className="w-full py-4 bg-spanish-yellow text-slate-900 font-patriot font-bold text-lg rounded-lg shadow hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">

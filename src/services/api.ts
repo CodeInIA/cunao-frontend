@@ -71,8 +71,12 @@ export const apiService = {
   },
 
   // Crear sesión de checkout de Stripe
-  async createCheckoutSession(items: CartItem[], shippingRegion: string): Promise<CheckoutSession> {
-    const response = await api.post<ApiResponse<CheckoutSession>>('/orders/checkout-session', { items, shippingRegion });
+  async createCheckoutSession(items: CartItem[], shippingRegion: string, emailMarketing?: boolean): Promise<CheckoutSession> {
+    const response = await api.post<ApiResponse<CheckoutSession>>('/orders/checkout-session', { 
+      items, 
+      shippingRegion,
+      emailMarketing
+    });
     
     if (!response.data.success || !response.data.data) {
       throw new Error(response.data.error || 'Error al crear la sesión de checkout');
@@ -119,6 +123,17 @@ export const apiService = {
     
     if (!response.data.success || !response.data.data) {
       throw new Error(response.data.error || 'Error al enviar el mensaje');
+    }
+    
+    return response.data.data;
+  },
+
+  // Newsletter
+  async subscribeToNewsletter(email: string): Promise<{ message: string }> {
+    const response = await api.post<ApiResponse<{ message: string }>>('/newsletter/subscribe', { email });
+    
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.error || 'Error al suscribirse a la newsletter');
     }
     
     return response.data.data;
