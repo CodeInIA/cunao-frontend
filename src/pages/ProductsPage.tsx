@@ -75,7 +75,7 @@ export const ProductsPage: React.FC = () => {
                   placeholder="Buscar frases cuñao..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-spanish-red focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-700/80 border border-slate-600 text-white placeholder-slate-400 rounded-lg transition-colors duration-200 focus:outline-none focus:border-spanish-yellow focus:placeholder-slate-300"
                 />
               </div>
             </form>

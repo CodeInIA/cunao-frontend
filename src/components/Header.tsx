@@ -60,15 +60,17 @@ export const Header: React.FC = () => {
                   navigateTo(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
                   setSearchQuery('');
                 }
-              }} className="relative hidden md:block">
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-48 pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-spanish-red focus:border-transparent"
-                />
-                <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+              }} className="hidden md:flex w-80 xl:w-96 justify-end">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Buscar..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-48 md:w-56 pl-10 pr-4 py-2 bg-slate-700/80 border border-slate-600 text-white placeholder-slate-400 rounded-lg transition-all duration-300 ease-out focus:outline-none focus:border-spanish-yellow focus:w-80 xl:focus:w-96 focus:placeholder-slate-300"
+                  />
+                  <Search size={20} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                </div>
               </form>
             )}
             {/* Carrito */}
