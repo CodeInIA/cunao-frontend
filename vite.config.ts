@@ -52,6 +52,14 @@ export default defineConfig({
     // Configuración para evitar algunos warnings de extensiones
     hmr: {
       overlay: true
+    },
+    // Proxy para redirigir las peticiones de API al backend
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false
+      }
     }
   },
   preview: {

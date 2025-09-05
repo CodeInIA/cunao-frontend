@@ -23,6 +23,7 @@ const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage').then(m 
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
 const SuccessPage = lazy(() => import('./pages/SuccessPage').then(m => ({ default: m.SuccessPage })));
 const CancelPage = lazy(() => import('./pages/CancelPage').then(m => ({ default: m.CancelPage })));
+const NewsletterPreferencesPage = lazy(() => import('./pages/NewsletterPreferencesPage').then(m => ({ default: m.NewsletterPreferencesPage })));
 import './App.css';
 
 function App() {
@@ -81,6 +82,7 @@ useEffect(() => {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/success" element={<SuccessPage />} />
                 <Route path="/cancel" element={<CancelPage />} />
+                <Route path="/newsletter/preferences" element={<NewsletterPreferencesPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
