@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, CheckCircle, XCircle, Save, Shield, AlertTriangle } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { LoadingSpinner } from '../components/Loading';
+import { apiService } from '../services/api';
 import toast from 'react-hot-toast';
 
 interface NewsletterPreferences {
@@ -9,21 +10,6 @@ interface NewsletterPreferences {
   newsletter: boolean;
   promotions: boolean;
   newProducts: boolean;
-}
-
-interface TokenValidationResponse {
-  success: boolean;
-  data?: {
-    valid: boolean;
-    email?: string;
-    preferences?: {
-      newsletter: boolean;
-      promotions: boolean;
-      newProducts: boolean;
-    };
-    isCustomer?: boolean;
-  };
-  error?: string;
 }
 
 export const NewsletterPreferencesPage: React.FC = () => {
@@ -62,40 +48,32 @@ export const NewsletterPreferencesPage: React.FC = () => {
     try {
       console.log('🔍 Validating token:', tokenToValidate.substring(0, 20) + '...');
       
-      const response = await fetch('/api/newsletter/validate-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: tokenToValidate }),
-      });
-
-      const data: TokenValidationResponse = await response.json();
+      const data = await apiService.validateNewsletterToken(tokenToValidate);
       
       console.log('🔍 Response from backend:', data);
       
-      if (response.ok && data.success && data.data?.valid && data.data?.email) {
+      if (data.valid && data.email) {
         setIsTokenValid(true);
-        setIsCustomer(data.data.isCustomer ?? false);
+        setIsCustomer(data.isCustomer ?? false);
         
         // Configurar preferencias con datos del backend
         setPreferences({
-          email: data.data.email,
-          newsletter: data.data.preferences?.newsletter ?? true,
-          promotions: data.data.preferences?.promotions ?? false,
-          newProducts: data.data.preferences?.newProducts ?? false
+          email: data.email,
+          newsletter: data.preferences?.newsletter ?? true,
+          promotions: data.preferences?.promotions ?? false,
+          newProducts: data.preferences?.newProducts ?? false
         });
         
         setTokenError('');
         console.log('✅ Token validado correctamente');
       } else {
-        console.log('❌ Token inválido:', data.error);
-        setTokenError(data.error || 'Token inválido o expirado');
+        console.log('❌ Token inválido');
+        setTokenError('Token inválido o expirado');
         setIsTokenValid(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error validating token:', error);
-      setTokenError('Error al validar el token. Por favor, inténtalo de nuevo más tarde.');
+      setTokenError(error.message || 'Error al validar el token. Por favor, inténtalo de nuevo más tarde.');
       setIsTokenValid(false);
     } finally {
       setIsValidatingToken(false);
@@ -115,25 +93,11 @@ export const NewsletterPreferencesPage: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/newsletter/update-preferences', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          token: token,
-          preferences: preferences 
-        }),
-      });
-
-      if (response.ok) {
-        toast.success('¡Preferencias guardadas correctamente!');
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al guardar preferencias');
-      }
-    } catch (error) {
-      toast.error('Error al guardar las preferencias');
+      const result = await apiService.updateNewsletterPreferences(token, preferences);
+      toast.success('¡Preferencias guardadas correctamente!');
+      console.log('✅ Preferencias actualizadas:', result);
+    } catch (error: any) {
+      toast.error(error.message || 'Error al guardar las preferencias');
       console.error('Error saving preferences:', error);
     } finally {
       setLoading(false);

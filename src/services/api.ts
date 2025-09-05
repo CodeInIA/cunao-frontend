@@ -137,6 +137,54 @@ export const apiService = {
     }
     
     return response.data.data;
+  },
+
+  // Validar token de newsletter
+  async validateNewsletterToken(token: string): Promise<{
+    valid: boolean;
+    email?: string;
+    preferences?: {
+      newsletter: boolean;
+      promotions: boolean;
+      newProducts: boolean;
+    };
+    isCustomer?: boolean;
+  }> {
+    const response = await api.post<ApiResponse<{
+      valid: boolean;
+      email?: string;
+      preferences?: {
+        newsletter: boolean;
+        promotions: boolean;
+        newProducts: boolean;
+      };
+      isCustomer?: boolean;
+    }>>('/newsletter/validate-token', { token });
+    
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.error || 'Token inválido o expirado');
+    }
+    
+    return response.data.data;
+  },
+
+  // Actualizar preferencias de newsletter
+  async updateNewsletterPreferences(token: string, preferences: {
+    email: string;
+    newsletter: boolean;
+    promotions: boolean;
+    newProducts: boolean;
+  }): Promise<{ message: string; preferences: any }> {
+    const response = await api.put<ApiResponse<{ message: string; preferences: any }>>('/newsletter/update-preferences', {
+      token,
+      preferences
+    });
+    
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.error || 'Error actualizando preferencias');
+    }
+    
+    return response.data.data;
   }
 };
 
