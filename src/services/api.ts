@@ -106,6 +106,22 @@ export const apiService = {
       address
     });
     return response.data.data || [];
+  },
+
+  // Contacto
+  async sendContactForm(formData: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }): Promise<{ message: string }> {
+    const response = await api.post<ApiResponse<{ message: string }>>('/contact/send', formData);
+    
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.error || 'Error al enviar el mensaje');
+    }
+    
+    return response.data.data;
   }
 };
 

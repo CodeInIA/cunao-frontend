@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageCircle, Send, Clock, CheckCircle } from 'lucide-react';
 import config from '../config';
 import toast from 'react-hot-toast';
+import { apiService } from '../services/api';
 
 export const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ export const ContactPage: React.FC = () => {
     message: ''
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -19,11 +22,32 @@ export const ContactPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí iría la lógica para enviar el formulario
-    toast.success('¡Mensaje enviado! Te responderemos pronto, cuñao.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    
+    if (isSubmitting) return;
+
+    // Validación básica
+    if (!formData.name.trim() || !formData.email.trim() || !formData.subject.trim() || !formData.message.trim()) {
+      toast.error('Por favor, completa todos los campos');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await apiService.sendContactForm(formData);
+      toast.success('¡Mensaje enviado! Te responderemos pronto, cuñao.', {
+        duration: 4000,
+        icon: '🇪🇸',
+      });
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error: any) {
+      console.error('Error enviando mensaje:', error);
+      toast.error(error.message || 'Error al enviar el mensaje. Inténtalo de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -157,7 +181,11 @@ export const ContactPage: React.FC = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-spanish-red focus:border-transparent"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                             focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
+                             transition-all duration-200 ease-in-out
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Escribe tu nombre"
                   />
                 </div>
@@ -173,7 +201,11 @@ export const ContactPage: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-spanish-red focus:border-transparent"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                             focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
+                             transition-all duration-200 ease-in-out
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="tu@email.com"
                   />
                 </div>
@@ -189,7 +221,11 @@ export const ContactPage: React.FC = () => {
                     value={formData.subject}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-spanish-red focus:border-transparent"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                             focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
+                             transition-all duration-200 ease-in-out
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="¿De qué quieres hablarnos?"
                   />
                 </div>
@@ -205,17 +241,37 @@ export const ContactPage: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-spanish-red focus:border-transparent resize-none"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 
+                             focus:ring-2 focus:ring-spanish-red focus:border-spanish-red focus:outline-none
+                             transition-all duration-200 ease-in-out resize-none
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Cuéntanos tu historia, sugerencia o la frase cuñao que se te haya ocurrido..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-spanish-red text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full bg-spanish-red text-white py-3 px-6 rounded-lg font-semibold 
+                           hover:bg-red-700 hover:shadow-xl hover:shadow-red-500/25 
+                           active:scale-95 transition-all duration-200 ease-in-out transform hover:scale-105
+                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none
+                           flex items-center justify-center gap-2 relative overflow-hidden
+                           before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent
+                           before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700"
                 >
-                  <Send size={20} />
-                  Enviar Mensaje
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={20} />
+                      Enviar Mensaje
+                    </>
+                  )}
                 </button>
               </form>
 
