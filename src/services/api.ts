@@ -71,11 +71,17 @@ export const apiService = {
   },
 
   // Crear sesión de checkout de Stripe
-  async createCheckoutSession(items: CartItem[], shippingRegion: string, emailMarketing?: boolean): Promise<CheckoutSession> {
+  async createCheckoutSession(
+    items: CartItem[], 
+    shippingRegion: string, 
+    emailMarketing?: boolean, 
+    discountCode?: string
+  ): Promise<CheckoutSession> {
     const response = await api.post<ApiResponse<CheckoutSession>>('/orders/checkout-session', { 
       items, 
       shippingRegion,
-      emailMarketing
+      emailMarketing,
+      discountCode
     });
     
     if (!response.data.success || !response.data.data) {
@@ -83,6 +89,28 @@ export const apiService = {
     }
     
     return response.data.data;
+  },
+
+  // Validar código de descuento
+  async validateDiscountCode(code: string, subtotal: number): Promise<ApiResponse<{
+    isValid: boolean;
+    discountPercentage?: number;
+    discountAmount?: number;
+    finalTotal?: number;
+    message?: string;
+  }>> {
+    const response = await api.post<ApiResponse<{
+      isValid: boolean;
+      discountPercentage?: number;
+      discountAmount?: number;
+      finalTotal?: number;
+      message?: string;
+    }>>('/discounts/validate', { 
+      code, 
+      subtotal 
+    });
+    
+    return response.data;
   },
 
   // Procesar pedido después del pago

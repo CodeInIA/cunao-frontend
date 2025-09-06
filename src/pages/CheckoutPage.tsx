@@ -24,12 +24,66 @@ export const CheckoutPage: React.FC = () => {
   const [shippingRegion, setShippingRegion] = useState<ShippingRegion>('');
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [emailMarketing, setEmailMarketing] = useState(true); // Activado por defecto
+  
+  // Estados para el código de descuento
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    code: string;
+    percentage: number;
+    amount: number;
+    finalTotal: number;
+  } | null>(null);
+  const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
+  const [discountError, setDiscountError] = useState('');
 
   const subtotal = getTotalPrice();
   const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold;
   const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
   
-  const total = subtotal > 0 ? subtotal + (shippingCost ?? 0) : 0;
+  // Calcular total considerando descuento
+  const subtotalAfterDiscount = appliedDiscount ? appliedDiscount.finalTotal : subtotal;
+  const total = subtotalAfterDiscount > 0 ? subtotalAfterDiscount + (shippingCost ?? 0) : 0;
+
+  // Función para validar código de descuento
+  const validateDiscountCode = async () => {
+    if (!discountCode.trim()) {
+      setDiscountError('Introduce un código de descuento');
+      return;
+    }
+
+    setIsValidatingDiscount(true);
+    setDiscountError('');
+
+    try {
+      const response = await apiService.validateDiscountCode(discountCode.trim(), subtotal);
+      
+      if (response.success && response.data?.isValid) {
+        setAppliedDiscount({
+          code: discountCode.trim(),
+          percentage: response.data.discountPercentage!,
+          amount: response.data.discountAmount!,
+          finalTotal: response.data.finalTotal!
+        });
+        toast.success(response.data.message || '¡Código de descuento aplicado!');
+      } else {
+        setDiscountError(response.data?.message || 'Código de descuento no válido');
+        setAppliedDiscount(null);
+      }
+    } catch (error) {
+      console.error('Error validando descuento:', error);
+      setDiscountError('Error al validar el código de descuento');
+      setAppliedDiscount(null);
+    } finally {
+      setIsValidatingDiscount(false);
+    }
+  };
+
+  // Función para remover descuento
+  const removeDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountCode('');
+    setDiscountError('');
+  };
 
   useEffect(() => {
     if (shippingConfig.loading) return;
@@ -65,7 +119,12 @@ export const CheckoutPage: React.FC = () => {
     toast.loading('Redirigiendo a la pasarela de pago...');
 
     try {
-      const sessionData = await apiService.createCheckoutSession(items, shippingRegion, emailMarketing);
+      const sessionData = await apiService.createCheckoutSession(
+        items, 
+        shippingRegion, 
+        emailMarketing,
+        appliedDiscount?.code
+      );
       if (sessionData.checkout_url) {
         window.location.href = sessionData.checkout_url;
       } else {
@@ -180,8 +239,67 @@ export const CheckoutPage: React.FC = () => {
 
           </div>
 
+          {/* Sección de código de descuento */}
+          <div className="mb-6 p-5 bg-gradient-to-r from-slate-700 to-slate-600 rounded-xl border border-slate-500 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4">¿Tienes un código de descuento?</h3>
+            
+            {!appliedDiscount ? (
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                    placeholder="Introduce tu código"
+                    className="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-spanish-yellow focus:border-transparent"
+                    disabled={isValidatingDiscount}
+                  />
+                  <button
+                    onClick={validateDiscountCode}
+                    disabled={isValidatingDiscount || !discountCode.trim()}
+                    className="px-6 py-3 bg-spanish-yellow text-slate-900 font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isValidatingDiscount ? 'Validando...' : 'Aplicar'}
+                  </button>
+                </div>
+                
+                {discountError && (
+                  <p className="text-red-400 text-sm">{discountError}</p>
+                )}
+              </div>
+            ) : (
+              <div className="bg-green-900/50 border border-green-500 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-5 h-5 text-green-400" />
+                      <span className="font-semibold text-green-400">Código aplicado: {appliedDiscount.code}</span>
+                    </div>
+                    <p className="text-green-300 text-sm mt-1">
+                      {appliedDiscount.percentage}% de descuento (-{formatPrice(appliedDiscount.amount)})
+                    </p>
+                  </div>
+                  <button
+                    onClick={removeDiscount}
+                    className="text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-2 mb-8">
             <div className="flex justify-between text-slate-300"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
+            
+            {appliedDiscount && (
+              <div className="flex justify-between text-green-400">
+                <span>Descuento ({appliedDiscount.code})</span>
+                <span>-{formatPrice(appliedDiscount.amount)}</span>
+              </div>
+            )}
+            
             <div className="flex justify-between text-slate-300">
               <span>Envío</span>
               {shippingConfig.loading ? (
