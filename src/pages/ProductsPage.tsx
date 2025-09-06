@@ -24,13 +24,31 @@ export const ProductsPage: React.FC = () => {
     }
   }, [location.search, fetchProducts, searchProducts]);
 
+  // Efecto para búsqueda en tiempo real
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      if (searchQuery.trim()) {
+        searchProducts(searchQuery.trim());
+        // Actualizar URL sin recargar la página
+        const newUrl = `/productos?q=${encodeURIComponent(searchQuery.trim())}`;
+        window.history.replaceState(null, '', newUrl);
+      } else {
+        fetchProducts();
+        // Limpiar URL si no hay búsqueda
+        window.history.replaceState(null, '', '/productos');
+      }
+    }, 300); // Debounce de 300ms
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchQuery, searchProducts, fetchProducts]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigateTo(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigateTo('/productos');
-    }
+    // Ya no necesitamos hacer nada aquí, la búsqueda es en tiempo real
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -57,7 +75,7 @@ export const ProductsPage: React.FC = () => {
                   type="text"
                   placeholder="Buscar frases cuñao..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchInputChange}
                   className="w-full pl-10 pr-4 py-2 bg-slate-700/80 border border-slate-600 text-white placeholder-slate-400 rounded-lg transition-colors duration-200 focus:outline-none focus:border-spanish-yellow focus:placeholder-slate-300"
                 />
               </div>
