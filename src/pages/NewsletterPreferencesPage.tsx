@@ -113,15 +113,15 @@ export const NewsletterPreferencesPage: React.FC = () => {
 
   if (isValidatingToken) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="bg-slate-800 rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 border border-slate-700">
           <div className="text-center">
-            <Shield className="mx-auto h-12 w-12 text-blue-600 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <Shield className="mx-auto h-12 w-12 text-spanish-yellow mb-4" />
+            <h2 className="text-xl font-semibold text-white mb-2">
               Validando acceso...
             </h2>
             <LoadingSpinner />
-            <p className="text-gray-600 mt-4">
+            <p className="text-slate-300 mt-4">
               Verificando tu token de acceso
             </p>
           </div>
@@ -132,19 +132,19 @@ export const NewsletterPreferencesPage: React.FC = () => {
 
   if (!isTokenValid || tokenError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="bg-slate-800 rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 border border-slate-700">
           <div className="text-center">
-            <AlertTriangle className="mx-auto h-12 w-12 text-red-600 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
+            <h2 className="text-xl font-semibold text-white mb-2">
               Error de acceso
             </h2>
-            <p className="text-red-600 mb-6">
+            <p className="text-red-400 mb-6">
               {tokenError}
             </p>
             <button
               onClick={() => navigateTo('/')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              className="bg-spanish-yellow hover:bg-yellow-400 text-slate-900 font-medium py-2 px-4 rounded-lg transition-colors"
             >
               Volver al inicio
             </button>
@@ -155,47 +155,47 @@ export const NewsletterPreferencesPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-slate-900">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 mb-6 border border-slate-700">
             <div className="text-center">
-              <Mail className="mx-auto h-12 w-12 text-blue-600 mb-4" />
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <Mail className="mx-auto h-12 w-12 text-spanish-yellow mb-4" />
+              <h1 className="text-3xl font-bold text-white mb-2">
                 Preferencias de Newsletter
               </h1>
-              <p className="text-gray-600">
+              <p className="text-slate-300">
                 Gestiona tus preferencias de comunicación
               </p>
             </div>
           </div>
 
           {/* Email Display */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 mb-6 border border-slate-700">
             <div className="flex items-center gap-3 mb-4">
-              <Mail className="h-5 w-5 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900">
+              <Mail className="h-5 w-5 text-spanish-yellow" />
+              <h2 className="text-xl font-semibold text-white">
                 Email de contacto
               </h2>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-gray-700 font-medium">{preferences.email}</p>
+            <div className="bg-slate-700 rounded-lg p-4 border border-slate-600">
+              <p className="text-white font-medium">{preferences.email}</p>
             </div>
           </div>
 
           {/* Preferences */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 mb-6 border border-slate-700">
+            <h2 className="text-xl font-semibold text-white mb-6">
               Preferencias de comunicación
             </h2>
 
             <div className="space-y-6">
               {/* Newsletter */}
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex items-center justify-between p-4 border border-slate-600 rounded-lg hover:bg-slate-700 transition-colors">
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">Newsletter Semanal</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-medium text-white">Newsletter Semanal</h3>
+                  <p className="text-sm text-slate-300">
                     Recibe nuestro newsletter semanal con contenido cuñado
                   </p>
                 </div>
@@ -203,8 +203,8 @@ export const NewsletterPreferencesPage: React.FC = () => {
                   onClick={() => togglePreference('newsletter')}
                   className={`ml-4 flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     preferences.newsletter
-                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                      : 'bg-red-100 text-red-800 hover:bg-red-200'
+                      ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400'
+                      : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
                   }`}
                 >
                   {preferences.newsletter ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
@@ -213,14 +213,14 @@ export const NewsletterPreferencesPage: React.FC = () => {
               </div>
 
               {/* Promotions */}
-              <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-lg transition-colors ${
-                isCustomer ? 'hover:bg-gray-50' : 'bg-gray-100'
+              <div className={`flex items-center justify-between p-4 border border-slate-600 rounded-lg transition-colors ${
+                isCustomer ? 'hover:bg-slate-700' : 'bg-slate-700'
               }`}>
                 <div className="flex-1">
-                  <h3 className={`font-medium ${isCustomer ? 'text-gray-900' : 'text-gray-500'}`}>
+                  <h3 className={`font-medium ${isCustomer ? 'text-white' : 'text-slate-400'}`}>
                     Promociones
                   </h3>
-                  <p className={`text-sm ${isCustomer ? 'text-gray-600' : 'text-gray-400'}`}>
+                  <p className={`text-sm ${isCustomer ? 'text-slate-300' : 'text-slate-500'}`}>
                     {isCustomer 
                       ? 'Ofertas especiales y descuentos exclusivos'
                       : 'Solo disponible para clientes con compras'
@@ -232,10 +232,10 @@ export const NewsletterPreferencesPage: React.FC = () => {
                   disabled={!isCustomer}
                   className={`ml-4 flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     !isCustomer 
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                       : preferences.promotions
-                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                        ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400'
+                        : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
                   }`}
                 >
                   {preferences.promotions ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
@@ -244,14 +244,14 @@ export const NewsletterPreferencesPage: React.FC = () => {
               </div>
 
               {/* New Products */}
-              <div className={`flex items-center justify-between p-4 border border-gray-200 rounded-lg transition-colors ${
-                isCustomer ? 'hover:bg-gray-50' : 'bg-gray-100'
+              <div className={`flex items-center justify-between p-4 border border-slate-600 rounded-lg transition-colors ${
+                isCustomer ? 'hover:bg-slate-700' : 'bg-slate-700'
               }`}>
                 <div className="flex-1">
-                  <h3 className={`font-medium ${isCustomer ? 'text-gray-900' : 'text-gray-500'}`}>
+                  <h3 className={`font-medium ${isCustomer ? 'text-white' : 'text-slate-400'}`}>
                     Nuevos Productos
                   </h3>
-                  <p className={`text-sm ${isCustomer ? 'text-gray-600' : 'text-gray-400'}`}>
+                  <p className={`text-sm ${isCustomer ? 'text-slate-300' : 'text-slate-500'}`}>
                     {isCustomer 
                       ? 'Notificaciones sobre lanzamientos de productos'
                       : 'Solo disponible para clientes con compras'
@@ -263,10 +263,10 @@ export const NewsletterPreferencesPage: React.FC = () => {
                   disabled={!isCustomer}
                   className={`ml-4 flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     !isCustomer 
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                       : preferences.newProducts
-                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                        ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400'
+                        : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
                   }`}
                 >
                   {preferences.newProducts ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
@@ -277,11 +277,11 @@ export const NewsletterPreferencesPage: React.FC = () => {
           </div>
 
           {/* Save Button */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 border border-slate-700">
             <button
               onClick={handleSavePreferences}
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-spanish-yellow hover:bg-yellow-400 disabled:bg-slate-600 disabled:text-slate-400 text-slate-900 font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <LoadingSpinner />
