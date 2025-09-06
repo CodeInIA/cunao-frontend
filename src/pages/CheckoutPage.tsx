@@ -230,14 +230,14 @@ export const CheckoutPage: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-base font-semibold text-white">
-                    Acepto recibir ofertas y promociones exclusivas por email
+                    Acepto recibir newsletter, ofertas y promociones exclusivas por email
                   </span>
                   <div className="px-2 py-0.5 bg-spanish-yellow/20 text-spanish-yellow text-xs font-medium rounded-full border border-spanish-yellow/30">
                     Recomendado
                   </div>
                 </div>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Te enviaremos descuentos, nuevas camisetas cuñao y ofertas especiales. 
+                  Te enviaremos nuestra newsletter semanal, descuentos, nuevas camisetas cuñao y ofertas especiales. 
                   Puedes cancelar tu suscripción en cualquier momento.
                 </p>
                 <div className="flex items-center gap-4 mt-3 text-xs text-slate-400">
