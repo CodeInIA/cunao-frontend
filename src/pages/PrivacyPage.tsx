@@ -26,11 +26,12 @@ export const PrivacyPage: React.FC = () => {
         <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-8 mb-8">
           <div className="mb-8">
             <p className="text-slate-400 mb-4">
-              <strong>Última actualización:</strong> 16 de agosto de 2025
+              <strong>Última actualización:</strong> 6 de septiembre de 2025
             </p>
             <p className="text-slate-300">
               En <strong>Cuñadismo Ilustrado</strong> respetamos tu privacidad tanto como respetamos las opiniones cuñao. 
-              Esta política explica cómo recopilamos, utilizamos y protegemos tu información personal.
+              Esta política explica cómo recopilamos, utilizamos y protegemos tu información personal en nuestra tienda online 
+              y sistema de newsletter.
             </p>
           </div>
 
@@ -130,6 +131,58 @@ export const PrivacyPage: React.FC = () => {
                 <p className="text-sm text-slate-400">
                   Para entender cómo usas la web y mejorarla (anónimas).
                 </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Newsletter */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4 flex items-center gap-2">
+              <Mail className="w-6 h-6 text-spanish-yellow" />
+              Sistema de Newsletter
+            </h2>
+            
+            <div className="bg-slate-700 border border-slate-600 p-6 rounded-lg">
+              <h3 className="font-semibold text-spanish-yellow mb-3">¿Cómo funciona nuestro newsletter?</h3>
+              <ul className="space-y-2 text-slate-300 mb-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-spanish-red">•</span>
+                  <span>Suscripción 100% voluntaria desde el footer de la web</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-spanish-red">•</span>
+                  <span>Envío semanal automático los sábados a las 18:00</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-spanish-red">•</span>
+                  <span>52 frases cuñao diferentes, una para cada semana del año</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-spanish-red">•</span>
+                  <span>Gestión de preferencias con enlaces seguros y únicos</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-spanish-red">•</span>
+                  <span>Puedes darte de baja o modificar preferencias en cualquier momento</span>
+                </li>
+              </ul>
+              
+              <div className="bg-slate-800 border border-slate-600 p-4 rounded">
+                <h4 className="font-semibold text-white mb-2">Tipos de comunicaciones:</h4>
+                <div className="grid md:grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span className="text-spanish-yellow font-medium">Newsletter Semanal:</span>
+                    <p className="text-slate-400">Contenido cuñao y novedades</p>
+                  </div>
+                  <div>
+                    <span className="text-spanish-yellow font-medium">Promociones:</span>
+                    <p className="text-slate-400">Solo para clientes con compras</p>
+                  </div>
+                  <div>
+                    <span className="text-spanish-yellow font-medium">Nuevos Productos:</span>
+                    <p className="text-slate-400">Lanzamientos exclusivos</p>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

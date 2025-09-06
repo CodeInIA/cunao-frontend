@@ -25,6 +25,13 @@ export const ShippingPage: React.FC = () => {
 
       <div className="container mx-auto px-4 py-16 max-w-6xl">
         
+        {/* Fecha de actualización */}
+        <div className="text-center mb-8">
+          <p className="text-slate-400">
+            <strong>Última actualización:</strong> 6 de septiembre de 2025
+          </p>
+        </div>
+        
         {/* Información de envíos */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
           

@@ -27,7 +27,7 @@ export const TermsPage: React.FC = () => {
           {/* Información general */}
           <div className="mb-8">
             <p className="text-slate-400 mb-4">
-              <strong>Última actualización:</strong> 16 de agosto de 2025
+              <strong>Última actualización:</strong> 6 de septiembre de 2025
             </p>
             <p className="text-slate-300">
               Bienvenido a <strong>Cuñadismo Ilustrado</strong>. Al utilizar nuestro sitio web y servicios, 
