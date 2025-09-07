@@ -23,6 +23,8 @@ export const ProductDetailPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
 
   // Precarga inteligente: primero variante seleccionada, luego el resto
   const preloadStatus = useProductPagePreloader(
@@ -180,16 +182,28 @@ export const ProductDetailPage: React.FC = () => {
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    setIsDragging(true);
+    setDragOffset(0);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
     // Prevenir el scroll de la página mientras se desliza en el carrusel
     e.preventDefault();
-    setTouchEnd(e.targetTouches[0].clientX);
+    
+    if (!touchStart) return;
+    
+    const currentX = e.targetTouches[0].clientX;
+    const diff = touchStart - currentX;
+    setDragOffset(diff);
+    setTouchEnd(currentX);
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) {
+      setIsDragging(false);
+      setDragOffset(0);
+      return;
+    }
     
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
@@ -201,6 +215,10 @@ export const ProductDetailPage: React.FC = () => {
     if (isRightSwipe && currentImageIndex > 0) {
       navigateToImage(currentImageIndex - 1);
     }
+    
+    // Reset drag state
+    setIsDragging(false);
+    setDragOffset(0);
   };
 
   const navigateToImage = (index: number) => {
@@ -306,9 +324,9 @@ export const ProductDetailPage: React.FC = () => {
             >
               {/* Contenedor deslizante */}
               <div 
-                className="flex transition-transform duration-300 ease-out h-full w-full"
+                className={`flex h-full w-full ${isDragging ? '' : 'transition-transform duration-300 ease-out'}`}
                 style={{ 
-                  transform: `translateX(-${currentImageIndex * 100}%)`
+                  transform: `translateX(calc(-${currentImageIndex * 100}% + ${isDragging ? -dragOffset : 0}px))`
                 }}
               >
                 {galleryImages.map((image, index) => (
