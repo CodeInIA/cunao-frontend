@@ -4,7 +4,7 @@ import { getOptimizedImageUrl, getResponsiveImageSrcSet, getResponsiveImageSizes
 
 interface OptimizedImageProps {
   image: ProductImage;
-  size?: 'thumbnail' | 'medium' | 'large';
+  size?: 'thumbnail' | 'medium' | 'large' | 'original';
   className?: string;
   alt?: string;
   loading?: 'lazy' | 'eager';
