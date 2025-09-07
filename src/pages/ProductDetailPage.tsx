@@ -183,6 +183,8 @@ export const ProductDetailPage: React.FC = () => {
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
+    // Prevenir el scroll de la página mientras se desliza en el carrusel
+    e.preventDefault();
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
