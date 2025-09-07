@@ -302,15 +302,28 @@ export const ProductDetailPage: React.FC = () => {
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
             >
-              {currentImage && (
-                <OptimizedImage
-                  image={currentImage}
-                  alt={currentProduct.title}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                  responsive={true}
-                />
-              )}
+              {/* Contenedor deslizante */}
+              <div 
+                className="flex transition-transform duration-300 ease-out h-full w-full"
+                style={{ 
+                  transform: `translateX(-${currentImageIndex * 100}%)`
+                }}
+              >
+                {galleryImages.map((image, index) => (
+                  <div 
+                    key={image.src} 
+                    className="w-full h-full flex-shrink-0"
+                  >
+                    <OptimizedImage
+                      image={image}
+                      alt={`${currentProduct.title} - ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      responsive={true}
+                    />
+                  </div>
+                ))}
+              </div>
               
               {/* Indicadores de puntos */}
               {galleryImages.length > 1 && (
