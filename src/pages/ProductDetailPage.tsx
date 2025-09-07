@@ -27,6 +27,8 @@ export const ProductDetailPage: React.FC = () => {
   const [dragOffset, setDragOffset] = useState(0);
   const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
   const [touchEndTime, setTouchEndTime] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [isHorizontalSwipe, setIsHorizontalSwipe] = useState<boolean | null>(null);
 
   // Precarga inteligente: primero variante seleccionada, luego el resto
   const preloadStatus = useProductPagePreloader(
@@ -184,27 +186,44 @@ export const ProductDetailPage: React.FC = () => {
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchStartY(e.targetTouches[0].clientY);
     setTouchStartTime(Date.now());
     setIsDragging(true);
     setDragOffset(0);
+    setIsHorizontalSwipe(null); // Reset para determinar dirección
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    // Prevenir el scroll de la página mientras se desliza en el carrusel
-    e.preventDefault();
-    
-    if (!touchStart) return;
+    if (!touchStart || !touchStartY) return;
     
     const currentX = e.targetTouches[0].clientX;
-    const diff = touchStart - currentX;
-    setDragOffset(diff);
-    setTouchEnd(currentX);
+    const currentY = e.targetTouches[0].clientY;
+    
+    const deltaX = Math.abs(touchStart - currentX);
+    const deltaY = Math.abs(touchStartY - currentY);
+    
+    // Determinar si es swipe horizontal o vertical en el primer movimiento significativo
+    if (isHorizontalSwipe === null && (deltaX > 10 || deltaY > 10)) {
+      setIsHorizontalSwipe(deltaX > deltaY);
+    }
+    
+    // Solo prevenir scroll si es claramente un swipe horizontal
+    if (isHorizontalSwipe) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const diff = touchStart - currentX;
+      setDragOffset(diff);
+      setTouchEnd(currentX);
+    }
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) {
+    if (!touchStart || !touchEnd || !isHorizontalSwipe) {
+      // Si no fue un swipe horizontal, reset y permitir scroll normal
       setIsDragging(false);
       setDragOffset(0);
+      setIsHorizontalSwipe(null);
       return;
     }
     
@@ -241,6 +260,7 @@ export const ProductDetailPage: React.FC = () => {
     // Reset drag state
     setIsDragging(false);
     setDragOffset(0);
+    setIsHorizontalSwipe(null);
   };
 
   const navigateToImage = (index: number) => {
