@@ -297,6 +297,49 @@ export const ProductDetailPage: React.FC = () => {
       .replace(/$/, '</p>');
   };
 
+  // Extrae la tabla de tallas (id="size-guide") del HTML y la limpia de estilos inline
+  const extractSizeGuide = React.useCallback((html: string) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Buscar tabla por id; si no, primera tabla del documento
+      let table = doc.querySelector('table#size-guide') || doc.querySelector('table');
+      if (!table) {
+        return { contentHtml: html, sizeTableHtml: '' };
+      }
+
+      // Clonar y limpiar estilos inline para que nuestros estilos apliquen bien
+      const cleanTable = table.cloneNode(true) as HTMLElement;
+      cleanTable.removeAttribute('style');
+      cleanTable.id = 'size-guide';
+      cleanTable.classList.add('size-guide-table');
+      cleanTable.querySelectorAll('[style]').forEach((el) => (el as HTMLElement).removeAttribute('style'));
+
+      // Reemplazar encabezados vacíos por texto si aplica (primera celda vacía)
+      const firstTh = cleanTable.querySelector('thead tr th');
+      if (firstTh && firstTh.textContent && firstTh.textContent.trim() === '') {
+        firstTh.textContent = '\u00A0';
+      }
+
+      // Eliminar la tabla del contenido
+      table.parentElement?.removeChild(table);
+
+      return {
+        contentHtml: doc.body.innerHTML,
+        sizeTableHtml: cleanTable.outerHTML,
+      };
+    } catch (e) {
+      return { contentHtml: html, sizeTableHtml: '' };
+    }
+  }, []);
+
+  const { contentHtml, sizeTableHtml } = React.useMemo(() => {
+    const raw = currentProduct?.description || '';
+    const html = formatDescription(raw);
+    return extractSizeGuide(html);
+  }, [currentProduct?.description, extractSizeGuide]);
+
   // Actualizar índice cuando cambia la imagen actual
   React.useEffect(() => {
     if (currentImage && galleryImages.length > 0) {
@@ -577,10 +620,24 @@ export const ProductDetailPage: React.FC = () => {
             {selectedVariant ? 'Añadir al carrito' : 'Selecciona Talla y Color'}
           </button>
           <div className="mt-8">
-            <div
-              className="rich-text mb-6"
-              dangerouslySetInnerHTML={{ __html: formatDescription(currentProduct.description) }}
-            />
+            <div className="rich-text mb-6" dangerouslySetInnerHTML={{ __html: contentHtml }} />
+            {sizeTableHtml && (
+              <div className="mb-8">
+                <details className="size-guide block bg-slate-800 border border-slate-700 rounded-lg">
+                  <summary className="size-guide-summary flex items-center justify-between cursor-pointer select-none list-none px-4 py-3">
+                    <span className="text-white font-semibold">Guía de tallas</span>
+                    <svg className="chevron h-5 w-5 text-slate-300 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                    </svg>
+                  </summary>
+                  <div className="px-4 pb-4">
+                    <div className="size-guide-container overflow-x-auto">
+                      <div dangerouslySetInnerHTML={{ __html: sizeTableHtml }} />
+                    </div>
+                  </div>
+                </details>
+              </div>
+            )}
             {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
               <div className="space-y-4 mb-8">
                 {currentGPSR.map((section, idx) => (

@@ -36,6 +36,50 @@ body {
   color: #F1BF00; /* spanish-yellow para bullets */
 }
 
+/* Guía de tallas */
+details.size-guide[open] .chevron {
+  transform: rotate(180deg);
+}
+.size-guide-container {
+  width: 100%;
+}
+.size-guide-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 480px;
+  background-color: #0b1220; /* más oscuro que el fondo para contraste sutil */
+  border: 1px solid #334155; /* slate-700 */
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.size-guide-table thead th {
+  background-color: #111827; /* slate-900-ish */
+  color: #e5e7eb; /* slate-200 */
+  font-weight: 700;
+  text-align: left;
+  padding: 0.75rem 0.75rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #334155;
+}
+.size-guide-table tbody td {
+  color: #cbd5e1; /* slate-300 */
+  font-size: 0.95rem;
+  padding: 0.75rem 0.75rem;
+  border-top: 1px dashed #334155;
+  vertical-align: top;
+}
+.size-guide-table tbody tr:nth-child(odd) td {
+  background: rgba(148, 163, 184, 0.06); /* slate-400/6 */
+}
+.size-guide-table tbody tr:hover td {
+  background: rgba(234, 179, 8, 0.06); /* yellow-500/6 */
+}
+.size-guide-summary {
+  background: #0b1220;
+  border-bottom: 1px solid #334155;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Playfair Display', serif;
   color: #f8fafc;
