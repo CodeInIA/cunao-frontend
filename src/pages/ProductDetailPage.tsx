@@ -183,17 +183,18 @@ export const ProductDetailPage: React.FC = () => {
 
   // Funciones para el carrusel móvil
   const minSwipeDistance = 50;
-  const directionThreshold = 15; // Umbral más sensible para detectar dirección
+  const directionThreshold = 20; // Umbral para detectar dirección
+  const horizontalDominanceRatio = 0.7; // Debe ser 70% horizontal para considerarse swipe horizontal
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
     setTouchStartY(e.targetTouches[0].clientY);
     setTouchStartTime(Date.now());
-    setIsDragging(true);
+    setIsDragging(false); // No iniciar como dragging hasta confirmar dirección
     setDragOffset(0);
     setIsHorizontalSwipe(null);
-    setIsCarouselActive(true); // Activar el carrusel al iniciar touch
+    setIsCarouselActive(false); // No activar hasta confirmar swipe horizontal
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
@@ -204,36 +205,39 @@ export const ProductDetailPage: React.FC = () => {
     
     const deltaX = Math.abs(touchStart - currentX);
     const deltaY = Math.abs(touchStartY - currentY);
+    const totalMovement = deltaX + deltaY;
     
-    // Determinar dirección más temprano y con mejor precisión
-    if (isHorizontalSwipe === null && (deltaX > directionThreshold || deltaY > directionThreshold)) {
-      const horizontalRatio = deltaX / (deltaX + deltaY);
-      // Considerar horizontal si es > 60% del movimiento total
-      setIsHorizontalSwipe(horizontalRatio > 0.6);
+    // Solo determinar dirección después de movimiento significativo
+    if (isHorizontalSwipe === null && totalMovement > directionThreshold) {
+      const horizontalRatio = deltaX / totalMovement;
+      const isHorizontal = horizontalRatio > horizontalDominanceRatio;
+      
+      setIsHorizontalSwipe(isHorizontal);
+      
+      if (isHorizontal) {
+        setIsDragging(true);
+        setIsCarouselActive(true);
+      }
     }
     
-    // Bloquear scroll si:
-    // 1. Ya se determinó que es swipe horizontal, O
-    // 2. El carrusel está activo y aún no se ha determinado la dirección
-    if (isHorizontalSwipe === true || (isCarouselActive && isHorizontalSwipe === null)) {
+    // Solo bloquear scroll Y prevenir eventos si se confirmó que es swipe horizontal
+    if (isHorizontalSwipe === true) {
       e.preventDefault();
       e.stopPropagation();
-    }
-    
-    // Solo actualizar el offset si es swipe horizontal
-    if (isHorizontalSwipe === true) {
+      
       const diff = touchStart - currentX;
       setDragOffset(diff);
       setTouchEnd(currentX);
     }
+    // Si no es horizontal o aún no se ha determinado, permitir scroll normal
   };
 
   const onTouchEnd = () => {
-    // Siempre desactivar el carrusel al terminar el touch
+    // Siempre desactivar estados al terminar
     setIsCarouselActive(false);
     
     if (!touchStart || !touchEnd || isHorizontalSwipe !== true) {
-      // Si no fue un swipe horizontal válido, reset y salir
+      // Si no fue un swipe horizontal válido, reset sin navegar
       setIsDragging(false);
       setDragOffset(0);
       setIsHorizontalSwipe(null);
@@ -292,14 +296,14 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [currentImage, galleryImages]);
 
-  // Bloquear scroll del body cuando el carrusel está activo
+  // Bloquear scroll del body solo cuando se confirme swipe horizontal
   React.useEffect(() => {
-    if (isCarouselActive || isDragging) {
-      // Prevenir scroll del body
+    if (isHorizontalSwipe === true && (isCarouselActive || isDragging)) {
+      // Prevenir scroll del body solo si es swipe horizontal confirmado
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
+      document.body.style.touchAction = 'pan-y'; // Permitir scroll vertical pero no horizontal
     } else {
-      // Restaurar scroll del body
+      // Restaurar scroll normal del body
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
     }
@@ -309,7 +313,7 @@ export const ProductDetailPage: React.FC = () => {
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
     };
-  }, [isCarouselActive, isDragging]);
+  }, [isHorizontalSwipe, isCarouselActive, isDragging]);
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
