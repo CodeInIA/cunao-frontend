@@ -9,7 +9,7 @@ const API_CACHE = `cunao-api-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/index.html',
-  '/logo-sin-letras.png',
+  '/logo-sin-letras.webp',
   '/manifest.webmanifest'
 ];
 
