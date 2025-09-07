@@ -1,9 +1,10 @@
 /* Enhanced service worker for Cuñadismo Ilustrado PWA */
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v3'; // Incrementado para nuevas optimizaciones
 let IS_FIRST_INSTALL = false; // Flag para evitar notificación en primera instalación
 const STATIC_CACHE = `cunao-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cunao-runtime-${CACHE_VERSION}`;
 const API_CACHE = `cunao-api-${CACHE_VERSION}`;
+const IMAGES_CACHE = `cunao-images-${CACHE_VERSION}`; // Cache específico para imágenes
 
 // Rutas críticas que queremos cachear de inicio
 const PRECACHE_URLS = [
@@ -56,6 +57,12 @@ self.addEventListener('activate', (event) => {
       self.clients.claim()
     ]).then(() => {
       console.log('[SW] Activated and ready. firstInstall:', IS_FIRST_INSTALL);
+      
+      // Precargar imágenes críticas en primera instalación
+      if (IS_FIRST_INSTALL) {
+        preloadCriticalImages();
+      }
+      
       if (!IS_FIRST_INSTALL) {
         // Notificar a clientes sobre nueva versión SOLO en actualización
         self.clients.matchAll().then(clients => {
@@ -105,9 +112,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Imágenes de productos - Cache First con TTL
-  if (request.destination === 'image' && url.origin !== location.origin) {
-    event.respondWith(cacheFirst(request, RUNTIME_CACHE, 86400000)); // 24h TTL
+  // Imágenes de productos de Cloudinary - Cache agresivo para productos
+  if (request.destination === 'image' && 
+      (url.hostname.includes('cloudinary.com') || url.origin !== location.origin)) {
+    event.respondWith(
+      caches.open(RUNTIME_CACHE)
+        .then(cache => cache.match(request))
+        .then(cached => {
+          if (cached) {
+            console.log('[SW] Imagen servida desde cache:', url.pathname);
+            return cached;
+          }
+          
+          console.log('[SW] Descargando y cacheando imagen:', url.pathname);
+          return fetch(request)
+            .then(response => {
+              if (response.ok) {
+                cache.put(request, response.clone());
+              }
+              return response;
+            })
+            .catch(() => {
+              console.warn('[SW] Error descargando imagen:', url.pathname);
+              return new Response('', { status: 404 });
+            });
+        })
+    );
     return;
   }
 });
@@ -205,4 +235,49 @@ function createOfflineResponse() {
     status: 503, 
     statusText: 'Service Unavailable' 
   });
+}
+
+// Función para precargar imágenes críticas en primera visita
+async function preloadCriticalImages() {
+  console.log('[SW] Starting critical image preload for first-time visitor');
+  
+  try {
+    // URLs de imágenes críticas (logo, héroe, destacados)
+    const criticalImages = [
+      // Logo
+      '/logo-sin-letras.webp',
+      // Imágenes más comunes en Cloudinary (ejemplos típicos)
+      'https://res.cloudinary.com/dt2t5twyx/image/upload/v1/products/polo-fitness-crossfit-culturismo-hombre-mujer-7_uxuytm.webp',
+      'https://res.cloudinary.com/dt2t5twyx/image/upload/v1/products/polo-cerveza-rubia-preferida-cuñaos-hombre-mujer-7_qzfwad.webp',
+      'https://res.cloudinary.com/dt2t5twyx/image/upload/v1/products/polo-cubana-hombre-mujer-7_a0jpzq.webp'
+    ];
+    
+    const cache = await caches.open(IMAGES_CACHE);
+    
+    // Precargar en paralelo con timeout
+    const preloadPromises = criticalImages.map(async (url) => {
+      try {
+        const response = await fetch(url, {
+          mode: 'no-cors',
+          credentials: 'omit'
+        });
+        if (response.ok || response.type === 'opaque') {
+          await cache.put(url, response.clone());
+          console.log('[SW] Preloaded:', url);
+        }
+      } catch (error) {
+        console.log('[SW] Failed to preload:', url, error);
+      }
+    });
+    
+    // Esperar máximo 5 segundos por la precarga
+    await Promise.race([
+      Promise.all(preloadPromises),
+      new Promise(resolve => setTimeout(resolve, 5000))
+    ]);
+    
+    console.log('[SW] Critical image preload completed');
+  } catch (error) {
+    console.error('[SW] Critical image preload failed:', error);
+  }
 }

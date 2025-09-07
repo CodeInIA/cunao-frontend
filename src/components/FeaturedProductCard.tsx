@@ -128,7 +128,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
             <OptimizedImage
               image={firstImage}
               alt={product.title || 'Producto'}
-              loading="lazy"
+              loading="eager"
               className={`w-full h-auto object-cover transition-transform duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'} ${isHovered ? 'scale-105' : 'scale-100'}`}
               responsive={true}
               onLoad={() => setImgLoaded(true)}

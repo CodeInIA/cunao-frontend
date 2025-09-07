@@ -10,8 +10,8 @@ interface ImagePreloadStatus {
 }
 
 /**
- * Hook para precargar todas las imágenes de un producto de forma eficiente
- * Esto mejora la experiencia de usuario al cambiar entre variantes
+ * Hook simplificado para precarga de imágenes sin duplicar requests
+ * Solo precarga si las imágenes no están ya en caché del navegador
  */
 export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
   const [status, setStatus] = useState<ImagePreloadStatus>({
@@ -32,8 +32,9 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
       return;
     }
 
-    // Solo usar una imagen por producto (máxima calidad)
-    const totalImages = images.length;
+    // Reducir la precarga agresiva - solo precargar las primeras 3 imágenes
+    const imagesToPreload = images.slice(0, 3);
+    const totalImages = imagesToPreload.length;
     
     setStatus(prev => ({
       ...prev,
@@ -43,7 +44,7 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
       errors: []
     }));
 
-    console.log(`🖼️ Iniciando precarga de ${totalImages} imágenes en máxima calidad`);
+    console.log(`🖼️ Precargando ${totalImages} imágenes principales`);
 
     let loadedCount = 0;
     const errors: string[] = [];
@@ -57,15 +58,24 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
       });
     };
 
-    // Precargar imagen en máxima calidad
+    // Precargar imagen con verificación de caché
     const preloadImage = (image: ProductImage, index: number): Promise<void> => {
       return new Promise((resolve) => {
         const img = new Image();
-        const url = getOptimizedImageUrl(image); // Solo máxima calidad
+        const url = getOptimizedImageUrl(image);
+        
+        // Verificar si ya está en caché
+        if (img.complete && img.naturalHeight !== 0) {
+          loadedCount++;
+          console.log(`✅ Imagen ${index + 1} ya en caché`);
+          updateStatus();
+          resolve();
+          return;
+        }
         
         img.onload = () => {
           loadedCount++;
-          console.log(`✅ Imagen ${index + 1}/${images.length} precargada exitosamente`);
+          console.log(`✅ Imagen ${index + 1}/${totalImages} precargada`);
           updateStatus();
           resolve();
         };
@@ -78,19 +88,24 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
           updateStatus();
           resolve();
         };
-        
+
         img.src = url;
       });
     };
 
-    // Precargar todas las imágenes
+    // Precargar imágenes con delay para evitar saturar la red
     const preloadPromises: Promise<void>[] = [];
     
-    images.forEach((image, imageIndex) => {
-      preloadPromises.push(preloadImage(image, imageIndex));
+    imagesToPreload.forEach((image, imageIndex) => {
+      const delayedPreload = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          preloadImage(image, imageIndex).then(resolve);
+        }, imageIndex * 100); // Delay de 100ms entre imágenes
+      });
+      preloadPromises.push(delayedPreload);
     });
 
-    // Esperar a que todas las imágenes se carguen (o fallen)
+    // Esperar a que todas se carguen
     Promise.all(preloadPromises).then(() => {
       console.log(`🎉 Precarga completada: ${loadedCount}/${totalImages} imágenes procesadas`);
       if (errors.length > 0) {
@@ -98,14 +113,10 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
       }
     });
 
-    // Cleanup no es necesario ya que las imágenes quedan en caché del navegador
-
   }, [images]);
 
   return status;
-}
-
-/**
+}/**
  * Hook simplificado que precarga imágenes en máxima calidad
  * (Ahora es redundante ya que el hook principal solo usa máxima calidad)
  */

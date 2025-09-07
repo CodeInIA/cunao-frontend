@@ -6,6 +6,7 @@ import { CartSidebar } from './components/CartSidebar';
 import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/Error';
 import { LoadingSpinner } from './components/Loading';
+import { useCriticalImagePreloader } from './hooks/useCriticalImagePreloader';
 
 // =============================================================
 // Lazy-loaded pages (code splitting por ruta)
@@ -27,6 +28,8 @@ const NewsletterPreferencesPage = lazy(() => import('./pages/NewsletterPreferenc
 import './App.css';
 
 function App() {
+  // Precarga crítica de imágenes para primera visita
+  useCriticalImagePreloader();
 
   // =================================================================
   // ▼▼▼ CÓDIGO DE REDIRECCIÓN AÑADIDO AQUÍ ▼▼▼
