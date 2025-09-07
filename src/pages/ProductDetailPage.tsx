@@ -20,6 +20,9 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState<ProductImage | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Precarga inteligente: primero variante seleccionada, luego el resto
   const preloadStatus = useProductPagePreloader(
@@ -171,6 +174,50 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [galleryImages, currentImage]);
 
+  // Funciones para el carrusel móvil
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && currentImageIndex < galleryImages.length - 1) {
+      navigateToImage(currentImageIndex + 1);
+    }
+    if (isRightSwipe && currentImageIndex > 0) {
+      navigateToImage(currentImageIndex - 1);
+    }
+  };
+
+  const navigateToImage = (index: number) => {
+    if (galleryImages[index]) {
+      setCurrentImageIndex(index);
+      setCurrentImage(galleryImages[index]);
+    }
+  };
+
+  // Actualizar índice cuando cambia la imagen actual
+  React.useEffect(() => {
+    if (currentImage && galleryImages.length > 0) {
+      const index = galleryImages.findIndex(img => img.src === currentImage.src);
+      if (index !== -1) {
+        setCurrentImageIndex(index);
+      }
+    }
+  }, [currentImage, galleryImages]);
+
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
     
@@ -247,22 +294,57 @@ export const ProductDetailPage: React.FC = () => {
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         
         <div className="md:sticky md:top-28 h-max">
-          <div className="flex flex-col md:flex-row gap-4">
+          {/* Carrusel móvil */}
+          <div className="block md:hidden">
+            <div 
+              className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-800"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            >
+              {currentImage && (
+                <OptimizedImage
+                  image={currentImage}
+                  alt={currentProduct.title}
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                  responsive={true}
+                />
+              )}
+              
+              {/* Indicadores de puntos */}
+              {galleryImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                  {galleryImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => navigateToImage(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                        index === currentImageIndex
+                          ? 'bg-spanish-yellow scale-125'
+                          : 'bg-white/40 hover:bg-white/60'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
+          {/* Galería desktop (existente) */}
+          <div className="hidden md:flex flex-row gap-4">
             <div className={`
-              flex flex-row md:flex-col gap-2
-              overflow-x-auto md:overflow-y-auto 
-              md:max-h-[500px] md:pr-2 
+              flex flex-col gap-2
+              overflow-y-auto 
+              max-h-[500px] pr-2 
               scrollbar-thin scrollbar-thumb-spanish-yellow scrollbar-track-slate-700
-              order-2 md:order-1
             `}>
               {galleryImages.map((image) => (
                 <button
                   key={image.src}
                   onClick={() => setCurrentImage(image)}
                   className={`
-                    w-16 h-16 flex-shrink-0
-                    md:w-20 md:h-20 
+                    w-20 h-20 flex-shrink-0
                     rounded-lg overflow-hidden transition-all duration-200
                     ${
                       currentImage?.src === image.src
@@ -280,7 +362,7 @@ export const ProductDetailPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex-1 order-1 md:order-2">
+            <div className="flex-1">
               {currentImage && (
                 <OptimizedImage
                   image={currentImage}
