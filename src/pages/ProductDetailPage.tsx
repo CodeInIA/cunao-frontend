@@ -5,6 +5,8 @@ import { useCartStore } from '../stores/cartStore';
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
 import { formatPrice, slugify } from '../utils/formatters';
 import type { ProductVariant, ProductImage } from '../types';
+import { OptimizedImage } from '../components/OptimizedImage';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 
 export const ProductDetailPage: React.FC = () => {
   const { id: slug } = useParams<{ id: string }>();
@@ -18,12 +20,13 @@ export const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState<ProductImage | null>(null);
 
-  // Precarga de imágenes
+  // Precarga de imágenes optimizadas
   useEffect(() => {
     if (currentProduct && currentProduct.images) {
       currentProduct.images.forEach((image) => {
         const img = new Image();
-        img.src = image.src;
+        // Precargar la imagen optimizada si está disponible
+        img.src = getOptimizedImageUrl(image, 'large');
       });
     }
   }, [currentProduct]);
@@ -231,17 +234,27 @@ export const ProductDetailPage: React.FC = () => {
                     }`
                   }
                 >
-                  <img src={image.src} alt="thumbnail" className="w-full h-full object-cover" />
+                  <OptimizedImage 
+                    image={image} 
+                    size="thumbnail" 
+                    alt="thumbnail" 
+                    className="w-full h-full object-cover" 
+                  />
                 </button>
               ))}
             </div>
 
             <div className="flex-1 order-1 md:order-2">
-              <img
-                src={currentImage?.src}
-                alt={currentProduct.title}
-                className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
-              />
+              {currentImage && (
+                <OptimizedImage
+                  image={currentImage}
+                  size="large"
+                  alt={currentProduct.title}
+                  className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
+                  loading="eager"
+                  responsive={true}
+                />
+              )}
             </div>
           </div>
         </div>

@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { ShoppingCart, Star, Crown, Zap } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import type { Product } from '../types';
+import { OptimizedImage } from './OptimizedImage';
+import { getMainProductImage } from '../utils/imageUtils';
 
 interface FeaturedProductCardProps {
   product: Product;
@@ -71,7 +73,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
     return { minPriceFormatted: `€${(min / 100).toFixed(2)}`, hasPrice: true };
   }, [product.variants]);
 
-  const firstImage = product.images?.[0];
+  const firstImage = getMainProductImage(product.images || []);
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -123,13 +125,14 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
           )}
 
           {firstImage ? (
-            <img
-              src={firstImage.src}
+            <OptimizedImage
+              image={firstImage}
+              size="medium"
               alt={product.title || 'Producto'}
               loading="lazy"
-              onLoad={() => setImgLoaded(true)}
               className={`w-full h-auto object-cover transition-transform duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'} ${isHovered ? 'scale-105' : 'scale-100'}`}
-              style={{ display: 'block' }}
+              responsive={true}
+              onLoad={() => setImgLoaded(true)}
             />
           ) : (
             <div className="w-full h-48 flex items-center justify-center bg-slate-700">

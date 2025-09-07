@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Product } from '../types';
-import { slugify } from '../utils/formatters'; // Importar la utilidad
+import { slugify } from '../utils/formatters';
+import { OptimizedImage } from './OptimizedImage';
+import { getMainProductImage } from '../utils/imageUtils';
 
 interface ProductCardProps {
   product: Product;
@@ -10,7 +12,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [hoveredColorId, setHoveredColorId] = React.useState<number | null>(null);
   const navigate = useNavigate();
-  const defaultImage = product.images.find((img: any) => img.is_default) || product.images[0];
+  const defaultImage = getMainProductImage(product.images);
   const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
   const uniquePrices = Array.from(new Set(enabledVariants.map((v: any) => v.price)));
   const price = uniquePrices.length === 1
@@ -47,10 +49,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Imagen del producto */}
         <div className="aspect-square bg-slate-700 overflow-hidden relative">
           {imageToShow ? (
-            <img
-              src={imageToShow.src}
+            <OptimizedImage
+              image={imageToShow}
+              size="medium"
               alt={product.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+              responsive={true}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-500">
