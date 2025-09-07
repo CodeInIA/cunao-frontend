@@ -25,6 +25,8 @@ export const ProductDetailPage: React.FC = () => {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
+  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
+  const [touchEndTime, setTouchEndTime] = useState<number | null>(null);
 
   // Precarga inteligente: primero variante seleccionada, luego el resto
   const preloadStatus = useProductPagePreloader(
@@ -182,6 +184,7 @@ export const ProductDetailPage: React.FC = () => {
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchStartTime(Date.now());
     setIsDragging(true);
     setDragOffset(0);
   };
@@ -205,15 +208,34 @@ export const ProductDetailPage: React.FC = () => {
       return;
     }
     
+    const endTime = Date.now();
+    setTouchEndTime(endTime);
+    
     const distance = touchStart - touchEnd;
+    const swipeTime = touchStartTime ? endTime - touchStartTime : 1000;
+    const velocity = Math.abs(distance) / swipeTime; // píxeles por milisegundo
+    
+    // Calcular cuántas imágenes saltar basado en la velocidad
+    const baseDistance = Math.abs(distance);
+    let imagesToMove = 1;
+    
+    // Si el swipe es muy rápido (velocidad alta), permitir saltar múltiples imágenes
+    if (velocity > 1.5 && baseDistance > 100) { // Velocity > 1.5 px/ms y distancia > 100px
+      imagesToMove = Math.min(Math.floor(velocity * 0.8), 3); // Máximo 3 imágenes
+    } else if (velocity > 0.8 && baseDistance > 80) { // Velocity > 0.8 px/ms y distancia > 80px
+      imagesToMove = 2;
+    }
+    
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe && currentImageIndex < galleryImages.length - 1) {
-      navigateToImage(currentImageIndex + 1);
+    if (isLeftSwipe) {
+      const newIndex = Math.min(currentImageIndex + imagesToMove, galleryImages.length - 1);
+      navigateToImage(newIndex);
     }
-    if (isRightSwipe && currentImageIndex > 0) {
-      navigateToImage(currentImageIndex - 1);
+    if (isRightSwipe) {
+      const newIndex = Math.max(currentImageIndex - imagesToMove, 0);
+      navigateToImage(newIndex);
     }
     
     // Reset drag state
