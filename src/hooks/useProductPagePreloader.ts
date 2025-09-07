@@ -78,7 +78,7 @@ export function useProductPagePreloader(
     const preloadImage = (image: ProductImage, isVariantImage: boolean): Promise<void> => {
       return new Promise((resolve) => {
         const img = new Image();
-        const url = getOptimizedImageUrl(image, 'original'); // Usar siempre resolución original
+        const url = getOptimizedImageUrl(image); // Usar siempre máxima calidad
         
         img.onload = () => {
           if (isVariantImage) {

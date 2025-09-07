@@ -51,7 +51,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {imageToShow ? (
             <OptimizedImage
               image={imageToShow}
-              size="original" // Usar resolución original para máxima calidad
               alt={product.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"

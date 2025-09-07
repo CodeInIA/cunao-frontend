@@ -127,7 +127,6 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
           {firstImage ? (
             <OptimizedImage
               image={firstImage}
-              size="original" // Usar resolución original para máxima calidad
               alt={product.title || 'Producto'}
               loading="lazy"
               className={`w-full h-auto object-cover transition-transform duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'} ${isHovered ? 'scale-105' : 'scale-100'}`}

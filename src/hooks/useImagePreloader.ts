@@ -32,8 +32,8 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
       return;
     }
 
-    const sizes = ['thumbnail', 'medium', 'large', 'original'] as const;
-    const totalImages = images.length * sizes.length;
+    // Solo usar una imagen por producto (máxima calidad)
+    const totalImages = images.length;
     
     setStatus(prev => ({
       ...prev,
@@ -43,7 +43,7 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
       errors: []
     }));
 
-    console.log(`🖼️ Iniciando precarga de ${totalImages} imágenes (${images.length} productos × ${sizes.length} tamaños)`);
+    console.log(`🖼️ Iniciando precarga de ${totalImages} imágenes en máxima calidad`);
 
     let loadedCount = 0;
     const errors: string[] = [];
@@ -57,22 +57,22 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
       });
     };
 
-    // Precargar todas las imágenes en paralelo con límite de concurrencia
-    const preloadImage = (image: ProductImage, size: typeof sizes[number], index: number): Promise<void> => {
+    // Precargar imagen en máxima calidad
+    const preloadImage = (image: ProductImage, index: number): Promise<void> => {
       return new Promise((resolve) => {
         const img = new Image();
-        const url = getOptimizedImageUrl(image, size);
+        const url = getOptimizedImageUrl(image); // Solo máxima calidad
         
         img.onload = () => {
           loadedCount++;
-          console.log(`✅ Imagen ${index + 1}/${images.length} (${size}) precargada exitosamente`);
+          console.log(`✅ Imagen ${index + 1}/${images.length} precargada exitosamente`);
           updateStatus();
           resolve();
         };
         
         img.onerror = () => {
           loadedCount++;
-          const error = `Error precargando imagen ${index + 1} (${size}): ${url.substring(0, 100)}...`;
+          const error = `Error precargando imagen ${index + 1}: ${url.substring(0, 100)}...`;
           errors.push(error);
           console.warn(`⚠️ ${error}`);
           updateStatus();
@@ -87,9 +87,7 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
     const preloadPromises: Promise<void>[] = [];
     
     images.forEach((image, imageIndex) => {
-      sizes.forEach((size) => {
-        preloadPromises.push(preloadImage(image, size, imageIndex));
-      });
+      preloadPromises.push(preloadImage(image, imageIndex));
     });
 
     // Esperar a que todas las imágenes se carguen (o fallen)
@@ -108,52 +106,13 @@ export function useImagePreloader(images: ProductImage[]): ImagePreloadStatus {
 }
 
 /**
- * Hook simplificado que solo precarga las imágenes originales (máxima calidad)
- * Útil cuando solo necesitas la imagen principal en alta calidad
+ * Hook simplificado que precarga imágenes en máxima calidad
+ * (Ahora es redundante ya que el hook principal solo usa máxima calidad)
  */
 export function useOriginalImagePreloader(images: ProductImage[]): Pick<ImagePreloadStatus, 'isLoading' | 'loadedCount'> {
-  const [status, setStatus] = useState({
-    isLoading: true,
-    loadedCount: 0
-  });
-
-  useEffect(() => {
-    if (!images || images.length === 0) {
-      setStatus({ isLoading: false, loadedCount: 0 });
-      return;
-    }
-
-    console.log(`🖼️ Precargando ${images.length} imágenes originales de alta calidad`);
-
-    let loadedCount = 0;
-
-    const updateStatus = () => {
-      setStatus({
-        isLoading: loadedCount < images.length,
-        loadedCount
-      });
-    };
-
-    images.forEach((image, index) => {
-      const img = new Image();
-      const url = getOptimizedImageUrl(image, 'original');
-      
-      img.onload = () => {
-        loadedCount++;
-        console.log(`✅ Imagen original ${index + 1}/${images.length} precargada`);
-        updateStatus();
-      };
-      
-      img.onerror = () => {
-        loadedCount++;
-        console.warn(`⚠️ Error precargando imagen original ${index + 1}: ${url.substring(0, 100)}...`);
-        updateStatus();
-      };
-      
-      img.src = url;
-    });
-
-  }, [images]);
-
-  return status;
+  const fullStatus = useImagePreloader(images);
+  return {
+    isLoading: fullStatus.isLoading,
+    loadedCount: fullStatus.loadedCount
+  };
 }

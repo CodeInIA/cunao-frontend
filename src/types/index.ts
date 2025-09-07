@@ -30,15 +30,9 @@ export interface ProductImage {
   variant_ids: number[];
   position: string;
   is_default: boolean;
-  // URLs de CDN optimizadas
+  // URL de CDN optimizada (WebP en máxima calidad)
   cdnUrl?: string;
   cdnPublicId?: string;
-  cdnUrls?: {
-    thumbnail: string;
-    medium: string;
-    large: string;
-    original: string;
-  };
   alt?: string;
 }
 

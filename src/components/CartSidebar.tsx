@@ -120,7 +120,6 @@ export const CartSidebar: React.FC = () => {
                     {imageToUse ? (
                       <OptimizedImage
                         image={imageToUse}
-                        size="original" // Usar resolución original para máxima calidad
                         alt={item.title}
                         className="w-24 h-24 lg:w-40 lg:h-40 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
                         loading="lazy"

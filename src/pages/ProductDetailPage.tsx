@@ -247,7 +247,6 @@ export const ProductDetailPage: React.FC = () => {
                 >
                   <OptimizedImage 
                     image={image} 
-                    size="thumbnail" 
                     alt="thumbnail" 
                     className="w-full h-full object-cover" 
                   />
@@ -259,7 +258,6 @@ export const ProductDetailPage: React.FC = () => {
               {currentImage && (
                 <OptimizedImage
                   image={currentImage}
-                  size="original" // Usar imagen original para máxima calidad
                   alt={currentProduct.title}
                   className="w-full rounded-xl shadow-lg border-4 border-slate-800 aspect-square object-cover"
                   loading="eager"

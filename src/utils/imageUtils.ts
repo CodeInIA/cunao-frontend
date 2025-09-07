@@ -1,58 +1,28 @@
 import { ProductImage } from '../types/index.js';
 
 /**
- * Obtiene la URL optimizada de una imagen según el tamaño deseado
- * IMPORTANTE: 'original' devuelve la máxima calidad disponible en WebP
+ * Obtiene la URL de máxima calidad WebP original
+ * Simplificado: siempre devuelve la mejor calidad disponible
  */
 export function getOptimizedImageUrl(
   image: ProductImage, 
-  size: 'thumbnail' | 'medium' | 'large' | 'original' = 'medium'
+  size: 'thumbnail' | 'medium' | 'large' | 'original' = 'original'
 ): string {
-  // Para tamaño original, usar la URL de máxima calidad del CDN si está disponible
-  if (size === 'original') {
-    if (image.cdnUrls && image.cdnUrls.original) {
-      return image.cdnUrls.original;
-    }
-    // Si no hay URL original en CDN, usar la principal del CDN (que ya es WebP optimizada)
-    if (image.cdnUrl) {
-      return image.cdnUrl;
-    }
-    // Último fallback a URL original de Printify
-    return image.src;
-  }
-  
-  // Para otros tamaños, usar las URLs específicas del CDN
-  if (image.cdnUrls && image.cdnUrls[size]) {
-    return image.cdnUrls[size];
-  }
-  
-  // Fallback a URL principal de CDN (que ya es WebP optimizada)
+  // Siempre usar la máxima calidad disponible
   if (image.cdnUrl) {
     return image.cdnUrl;
   }
   
-  // Último fallback a URL original de Printify
+  // Fallback a URL original de Printify
   return image.src;
 }
 
 /**
- * Obtiene múltiples tamaños de una imagen para srcSet responsive
+ * Obtiene la URL para srcSet responsive (simplificado - solo una URL de máxima calidad)
  */
 export function getResponsiveImageSrcSet(image: ProductImage): string {
-  const urls: string[] = [];
-  
-  if (image.cdnUrls) {
-    if (image.cdnUrls.thumbnail) urls.push(`${image.cdnUrls.thumbnail} 400w`);
-    if (image.cdnUrls.medium) urls.push(`${image.cdnUrls.medium} 800w`);
-    if (image.cdnUrls.large) urls.push(`${image.cdnUrls.large} 1200w`);
-  }
-  
-  // Si no hay URLs de CDN, usar la URL original
-  if (urls.length === 0) {
-    urls.push(`${image.src} 800w`);
-  }
-  
-  return urls.join(', ');
+  const url = getOptimizedImageUrl(image);
+  return `${url} 1x`;
 }
 
 /**
@@ -90,16 +60,15 @@ export function getVariantImages(images: ProductImage[], variantId: number): Pro
 }
 
 /**
- * Verifica si una imagen tiene URLs de CDN disponibles
+ * Verifica si una imagen tiene URL de CDN disponible
  */
 export function hasOptimizedImages(image: ProductImage): boolean {
-  return !!(image.cdnUrl || image.cdnUrls);
+  return !!image.cdnUrl;
 }
 
 /**
- * Obtiene la mejor URL disponible para una imagen
- * Prioriza CDN sobre URL original
+ * Obtiene la mejor URL disponible para una imagen (simplificado)
  */
-export function getBestImageUrl(image: ProductImage, preferredSize: 'thumbnail' | 'medium' | 'large' = 'medium'): string {
-  return getOptimizedImageUrl(image, preferredSize);
+export function getBestImageUrl(image: ProductImage): string {
+  return getOptimizedImageUrl(image);
 }

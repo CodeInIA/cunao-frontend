@@ -15,7 +15,7 @@ interface OptimizedImageProps {
 
 export function OptimizedImage({ 
   image, 
-  size = 'medium', 
+  size = 'original', // Usar por defecto máxima calidad
   className = '', 
   alt, 
   loading = 'lazy',
