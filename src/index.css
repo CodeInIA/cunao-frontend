@@ -103,6 +103,23 @@ body {
   width: 100%;
   overflow-x: auto;
   border-radius: 0.5rem;
+  /* Scrollbar personalizada para WebKit */
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1e293b;
+}
+.size-guide-container::-webkit-scrollbar {
+  height: 8px;
+}
+.size-guide-container::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 4px;
+}
+.size-guide-container::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+.size-guide-container::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 .size-guide-table {
   width: 100%;
@@ -119,8 +136,8 @@ body {
   color: #ffffff;
   font-weight: 600;
   text-align: center;
-  padding: 1rem 0.75rem;
-  font-size: 0.9rem;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   border-bottom: 1px solid #475569;
 }
@@ -129,11 +146,13 @@ body {
   color: #F1BF00;
   font-weight: 600;
   text-transform: none;
+  padding-left: 0.75rem;
+  min-width: 120px;
 }
 .size-guide-table tbody td {
   color: #e2e8f0;
-  font-size: 0.95rem;
-  padding: 0.875rem 0.75rem;
+  font-size: 0.85rem;
+  padding: 0.75rem 0.5rem;
   border-top: 1px solid #334155;
   vertical-align: middle;
   text-align: center;
@@ -144,12 +163,57 @@ body {
   font-weight: 500;
   text-align: left;
   border-right: 1px solid #475569;
+  padding-left: 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.3;
 }
 .size-guide-table tbody tr:nth-child(even) td {
   background: #252f3f;
 }
 .size-guide-table tbody tr:nth-child(even) td:first-child {
   background: #2a3441;
+}
+
+/* Diseño tipo Nike para móvil - columna fija */
+@media (max-width: 768px) {
+  .size-guide-container {
+    position: relative;
+  }
+  
+  .size-guide-table {
+    min-width: 600px;
+    position: relative;
+  }
+  
+  .size-guide-table thead th:first-child,
+  .size-guide-table tbody td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .size-guide-table thead th {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+  .size-guide-table thead th:first-child {
+    padding-left: 0.5rem;
+    min-width: 100px;
+    background: #374151;
+  }
+  .size-guide-table tbody td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+  .size-guide-table tbody td:first-child {
+    padding-left: 0.5rem;
+    font-size: 0.75rem;
+    background: #2d3748;
+  }
+  .size-guide-table tbody tr:nth-child(even) td:first-child {
+    background: #2a3441;
+  }
 }
 
 /* GPSR específico */

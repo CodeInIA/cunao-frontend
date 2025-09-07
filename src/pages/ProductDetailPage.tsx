@@ -32,6 +32,20 @@ export const ProductDetailPage: React.FC = () => {
   const [isCarouselActive, setIsCarouselActive] = useState(false);
   const [isSizeGuideModalOpen, setIsSizeGuideModalOpen] = useState(false);
 
+  // Bloquear scroll cuando el modal está abierto
+  useEffect(() => {
+    if (isSizeGuideModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup al desmontar o cambiar estado
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSizeGuideModalOpen]);
+
   // Precarga inteligente: primero variante seleccionada, luego el resto
   const preloadStatus = useProductPagePreloader(
     currentProduct?.images || [], 
@@ -317,10 +331,10 @@ export const ProductDetailPage: React.FC = () => {
       cleanTable.classList.add('size-guide-table');
       cleanTable.querySelectorAll('[style]').forEach((el) => (el as HTMLElement).removeAttribute('style'));
 
-      // Reemplazar encabezados vacíos por texto si aplica (primera celda vacía)
+      // Añadir "Talla" en la primera celda del encabezado
       const firstTh = cleanTable.querySelector('thead tr th');
-      if (firstTh && firstTh.textContent && firstTh.textContent.trim() === '') {
-        firstTh.textContent = '\u00A0';
+      if (firstTh) {
+        firstTh.textContent = 'Talla';
       }
 
       // Eliminar la tabla del contenido
@@ -687,12 +701,12 @@ export const ProductDetailPage: React.FC = () => {
           onClick={() => setIsSizeGuideModalOpen(false)}
         >
           <div 
-            className="bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            className="bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-slate-700">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Ruler className="w-5 h-5 text-spanish-yellow" />
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700">
+              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <Ruler className="w-4 h-4 md:w-5 md:h-5 text-spanish-yellow" />
                 Guía de tallas
               </h2>
               <button
@@ -700,12 +714,12 @@ export const ProductDetailPage: React.FC = () => {
                 className="text-slate-400 hover:text-white transition-colors"
                 title="Cerrar"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="p-6 overflow-auto max-h-[calc(90vh-120px)]">
+            <div className="p-4 md:p-6 overflow-auto max-h-[calc(90vh-120px)]">
               <div className="size-guide-container size-guide-modal">
                 <div dangerouslySetInnerHTML={{ __html: sizeTableHtml }} />
               </div>
