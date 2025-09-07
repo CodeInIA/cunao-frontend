@@ -1,6 +1,22 @@
 import { ProductImage } from '../types/index.js';
 
 /**
+ * Obtiene URL WebP optimizada tanto para ProductImage como para string
+ */
+export function getWebPImageUrl(image: ProductImage | string): string {
+  if (typeof image === 'string') {
+    // Si es un string, verificar si ya está optimizado (tiene cdnUrl o es de Cloudinary)
+    if (image.includes('res.cloudinary.com') || image.includes('cloudinary')) {
+      return image; // Ya está optimizado
+    }
+    // Si es URL de Printify, retornar tal como está (el backend se encargará de la optimización)
+    return image;
+  }
+  
+  return getOptimizedImageUrl(image);
+}
+
+/**
  * Obtiene la URL de máxima calidad WebP original
  * Simplificado: siempre devuelve la mejor calidad disponible
  */

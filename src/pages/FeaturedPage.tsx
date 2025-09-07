@@ -5,6 +5,7 @@ import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
 import { FeaturedProductCard } from '../components/FeaturedProductCard';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
 
 export const FeaturedPage: React.FC = () => {
@@ -71,7 +72,7 @@ export const FeaturedPage: React.FC = () => {
       quantity: 1,
       title: product.title,
       price: minPrice / 100, // Convertir de centavos a euros
-      image: product.images[0]?.src || '',
+      image: product.images[0] ? getOptimizedImageUrl(product.images[0]) : '',
       size: selectedSize,
       color: selectedColor
     };

@@ -7,6 +7,7 @@ import { Lock, ArrowLeft, MapPin, ChevronDown, Check } from 'lucide-react'; // I
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import toast from 'react-hot-toast';
 import { Listbox } from '@headlessui/react'; // Importación de Headless UI
+import { getWebPImageUrl } from '../utils/imageUtils';
 
 type ShippingRegion = 'spain' | 'europa' | '';
 
@@ -168,7 +169,11 @@ export const CheckoutPage: React.FC = () => {
             {items.map(item => (
               <div key={item.variantId} className="flex items-center gap-4">
                 <div className="relative">
-                  <img src={item.image} alt={item.title} className="w-16 h-16 rounded-md object-cover border-2 border-slate-600" />
+                  <img 
+                    src={getWebPImageUrl(item.image)} 
+                    alt={item.title} 
+                    className="w-16 h-16 rounded-md object-cover border-2 border-slate-600" 
+                  />
                   <span className="absolute -top-2 -right-2 bg-spanish-yellow text-slate-900 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">{item.quantity}</span>
                 </div>
                 <div className="flex-1">

@@ -41,7 +41,7 @@ function OptimizedImageComponent({
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative">
       {/* Skeleton/loading state */}
       {isLoading && (
         <div className={`absolute inset-0 ${fallbackClassName} animate-pulse flex items-center justify-center`}>

@@ -116,16 +116,16 @@ export const CartSidebar: React.FC = () => {
                 return (
                   // Contenedor de item: espaciado responsivo
                   <div key={item.variantId} className="flex space-x-4 lg:space-x-6 p-2 lg:p-4 bg-slate-800 rounded-lg border border-slate-700 items-start lg:items-center">
-                    {/* Imagen: tamaño responsivo con resolución original */}
+                    {/* Imagen: tamaño más grande y responsivo */}
                     {imageToUse ? (
                       <OptimizedImage
                         image={imageToUse}
                         alt={item.title}
-                        className="w-24 h-24 lg:w-40 lg:h-40 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
+                        className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-24 h-24 lg:w-40 lg:h-40 bg-slate-700 rounded-md border-2 border-slate-600 flex-shrink-0 flex items-center justify-center">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 bg-slate-700 rounded-md border-2 border-slate-600 flex-shrink-0 flex items-center justify-center">
                         <span className="text-slate-400 text-2xl">👕</span>
                       </div>
                     )}

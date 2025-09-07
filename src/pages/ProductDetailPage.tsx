@@ -183,13 +183,18 @@ export const ProductDetailPage: React.FC = () => {
   const handleAddToCart = () => {
     if (!selectedVariant || !currentProduct) return;
     const sizeTitle = allProductOptions.sizes?.find(s => s.id === selectedOptions.size)?.title || '';
+    
+    // Obtener imagen optimizada para el carrito
+    const imageToUse = currentImage || currentProduct.images[0];
+    const optimizedImageUrl = imageToUse ? getOptimizedImageUrl(imageToUse) : '';
+    
     const cartItem = {
       productId: currentProduct.id,
       variantId: selectedVariant.id,
       quantity: quantity,
       title: currentProduct.title,
       price: selectedVariant.price / 100,
-      image: currentImage?.src || currentProduct.images[0]?.src || '',
+      image: optimizedImageUrl,
       size: sizeTitle,
       color: selectedColorName || '',
     };
