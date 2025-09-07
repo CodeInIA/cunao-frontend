@@ -2,17 +2,31 @@ import { ProductImage } from '../types/index.js';
 
 /**
  * Obtiene la URL optimizada de una imagen según el tamaño deseado
+ * IMPORTANTE: 'original' devuelve la máxima calidad disponible en WebP
  */
 export function getOptimizedImageUrl(
   image: ProductImage, 
   size: 'thumbnail' | 'medium' | 'large' | 'original' = 'medium'
 ): string {
-  // Priorizar URLs de CDN si están disponibles
+  // Para tamaño original, usar la URL de máxima calidad del CDN si está disponible
+  if (size === 'original') {
+    if (image.cdnUrls && image.cdnUrls.original) {
+      return image.cdnUrls.original;
+    }
+    // Si no hay URL original en CDN, usar la principal del CDN (que ya es WebP optimizada)
+    if (image.cdnUrl) {
+      return image.cdnUrl;
+    }
+    // Último fallback a URL original de Printify
+    return image.src;
+  }
+  
+  // Para otros tamaños, usar las URLs específicas del CDN
   if (image.cdnUrls && image.cdnUrls[size]) {
     return image.cdnUrls[size];
   }
   
-  // Fallback a URL principal de CDN
+  // Fallback a URL principal de CDN (que ya es WebP optimizada)
   if (image.cdnUrl) {
     return image.cdnUrl;
   }

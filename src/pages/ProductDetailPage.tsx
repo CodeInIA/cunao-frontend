@@ -2,12 +2,12 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
-import { ShoppingCart, Plus, Minus, Check, Image as ImageIcon } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
 import { formatPrice, slugify } from '../utils/formatters';
 import type { ProductVariant, ProductImage } from '../types';
 import { OptimizedImage } from '../components/OptimizedImage';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { useImagePreloader } from '../hooks/useImagePreloader';
+import { useProductPagePreloader } from '../hooks/useProductPagePreloader';
 
 export const ProductDetailPage: React.FC = () => {
   const { id: slug } = useParams<{ id: string }>();
@@ -21,17 +21,23 @@ export const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState<ProductImage | null>(null);
 
-  // Precarga inteligente de todas las imágenes del producto
-  const preloadStatus = useImagePreloader(currentProduct?.images || []);
+  // Precarga inteligente: primero variante seleccionada, luego el resto
+  const preloadStatus = useProductPagePreloader(
+    currentProduct?.images || [], 
+    selectedVariant?.id
+  );
 
-  // Mostrar progreso de precarga en la consola
+  // Log del progreso de precarga (solo para desarrollo)
   useEffect(() => {
-    if (preloadStatus.totalCount > 0) {
-      const percentage = Math.round((preloadStatus.loadedCount / preloadStatus.totalCount) * 100);
-      console.log(`📊 Progreso de precarga: ${percentage}% (${preloadStatus.loadedCount}/${preloadStatus.totalCount})`);
+    if (preloadStatus.variantTotalCount > 0) {
+      console.log(`🎯 Variante: ${preloadStatus.variantLoadedCount}/${preloadStatus.variantTotalCount} | Total: ${preloadStatus.totalLoadedCount}/${preloadStatus.totalImageCount}`);
       
-      if (!preloadStatus.isLoading) {
-        console.log('🎉 ¡Todas las imágenes del producto están precargadas! Los cambios de variante serán instantáneos.');
+      if (preloadStatus.variantImagesLoaded && !preloadStatus.allImagesLoaded) {
+        console.log('🚀 ¡Imágenes de variante listas! Cargando resto en segundo plano...');
+      }
+      
+      if (preloadStatus.allImagesLoaded) {
+        console.log('🎉 ¡Todas las imágenes están listas! Cambios instantáneos disponibles.');
       }
     }
   }, [preloadStatus]);
@@ -268,16 +274,6 @@ export const ProductDetailPage: React.FC = () => {
           <h1 className="text-4xl font-display font-bold text-white mb-4">
             {currentProduct.title}
           </h1>
-
-          {/* Indicador de precarga de imágenes */}
-          {preloadStatus.isLoading && preloadStatus.totalCount > 0 && (
-            <div className="mb-4 flex items-center gap-2 text-sm text-slate-300">
-              <ImageIcon size={16} className="animate-pulse" />
-              <span>
-                Optimizando experiencia... {Math.round((preloadStatus.loadedCount / preloadStatus.totalCount) * 100)}%
-              </span>
-            </div>
-          )}
           
           <div className="mb-6">
             <span className="text-3xl font-bold text-spanish-yellow">

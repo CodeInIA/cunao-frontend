@@ -5,6 +5,8 @@ import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useCartStore } from '../stores/cartStore';
 import { X, ShoppingBag, Minus, Plus, Trash2, Truck } from 'lucide-react';
 import { formatPrice } from '../utils/formatters';
+import { OptimizedImage } from './OptimizedImage';
+import { getMainProductImage } from '../utils/imageUtils';
 
 export const CartSidebar: React.FC = () => {
   const shippingConfig = useShippingConfig(import.meta.env.VITE_API_URL);
@@ -104,15 +106,30 @@ export const CartSidebar: React.FC = () => {
                 const colorOptions = product.options?.find(o => o.type === 'color')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
                 const sizeOptions = product.options?.find(o => o.type === 'size')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
                 
+                // Obtener la imagen correcta para esta variante específica
+                const currentVariant = product.variants?.find(v => v.id === item.variantId);
+                const variantImage = currentVariant
+                  ? product.images?.find(img => img.variant_ids.includes(currentVariant.id))
+                  : null;
+                const imageToUse = variantImage || getMainProductImage(product.images || []);
+                
                 return (
                   // Contenedor de item: espaciado responsivo
                   <div key={item.variantId} className="flex space-x-4 lg:space-x-6 p-2 lg:p-4 bg-slate-800 rounded-lg border border-slate-700 items-start lg:items-center">
-                    {/* Imagen: tamaño responsivo */}
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-24 h-24 lg:w-40 lg:h-40 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
-                    />
+                    {/* Imagen: tamaño responsivo con resolución original */}
+                    {imageToUse ? (
+                      <OptimizedImage
+                        image={imageToUse}
+                        size="original" // Usar resolución original para máxima calidad
+                        alt={item.title}
+                        className="w-24 h-24 lg:w-40 lg:h-40 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 lg:w-40 lg:h-40 bg-slate-700 rounded-md border-2 border-slate-600 flex-shrink-0 flex items-center justify-center">
+                        <span className="text-slate-400 text-2xl">👕</span>
+                      </div>
+                    )}
                     <div className="flex-1 flex flex-col justify-between min-w-0 h-full lg:h-auto">
                       <div>
                         {/* Título y selectores: mantienen su estilo original en PC */}
