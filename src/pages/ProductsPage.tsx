@@ -10,6 +10,12 @@ export const ProductsPage: React.FC = () => {
   const { products, loadingState, error, fetchProducts, searchProducts } = useProductStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    category: '',
+    priceRange: '',
+    sortBy: 'popular'
+  });
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const { navigateTo } = useSmartNavigation();
   const location = useLocation();
 
@@ -41,6 +47,107 @@ export const ProductsPage: React.FC = () => {
 
     return () => clearTimeout(delayedSearch);
   }, [searchQuery, searchProducts, fetchProducts]);
+
+  // Efecto para aplicar filtros
+  useEffect(() => {
+    let filtered = [...products];
+
+    // Filtrar por categoría (usando tags)
+    if (filters.category) {
+      filtered = filtered.filter(product => 
+        product.tags?.some(tag => 
+          tag.toLowerCase().includes(filters.category.toLowerCase())
+        )
+      );
+    }
+
+    // Filtrar por rango de precio
+    if (filters.priceRange) {
+      const minPrice = Math.min(...filtered.flatMap(p => 
+        p.variants?.filter(v => v.is_enabled).map(v => v.price || 0) || [0]
+      )) / 100;
+
+      switch (filters.priceRange) {
+        case 'under35':
+          filtered = filtered.filter(product => {
+            const prices = product.variants?.filter(v => v.is_enabled).map(v => (v.price || 0) / 100) || [];
+            return Math.min(...prices) < 35;
+          });
+          break;
+        case '35-50':
+          filtered = filtered.filter(product => {
+            const prices = product.variants?.filter(v => v.is_enabled).map(v => (v.price || 0) / 100) || [];
+            const minPrice = Math.min(...prices);
+            return minPrice >= 35 && minPrice <= 50;
+          });
+          break;
+        case 'over50':
+          filtered = filtered.filter(product => {
+            const prices = product.variants?.filter(v => v.is_enabled).map(v => (v.price || 0) / 100) || [];
+            return Math.min(...prices) > 50;
+          });
+          break;
+      }
+    }
+
+    // Ordenar
+    switch (filters.sortBy) {
+      case 'price-asc':
+        filtered.sort((a, b) => {
+          const priceA = Math.min(...(a.variants?.filter(v => v.is_enabled).map(v => v.price || 0) || [0]));
+          const priceB = Math.min(...(b.variants?.filter(v => v.is_enabled).map(v => v.price || 0) || [0]));
+          return priceA - priceB;
+        });
+        break;
+      case 'price-desc':
+        filtered.sort((a, b) => {
+          const priceA = Math.min(...(a.variants?.filter(v => v.is_enabled).map(v => v.price || 0) || [0]));
+          const priceB = Math.min(...(b.variants?.filter(v => v.is_enabled).map(v => v.price || 0) || [0]));
+          return priceB - priceA;
+        });
+        break;
+      case 'newest':
+        filtered.sort((a, b) => {
+          const dateA = new Date(a.created_at || 0).getTime();
+          const dateB = new Date(b.created_at || 0).getTime();
+          return dateB - dateA;
+        });
+        break;
+      case 'popular':
+      default:
+        // Mantener orden original (más populares)
+        break;
+    }
+
+    setFilteredProducts(filtered);
+  }, [products, filters]);
+
+  const handleFilterChange = (filterType: keyof typeof filters, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      category: '',
+      priceRange: '',
+      sortBy: 'popular'
+    });
+  };
+
+  // Obtener categorías únicas de los tags
+  const availableCategories = Array.from(
+    new Set(
+      products.flatMap(product => product.tags || [])
+        .filter(tag => tag.length > 0)
+    )
+  ).sort();
+
+  const displayedProducts = filteredProducts.length > 0 || Object.values(filters).some(f => f !== '' && f !== 'popular') 
+    ? filteredProducts 
+    : products;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,37 +206,59 @@ export const ProductsPage: React.FC = () => {
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Categoría
                   </label>
-                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow">
-                    <option>Todas las categorías</option>
-                    <option>Clásicos cuñao</option>
-                    <option>Política</option>
-                    <option>Fútbol</option>
-                    <option>Nostalgia</option>
+                  <select 
+                    value={filters.category}
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                    className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow"
+                  >
+                    <option value="">Todas las categorías</option>
+                    {availableCategories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Precio
                   </label>
-                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow">
-                    <option>Todos los precios</option>
-                    <option>Menos de 35€</option>
-                    <option>35€ - 50€</option>
-                    <option>Más de 50€</option>
+                  <select 
+                    value={filters.priceRange}
+                    onChange={(e) => handleFilterChange('priceRange', e.target.value)}
+                    className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow"
+                  >
+                    <option value="">Todos los precios</option>
+                    <option value="under35">Menos de 35€</option>
+                    <option value="35-50">35€ - 50€</option>
+                    <option value="over50">Más de 50€</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Ordenar por
                   </label>
-                  <select className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow">
-                    <option>Más populares</option>
-                    <option>Precio: menor a mayor</option>
-                    <option>Precio: mayor a menor</option>
-                    <option>Más recientes</option>
+                  <select 
+                    value={filters.sortBy}
+                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                    className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:ring-2 focus:ring-spanish-yellow"
+                  >
+                    <option value="popular">Más populares</option>
+                    <option value="price-asc">Precio: menor a mayor</option>
+                    <option value="price-desc">Precio: mayor a menor</option>
+                    <option value="newest">Más recientes</option>
                   </select>
                 </div>
               </div>
+              {/* Botón para limpiar filtros */}
+              {(filters.category || filters.priceRange || filters.sortBy !== 'popular') && (
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={resetFilters}
+                    className="px-4 py-2 text-sm bg-slate-600 text-white rounded-md hover:bg-slate-500 transition-colors"
+                  >
+                    Limpiar filtros
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -158,13 +287,20 @@ export const ProductsPage: React.FC = () => {
         {/* Grid de productos */}
         {loadingState === 'success' && (
           <>
-            {products.length > 0 ? (
+            {displayedProducts.length > 0 ? (
               <>
-                <div className="text-sm text-gray-600 mb-4">
-                  Mostrando {products.length} productos
+                <div className="text-sm text-slate-400 mb-4 flex items-center justify-between">
+                  <span>
+                    Mostrando {displayedProducts.length} de {products.length} productos
+                  </span>
+                  {(filters.category || filters.priceRange || filters.sortBy !== 'popular') && (
+                    <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">
+                      Filtros aplicados
+                    </span>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {products.map((product) => (
+                  {displayedProducts.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
@@ -175,18 +311,28 @@ export const ProductsPage: React.FC = () => {
             ) : (
               <div className="text-center py-12">
                 <p className="text-slate-400 text-lg mb-4">
-                  No se encontraron productos
+                  {searchQuery 
+                    ? `No se encontraron productos para "${searchQuery}"`
+                    : "No se encontraron productos con los filtros aplicados"
+                  }
                 </p>
-                {searchQuery && (
+                {searchQuery ? (
                   <button
                     onClick={() => {
                       setSearchQuery('');
                       window.history.replaceState({}, '', '/productos');
                       fetchProducts();
                     }}
-                    className="px-4 py-2 border border-spanish-red text-spanish-red hover:bg-spanish-red hover:text-white transition-colors rounded-lg"
+                    className="px-4 py-2 border border-spanish-red text-spanish-red hover:bg-spanish-red hover:text-white transition-colors rounded-lg mr-2"
                   >
                     Ver todos los productos
+                  </button>
+                ) : (
+                  <button
+                    onClick={resetFilters}
+                    className="px-4 py-2 border border-spanish-red text-spanish-red hover:bg-spanish-red hover:text-white transition-colors rounded-lg"
+                  >
+                    Limpiar filtros
                   </button>
                 )}
               </div>
