@@ -98,7 +98,8 @@ export const ProductDetailPage: React.FC = () => {
   // ▼▼▼ LÓGICA DE INICIALIZACIÓN CORREGIDA Y FINAL ▼▼▼
   // =================================================================
   useEffect(() => {
-    if (currentProduct && currentProduct.variants && currentProduct.variants.length > 0) {
+    // Solo inicializar si aún no hay opciones seleccionadas
+    if (currentProduct && currentProduct.variants && currentProduct.variants.length > 0 && Object.keys(selectedOptions).length === 0) {
         let variantToSelect: ProductVariant | null = null;
 
         // Prioridad 1: Cargar variante según el color de la URL
@@ -175,7 +176,13 @@ export const ProductDetailPage: React.FC = () => {
     if (optionType === 'color' && currentProduct) {
       const colorObj = availableOptions.colors.find((c: any) => c.id === valueId);
       if (colorObj) {
-        navigate(`/producto/${slugify(currentProduct.title)}?color=${encodeURIComponent(colorObj.title)}`, { replace: true });
+        const newColorParam = encodeURIComponent(colorObj.title);
+        const currentColorParam = queryParams.color;
+        
+        // Solo navegar si el color realmente cambió en la URL
+        if (currentColorParam !== colorObj.title) {
+          navigate(`/producto/${slugify(currentProduct.title)}?color=${newColorParam}`, { replace: true });
+        }
       }
     }
   };
