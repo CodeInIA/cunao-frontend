@@ -29,6 +29,7 @@ export const ProductDetailPage: React.FC = () => {
   const [touchEndTime, setTouchEndTime] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [isHorizontalSwipe, setIsHorizontalSwipe] = useState<boolean | null>(null);
+  const [isCarouselActive, setIsCarouselActive] = useState(false);
 
   // Precarga inteligente: primero variante seleccionada, luego el resto
   const preloadStatus = useProductPagePreloader(
@@ -182,6 +183,7 @@ export const ProductDetailPage: React.FC = () => {
 
   // Funciones para el carrusel móvil
   const minSwipeDistance = 50;
+  const directionThreshold = 15; // Umbral más sensible para detectar dirección
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -190,7 +192,8 @@ export const ProductDetailPage: React.FC = () => {
     setTouchStartTime(Date.now());
     setIsDragging(true);
     setDragOffset(0);
-    setIsHorizontalSwipe(null); // Reset para determinar dirección
+    setIsHorizontalSwipe(null);
+    setIsCarouselActive(true); // Activar el carrusel al iniciar touch
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
@@ -202,16 +205,23 @@ export const ProductDetailPage: React.FC = () => {
     const deltaX = Math.abs(touchStart - currentX);
     const deltaY = Math.abs(touchStartY - currentY);
     
-    // Determinar si es swipe horizontal o vertical en el primer movimiento significativo
-    if (isHorizontalSwipe === null && (deltaX > 10 || deltaY > 10)) {
-      setIsHorizontalSwipe(deltaX > deltaY);
+    // Determinar dirección más temprano y con mejor precisión
+    if (isHorizontalSwipe === null && (deltaX > directionThreshold || deltaY > directionThreshold)) {
+      const horizontalRatio = deltaX / (deltaX + deltaY);
+      // Considerar horizontal si es > 60% del movimiento total
+      setIsHorizontalSwipe(horizontalRatio > 0.6);
     }
     
-    // Solo prevenir scroll si es claramente un swipe horizontal
-    if (isHorizontalSwipe) {
+    // Bloquear scroll si:
+    // 1. Ya se determinó que es swipe horizontal, O
+    // 2. El carrusel está activo y aún no se ha determinado la dirección
+    if (isHorizontalSwipe === true || (isCarouselActive && isHorizontalSwipe === null)) {
       e.preventDefault();
       e.stopPropagation();
-      
+    }
+    
+    // Solo actualizar el offset si es swipe horizontal
+    if (isHorizontalSwipe === true) {
       const diff = touchStart - currentX;
       setDragOffset(diff);
       setTouchEnd(currentX);
@@ -219,8 +229,11 @@ export const ProductDetailPage: React.FC = () => {
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd || !isHorizontalSwipe) {
-      // Si no fue un swipe horizontal, reset y permitir scroll normal
+    // Siempre desactivar el carrusel al terminar el touch
+    setIsCarouselActive(false);
+    
+    if (!touchStart || !touchEnd || isHorizontalSwipe !== true) {
+      // Si no fue un swipe horizontal válido, reset y salir
       setIsDragging(false);
       setDragOffset(0);
       setIsHorizontalSwipe(null);
@@ -232,16 +245,15 @@ export const ProductDetailPage: React.FC = () => {
     
     const distance = touchStart - touchEnd;
     const swipeTime = touchStartTime ? endTime - touchStartTime : 1000;
-    const velocity = Math.abs(distance) / swipeTime; // píxeles por milisegundo
+    const velocity = Math.abs(distance) / swipeTime;
     
     // Calcular cuántas imágenes saltar basado en la velocidad
     const baseDistance = Math.abs(distance);
     let imagesToMove = 1;
     
-    // Si el swipe es muy rápido (velocidad alta), permitir saltar múltiples imágenes
-    if (velocity > 1.5 && baseDistance > 100) { // Velocity > 1.5 px/ms y distancia > 100px
-      imagesToMove = Math.min(Math.floor(velocity * 0.8), 3); // Máximo 3 imágenes
-    } else if (velocity > 0.8 && baseDistance > 80) { // Velocity > 0.8 px/ms y distancia > 80px
+    if (velocity > 1.5 && baseDistance > 100) {
+      imagesToMove = Math.min(Math.floor(velocity * 0.8), 3);
+    } else if (velocity > 0.8 && baseDistance > 80) {
       imagesToMove = 2;
     }
     
@@ -279,6 +291,25 @@ export const ProductDetailPage: React.FC = () => {
       }
     }
   }, [currentImage, galleryImages]);
+
+  // Bloquear scroll del body cuando el carrusel está activo
+  React.useEffect(() => {
+    if (isCarouselActive || isDragging) {
+      // Prevenir scroll del body
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+
+    // Cleanup al desmontar el componente
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isCarouselActive, isDragging]);
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
