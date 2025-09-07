@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
-import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Check, Ruler } from 'lucide-react';
 import { formatPrice, slugify } from '../utils/formatters';
 import type { ProductVariant, ProductImage } from '../types';
 import { OptimizedImage } from '../components/OptimizedImage';
@@ -30,6 +30,7 @@ export const ProductDetailPage: React.FC = () => {
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [isHorizontalSwipe, setIsHorizontalSwipe] = useState<boolean | null>(null);
   const [isCarouselActive, setIsCarouselActive] = useState(false);
+  const [isSizeGuideModalOpen, setIsSizeGuideModalOpen] = useState(false);
 
   // Precarga inteligente: primero variante seleccionada, luego el resto
   const preloadStatus = useProductPagePreloader(
@@ -581,7 +582,19 @@ export const ProductDetailPage: React.FC = () => {
           )}
           {availableOptions.sizes && availableOptions.sizes.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-bold text-slate-300 uppercase mb-2">Talla</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-sm font-bold text-slate-300 uppercase">Talla</h3>
+                {sizeTableHtml && (
+                  <button
+                    onClick={() => setIsSizeGuideModalOpen(true)}
+                    className="text-xs text-slate-400 hover:text-spanish-yellow transition-colors underline decoration-dotted underline-offset-2 flex items-center gap-1"
+                    title="Ver guía de tallas"
+                  >
+                    <Ruler className="w-3 h-3" />
+                    Guía de tallas
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 {availableOptions.sizes.map((size: any) => (
                   <button
@@ -621,33 +634,41 @@ export const ProductDetailPage: React.FC = () => {
           </button>
           <div className="mt-8">
             <div className="rich-text mb-6" dangerouslySetInnerHTML={{ __html: contentHtml }} />
-            {sizeTableHtml && (
-              <div className="mb-8">
-                <details className="size-guide block bg-slate-800 border border-slate-700 rounded-lg">
-                  <summary className="size-guide-summary flex items-center justify-between cursor-pointer select-none list-none px-4 py-3">
-                    <span className="text-white font-semibold">Guía de tallas</span>
-                    <svg className="chevron h-5 w-5 text-slate-300 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            
+            {/* GPSR */}
+            {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
+              <div className="mb-6">
+                <details className="collapsible-section">
+                  <summary className="collapsible-summary">
+                    <div className="collapsible-title">
+                      <svg className="collapsible-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      Información de seguridad del producto (GPSR)
+                    </div>
+                    <svg className="chevron" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
                     </svg>
                   </summary>
-                  <div className="px-4 pb-4">
-                    <div className="size-guide-container overflow-x-auto">
-                      <div dangerouslySetInnerHTML={{ __html: sizeTableHtml }} />
+                  <div className="collapsible-content">
+                    <div className="gpsr-content">
+                      {currentGPSR.map((section, idx) => (
+                        <div key={idx} className="gpsr-item">
+                          <h4 className="gpsr-item-title">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {section.title}
+                          </h4>
+                          <p className="gpsr-item-text">{section.text}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </details>
               </div>
             )}
-            {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
-              <div className="space-y-4 mb-8">
-                {currentGPSR.map((section, idx) => (
-                  <div key={idx} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-                    <h3 className="text-lg font-bold text-white mb-2">{section.title}</h3>
-                    <p className="text-base text-slate-300 whitespace-pre-line">{section.text}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+            
             <div className="flex flex-wrap gap-2 mb-6">
               {currentProduct.tags.map((tag, idx) => (
                 <span key={idx} className="bg-slate-700 text-slate-300 text-xs px-3 py-1 rounded-full border border-slate-600">
@@ -658,6 +679,40 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de guía de tallas */}
+      {isSizeGuideModalOpen && sizeTableHtml && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setIsSizeGuideModalOpen(false)}
+        >
+          <div 
+            className="bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Ruler className="w-5 h-5 text-spanish-yellow" />
+                Guía de tallas
+              </h2>
+              <button
+                onClick={() => setIsSizeGuideModalOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+                title="Cerrar"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 overflow-auto max-h-[calc(90vh-120px)]">
+              <div className="size-guide-container size-guide-modal">
+                <div dangerouslySetInnerHTML={{ __html: sizeTableHtml }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
