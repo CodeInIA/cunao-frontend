@@ -5,7 +5,6 @@ import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
 import { FeaturedProductCard } from '../components/FeaturedProductCard';
-import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
 
 export const HomePage: React.FC = () => {
@@ -16,22 +15,6 @@ export const HomePage: React.FC = () => {
   useEffect(() => {
     fetchFeaturedProducts();
   }, [fetchFeaturedProducts]);
-
-  // Precarga agresiva de imágenes de productos destacados
-  useEffect(() => {
-    if (featuredProducts.length > 0) {
-      console.log('🚀 Iniciando precarga agresiva de imágenes destacadas');
-      featuredProducts.slice(0, 6).forEach((product, index) => {
-        const mainImage = product.images?.[0];
-        if (mainImage) {
-          const img = new Image();
-          img.src = getOptimizedImageUrl(mainImage);
-          img.onload = () => console.log(`✅ Imagen ${index + 1} precargada`);
-          img.onerror = () => console.warn(`❌ Error precargando imagen ${index + 1}`);
-        }
-      });
-    }
-  }, [featuredProducts]);
 
   const handleAddToCart = (product: Product) => {
     // Obtener el precio real del producto
