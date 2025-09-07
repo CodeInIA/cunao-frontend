@@ -18,6 +18,7 @@ interface ProductStore {
   fetchProductVariants: (id: string) => Promise<void>;
   searchProducts: (query: string) => Promise<void>;
   clearError: () => void;
+  resetState: () => void;
 }
 
 export const useProductStore = create<ProductStore>((set, get) => ({
@@ -103,6 +104,16 @@ export const useProductStore = create<ProductStore>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  resetState: () => {
+    set({ 
+      error: null, 
+      loadingState: 'idle',
+      currentProduct: null,
+      currentVariants: [],
+      currentGPSR: []
+    });
   },
 }));
 

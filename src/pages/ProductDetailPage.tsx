@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
-import { ShoppingCart, Plus, Minus, Check, Ruler } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Check, Ruler, Home, ArrowLeft } from 'lucide-react';
 import { formatPrice, slugify } from '../utils/formatters';
 import type { ProductVariant, ProductImage } from '../types';
 import { OptimizedImage } from '../components/OptimizedImage';
@@ -13,7 +13,7 @@ export const ProductDetailPage: React.FC = () => {
   const { id: slug } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentProduct, fetchProduct, loadingState, error, currentGPSR, fetchProductGPSR } = useProductStore();
+  const { currentProduct, fetchProduct, loadingState, error, currentGPSR, fetchProductGPSR, resetState } = useProductStore();
   const { addItem } = useCartStore();
 
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: number }>({});
@@ -467,10 +467,45 @@ export const ProductDetailPage: React.FC = () => {
 
   if (error || !currentProduct) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Producto no encontrado</h2>
-          <p className="text-slate-400 mb-6">El producto que buscas no existe o ha sido eliminado.</p>
+      <div className="min-h-screen bg-slate-900 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">Producto no encontrado</h2>
+            <p className="text-slate-400 mb-8">El producto que buscas no existe o ha sido eliminado.</p>
+            
+            {/* Botones de navegación */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+              >
+                <ArrowLeft size={20} />
+                Volver atrás
+              </button>
+              
+              <button
+                onClick={() => {
+                  console.log('🔄 Navegando a /productos con reload completo');
+                  window.location.href = '/productos';
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-spanish-red text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <ShoppingCart size={20} />
+                Ver todos los productos
+              </button>
+              
+              <button
+                onClick={() => {
+                  console.log('🏠 Navegando a / con reload completo');
+                  window.location.href = '/';
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-spanish-yellow text-slate-900 rounded-lg hover:bg-yellow-500 transition-colors"
+              >
+                <Home size={20} />
+                Ir al inicio
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
