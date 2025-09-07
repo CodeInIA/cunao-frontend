@@ -286,6 +286,17 @@ export const ProductDetailPage: React.FC = () => {
     }
   };
 
+  // Formatea descripción de Printify: si ya es HTML, úsalo; si es texto plano, preserva saltos de línea
+  const formatDescription = (description: string): string => {
+    if (!description) return '';
+    if (description.includes('<') && description.includes('>')) return description;
+    return description
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/^/, '<p>')
+      .replace(/$/, '</p>');
+  };
+
   // Actualizar índice cuando cambia la imagen actual
   React.useEffect(() => {
     if (currentImage && galleryImages.length > 0) {
@@ -566,7 +577,10 @@ export const ProductDetailPage: React.FC = () => {
             {selectedVariant ? 'Añadir al carrito' : 'Selecciona Talla y Color'}
           </button>
           <div className="mt-8">
-            <div className="text-lg text-slate-300 mb-6 prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: currentProduct.description }} />
+            <div
+              className="rich-text mb-6"
+              dangerouslySetInnerHTML={{ __html: formatDescription(currentProduct.description) }}
+            />
             {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
               <div className="space-y-4 mb-8">
                 {currentGPSR.map((section, idx) => (

@@ -11,6 +11,31 @@ body {
   color: #f8fafc;
 }
 
+/* Rich text para descripciones HTML de Printify */
+.rich-text {
+  color: #cbd5e1; /* slate-300 */
+  font-size: 1.125rem; /* text-lg */
+  line-height: 1.75rem; /* leading-7 */
+}
+.rich-text p {
+  margin: 0 0 0.75rem 0;
+}
+.rich-text strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+.rich-text ul {
+  margin: 0.5rem 0 1rem 1.25rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.rich-text li {
+  margin-bottom: 0.5rem;
+}
+.rich-text li::marker {
+  color: #F1BF00; /* spanish-yellow para bullets */
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Playfair Display', serif;
   color: #f8fafc;
