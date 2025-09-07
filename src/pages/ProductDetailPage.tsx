@@ -321,7 +321,7 @@ export const ProductDetailPage: React.FC = () => {
       // Buscar tabla por id; si no, primera tabla del documento
       let table = doc.querySelector('table#size-guide') || doc.querySelector('table');
       if (!table) {
-        return { contentHtml: html, sizeTableHtml: '' };
+        return { contentHtml: html, sizeTableHtml: '', tolerance: '' };
       }
 
       // Clonar y limpiar estilos inline para que nuestros estilos apliquen bien
@@ -330,6 +330,26 @@ export const ProductDetailPage: React.FC = () => {
       cleanTable.id = 'size-guide';
       cleanTable.classList.add('size-guide-table');
       cleanTable.querySelectorAll('[style]').forEach((el) => (el as HTMLElement).removeAttribute('style'));
+
+      // Buscar y extraer la fila de tolerancia (última fila)
+      let tolerance = '';
+      const lastRow = cleanTable.querySelector('tbody tr:last-child');
+      if (lastRow) {
+        const firstCell = lastRow.querySelector('td');
+        if (firstCell && firstCell.textContent?.toLowerCase().includes('tolerancia')) {
+          // Extraer el valor de tolerancia (segunda celda)
+          const toleranceCell = lastRow.querySelector('td:nth-child(2)');
+          if (toleranceCell) {
+            tolerance = toleranceCell.textContent?.trim() || '';
+            // Convertir a formato ±X cm
+            if (tolerance) {
+              tolerance = `±${tolerance} cm`;
+            }
+          }
+          // Eliminar la fila de tolerancia
+          lastRow.remove();
+        }
+      }
 
       // Añadir "Talla" en la primera celda del encabezado
       const firstTh = cleanTable.querySelector('thead tr th');
@@ -343,13 +363,14 @@ export const ProductDetailPage: React.FC = () => {
       return {
         contentHtml: doc.body.innerHTML,
         sizeTableHtml: cleanTable.outerHTML,
+        tolerance,
       };
     } catch (e) {
-      return { contentHtml: html, sizeTableHtml: '' };
+      return { contentHtml: html, sizeTableHtml: '', tolerance: '' };
     }
   }, []);
 
-  const { contentHtml, sizeTableHtml } = React.useMemo(() => {
+  const { contentHtml, sizeTableHtml, tolerance } = React.useMemo(() => {
     const raw = currentProduct?.description || '';
     const html = formatDescription(raw);
     return extractSizeGuide(html);
@@ -705,10 +726,15 @@ export const ProductDetailPage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700">
-              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                <Ruler className="w-4 h-4 md:w-5 md:h-5 text-spanish-yellow" />
-                Guía de tallas
-              </h2>
+              <div>
+                <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                  <Ruler className="w-4 h-4 md:w-5 md:h-5 text-spanish-yellow" />
+                  Guía de tallas
+                </h2>
+                {tolerance && (
+                  <p className="text-sm text-slate-400 mt-1">Tolerancia {tolerance}</p>
+                )}
+              </div>
               <button
                 onClick={() => setIsSizeGuideModalOpen(false)}
                 className="text-slate-400 hover:text-white transition-colors"
