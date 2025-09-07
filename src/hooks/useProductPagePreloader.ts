@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ProductImage } from '../types';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 
@@ -30,8 +30,11 @@ export function useProductPagePreloader(
     errors: []
   });
 
+  // Estabilizar la referencia del array para evitar re-renders infinitos
+  const stableImages = useMemo(() => allImages, [JSON.stringify(allImages.map(img => `${img.src}-${img.position}`))]);
+
   useEffect(() => {
-    if (!allImages || allImages.length === 0) {
+    if (!stableImages || stableImages.length === 0) {
       setStatus({
         variantImagesLoaded: true,
         allImagesLoaded: true,
@@ -46,12 +49,12 @@ export function useProductPagePreloader(
 
     // Separar imágenes de la variante seleccionada vs todas las demás
     const variantImages = selectedVariantId 
-      ? allImages.filter(img => img.variant_ids.includes(selectedVariantId))
-      : [allImages[0]]; // Si no hay variante, usar la primera imagen
+      ? stableImages.filter(img => img.variant_ids.includes(selectedVariantId))
+      : [stableImages[0]]; // Si no hay variante, usar la primera imagen
 
     const otherImages = selectedVariantId
-      ? allImages.filter(img => !img.variant_ids.includes(selectedVariantId))
-      : allImages.slice(1); // Excluir la primera imagen si no hay variante
+      ? stableImages.filter(img => !img.variant_ids.includes(selectedVariantId))
+      : stableImages.slice(1); // Excluir la primera imagen si no hay variante
 
     console.log(`🎯 Iniciando precarga inteligente: ${variantImages.length} imágenes de variante, ${otherImages.length} adicionales`);
 
@@ -61,7 +64,7 @@ export function useProductPagePreloader(
 
     const updateStatus = () => {
       const variantImagesLoaded = variantLoadedCount >= variantImages.length;
-      const allImagesLoaded = totalLoadedCount >= allImages.length;
+      const allImagesLoaded = totalLoadedCount >= stableImages.length;
       
       setStatus({
         variantImagesLoaded,
@@ -69,7 +72,7 @@ export function useProductPagePreloader(
         variantLoadedCount,
         totalLoadedCount,
         variantTotalCount: variantImages.length,
-        totalImageCount: allImages.length,
+        totalImageCount: stableImages.length,
         errors: [...errors]
       });
     };
@@ -132,14 +135,14 @@ export function useProductPagePreloader(
       variantLoadedCount: 0,
       totalLoadedCount: 0,
       variantTotalCount: variantImages.length,
-      totalImageCount: allImages.length,
+      totalImageCount: stableImages.length,
       errors: []
     });
 
     // Ejecutar precarga
     loadVariantImages();
 
-  }, [allImages, selectedVariantId]);
+  }, [stableImages, selectedVariantId]); // Usar stableImages en lugar de allImages
 
   return status;
 }

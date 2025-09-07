@@ -5,10 +5,12 @@ import { useProductStore } from '../stores/productStore';
 export const useSmartNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { error, loadingState } = useProductStore();
 
   const navigateTo = useCallback((path: string) => {
     const currentPath = location.pathname;
+    
+    // Obtener el estado actual directamente del store para evitar dependencias
+    const { error, loadingState } = useProductStore.getState();
     
     // Si hay un estado de error, usar window.location.href para forzar recarga completa
     if (error || loadingState === 'error') {
@@ -28,7 +30,7 @@ export const useSmartNavigation = () => {
         window.scrollTo({ top: 0, behavior: 'auto' });
       }, 0);
     }
-  }, [location.pathname, navigate, error, loadingState]);
+  }, [location.pathname, navigate]); // Sin error y loadingState como dependencias
 
   return { navigateTo, currentPath: location.pathname };
 };
