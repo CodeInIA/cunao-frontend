@@ -169,13 +169,27 @@ export const ProductDetailPage: React.FC = () => {
         setCurrentImage(galleryImages[0]);
       }
     }
-  }, [galleryImages]);
+  }, [galleryImages, currentImage]);
 
   const handleOptionChange = (optionType: 'color' | 'size', valueId: number) => {
     setSelectedOptions(prev => ({ ...prev, [optionType]: valueId }));
+    
+    // Si es un cambio de color, actualizar inmediatamente la imagen
     if (optionType === 'color' && currentProduct) {
       const colorObj = availableOptions.colors.find((c: any) => c.id === valueId);
       if (colorObj) {
+        // Obtener las imágenes para el nuevo color inmediatamente
+        const variantsForNewColor = currentProduct.variants?.filter(v => v.options.includes(valueId)) || [];
+        const variantIdsForNewColor = new Set(variantsForNewColor.map(v => v.id));
+        const imagesForNewColor = currentProduct.images.filter(img => 
+          img.variant_ids.some(id => variantIdsForNewColor.has(id))
+        );
+        
+        // Actualizar imagen inmediatamente si hay imágenes para este color
+        if (imagesForNewColor.length > 0) {
+          setCurrentImage(imagesForNewColor[0]);
+        }
+        
         const newColorParam = encodeURIComponent(colorObj.title);
         const currentColorParam = queryParams.color;
         

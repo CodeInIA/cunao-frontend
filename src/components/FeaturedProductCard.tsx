@@ -4,6 +4,7 @@ import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import type { Product } from '../types';
 import { OptimizedImage } from './OptimizedImage';
 import { getMainProductImage } from '../utils/imageUtils';
+import { slugify } from '../utils/formatters';
 
 interface FeaturedProductCardProps {
   product: Product;
@@ -81,7 +82,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
   };
 
   const handleCardClick = () => {
-    navigateTo(`/producto/${product.id}`);
+    navigateTo(`/producto/${slugify(product.title)}`);
   };
 
   return (
