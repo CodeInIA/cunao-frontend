@@ -250,24 +250,24 @@ export const CheckoutPage: React.FC = () => {
             
             {!appliedDiscount ? (
               <div className="space-y-3">
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
                   <input
                     type="text"
                     value={discountCode}
                     onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
                     placeholder="Introduce tu código"
-                    className="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-spanish-yellow focus:border-transparent"
+                    className="w-full sm:flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-spanish-yellow focus:border-transparent"
                     disabled={isValidatingDiscount}
                   />
                   <button
                     onClick={validateDiscountCode}
                     disabled={isValidatingDiscount || !discountCode.trim()}
-                    className="px-6 py-3 bg-spanish-yellow text-slate-900 font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-6 py-3 bg-spanish-yellow text-slate-900 font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="button"
                   >
                     {isValidatingDiscount ? 'Validando...' : 'Aplicar'}
                   </button>
                 </div>
-                
                 {discountError && (
                   <p className="text-red-400 text-sm">{discountError}</p>
                 )}
