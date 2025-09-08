@@ -43,7 +43,9 @@ export const CheckoutPage: React.FC = () => {
   
   // Calcular total considerando descuento
   const subtotalAfterDiscount = appliedDiscount ? appliedDiscount.finalTotal : subtotal;
-  const total = subtotalAfterDiscount > 0 ? subtotalAfterDiscount + (shippingCost ?? 0) : 0;
+  const total = isFreeShipping
+    ? subtotalAfterDiscount
+    : subtotalAfterDiscount + (shippingCost ?? 0);
 
   // Función para validar código de descuento
   const validateDiscountCode = async () => {
