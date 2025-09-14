@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /checkout/
+Disallow: /success/
+Disallow: /cancel/
+Disallow: /newsletter-preferences/
+
+Sitemap: https://www.cunadismoilustrado.me/sitemap.xml
