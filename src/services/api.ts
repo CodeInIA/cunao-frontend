@@ -75,13 +75,15 @@ export const apiService = {
     items: CartItem[], 
     shippingRegion: string, 
     emailMarketing?: boolean, 
-    discountCode?: string
+    discountCode?: string,
+    discountAppliesTo?: 'subtotal' | 'shipping'
   ): Promise<CheckoutSession> {
     const response = await api.post<ApiResponse<CheckoutSession>>('/orders/checkout-session', { 
       items, 
       shippingRegion,
       emailMarketing,
-      discountCode
+      discountCode,
+      discountAppliesTo
     });
     
     if (!response.data.success || !response.data.data) {
@@ -92,24 +94,28 @@ export const apiService = {
   },
 
   // Validar código de descuento
-  async validateDiscountCode(code: string, subtotal: number): Promise<ApiResponse<{
+  async validateDiscountCode(code: string, subtotal: number, shippingCost?: number): Promise<ApiResponse<{
     isValid: boolean;
     discountPercentage?: number;
     discountAmount?: number;
     finalTotal?: number;
+    appliesTo?: 'subtotal' | 'shipping';
     message?: string;
   }>> {
+    const payload: any = { code, subtotal };
+    if (typeof shippingCost !== 'undefined') payload.shippingCost = shippingCost;
+
     const response = await api.post<ApiResponse<{
       isValid: boolean;
       discountPercentage?: number;
       discountAmount?: number;
       finalTotal?: number;
+      appliesTo?: 'subtotal' | 'shipping';
       message?: string;
     }>>('/discounts/validate', { 
-      code, 
-      subtotal 
+      ...payload
     });
-    
+
     return response.data;
   },
 

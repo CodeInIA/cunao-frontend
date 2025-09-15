@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useShippingConfig } from '../hooks/useShippingConfig';
 import { useCartStore } from '../stores/cartStore';
 import { apiService } from '../services/api';
@@ -33,6 +33,7 @@ export const CheckoutPage: React.FC = () => {
     percentage: number;
     amount: number;
     finalTotal: number;
+    appliesTo?: 'subtotal' | 'shipping';
   } | null>(null);
   const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
   const [discountError, setDiscountError] = useState('');
@@ -41,16 +42,29 @@ export const CheckoutPage: React.FC = () => {
   const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold;
   const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
   
-  // Calcular total considerando descuento
-  const subtotalAfterDiscount = appliedDiscount ? appliedDiscount.finalTotal : subtotal;
-  const total = isFreeShipping
-    ? subtotalAfterDiscount
-    : subtotalAfterDiscount + (shippingCost ?? 0);
+  // Calcular total y envío considerando descuento
+  const shippingAfterDiscount = (() => {
+    if (isFreeShipping) return 0;
+    if (!appliedDiscount) return shippingCost ?? 0;
+    if (appliedDiscount.appliesTo === 'shipping') {
+      // Si tenemos shippingCost y un porcentaje, recalcular a partir del porcentaje para evitar usar un importe absoluto viejo
+      if (typeof shippingCost === 'number' && typeof appliedDiscount.percentage === 'number') {
+        const discountAmount = Math.round(((shippingCost) * appliedDiscount.percentage) / 100 * 100) / 100;
+        return Math.max(0, shippingCost - discountAmount);
+      }
+      return Math.max(0, (shippingCost ?? 0) - appliedDiscount.amount);
+    }
+    return shippingCost ?? 0;
+  })();
+
+  const total = appliedDiscount ? appliedDiscount.finalTotal : (isFreeShipping ? subtotal : subtotal + (shippingCost ?? 0));
 
   // Función para validar código de descuento
-  const validateDiscountCode = async () => {
+  const validateDiscountCode = useCallback(async (silent: boolean = false) => {
     if (!discountCode.trim()) {
-      setDiscountError('Introduce un código de descuento');
+      if (!silent) {
+        setDiscountError('Introduce un código de descuento');
+      }
       return;
     }
 
@@ -58,28 +72,45 @@ export const CheckoutPage: React.FC = () => {
     setDiscountError('');
 
     try {
-      const response = await apiService.validateDiscountCode(discountCode.trim(), subtotal);
-      
+      // No enviar shippingCost si aún no se ha seleccionado región (shippingCost === null)
+      const response = await apiService.validateDiscountCode(
+        discountCode.trim(),
+        subtotal,
+        typeof shippingCost === 'number' ? shippingCost : undefined
+      );
+
       if (response.success && response.data?.isValid) {
-        setAppliedDiscount({
-          code: discountCode.trim(),
-          percentage: response.data.discountPercentage!,
-          amount: response.data.discountAmount!,
-          finalTotal: response.data.finalTotal!
-        });
-        toast.success(response.data.message || '¡Código de descuento aplicado!');
+        // Si el backend indica que falta el coste de envío para calcular el descuento de envío
+        if (response.data.message && response.data.message.includes('Selecciona la región de envío')) {
+          setDiscountError(response.data.message);
+          setAppliedDiscount(null);
+        } else {
+          setAppliedDiscount({
+            code: discountCode.trim(),
+            percentage: response.data.discountPercentage!,
+            amount: response.data.discountAmount!,
+            finalTotal: response.data.finalTotal!,
+            appliesTo: response.data.appliesTo
+          });
+          const appliesTo = response.data.appliesTo || 'subtotal';
+          if (!silent) {
+            toast.success((response.data.message ? response.data.message + ' ' : '') + (appliesTo === 'shipping' ? 'Se ha aplicado al envío.' : 'Se ha aplicado al subtotal.'));
+          }
+        }
       } else {
         setDiscountError(response.data?.message || 'Código de descuento no válido');
         setAppliedDiscount(null);
       }
     } catch (error) {
       console.error('Error validando descuento:', error);
-      setDiscountError('Error al validar el código de descuento');
+      if (!silent) {
+        setDiscountError('Error al validar el código de descuento');
+      }
       setAppliedDiscount(null);
     } finally {
       setIsValidatingDiscount(false);
     }
-  };
+  }, [discountCode, subtotal, shippingCost]);
 
   // Función para remover descuento
   const removeDiscount = () => {
@@ -113,6 +144,24 @@ export const CheckoutPage: React.FC = () => {
     setShippingCost(cost);
   }, [shippingRegion, isFreeShipping, subtotal, shippingConfig]);
 
+  // Si hay un descuento aplicado, revalidarlo silenciosamente si cambia el coste de envío
+  useEffect(() => {
+    // No revalidar si no hay un código de descuento aplicado.
+    if (!appliedDiscount?.code) {
+      return;
+    }
+    // No revalidar si el coste de envío no está determinado todavía.
+    if (typeof shippingCost !== 'number' || shippingConfig.loading) {
+      return;
+    }
+
+    // Revalidar en backend en background (silent=true) para mantener el valor actualizado y autoritativo
+    validateDiscountCode(true).catch(err => console.error('Error revalidando descuento tras cambio de coste de envío:', err));
+  }, [shippingCost, appliedDiscount?.code, shippingConfig.loading, validateDiscountCode]);
+
+  // Mostrar aviso cerca del selector si el descuento requiere seleccionar región
+  const discountRequiresRegion = Boolean(discountError && discountError.includes('Selecciona la región de envío'));
+
   const handleProceedToPayment = async () => {
     if (!shippingRegion) {
       toast.error('Por favor, selecciona tu región de envío.');
@@ -123,10 +172,11 @@ export const CheckoutPage: React.FC = () => {
 
     try {
       const sessionData = await apiService.createCheckoutSession(
-        items, 
-        shippingRegion, 
+        items,
+        shippingRegion,
         emailMarketing,
-        appliedDiscount?.code
+        appliedDiscount?.code,
+        appliedDiscount?.appliesTo
       );
       if (sessionData.checkout_url) {
         window.location.href = sessionData.checkout_url;
@@ -262,7 +312,7 @@ export const CheckoutPage: React.FC = () => {
                     disabled={isValidatingDiscount}
                   />
                   <button
-                    onClick={validateDiscountCode}
+                    onClick={() => validateDiscountCode(false)}
                     disabled={isValidatingDiscount || !discountCode.trim()}
                     className="w-full sm:w-auto px-6 py-3 bg-spanish-yellow text-slate-900 font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     type="button"
@@ -302,11 +352,11 @@ export const CheckoutPage: React.FC = () => {
             
             {appliedDiscount && (
               <div className="flex justify-between text-green-400">
-                <span>Descuento ({appliedDiscount.code})</span>
+                <span>Descuento ({appliedDiscount.code}) {appliedDiscount.appliesTo === 'shipping' ? '— aplicado al envío' : ''}</span>
                 <span>-{formatPrice(appliedDiscount.amount)}</span>
               </div>
             )}
-            
+
             <div className="flex justify-between text-slate-300">
               <span>Envío</span>
               {shippingConfig.loading ? (
@@ -314,7 +364,7 @@ export const CheckoutPage: React.FC = () => {
               ) : isFreeShipping ? (
                 <span className="font-semibold text-green-400">Gratis</span>
               ) : (
-                <span>{shippingCost !== null ? formatPrice(shippingCost) : 'Selecciona una región'}</span>
+                <span>{shippingCost !== null ? formatPrice(shippingAfterDiscount) : 'Selecciona una región'}</span>
               )}
             </div>
             <div className="flex justify-between text-xl font-bold pt-2 border-t border-slate-700">
