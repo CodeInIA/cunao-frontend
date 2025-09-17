@@ -182,16 +182,18 @@ export const FeaturedPage: React.FC = () => {
       {/* Panel CTA: no encuentro mi artículo (más ancho y horizontal) */}
   <section className="pt-0 pb-6 mt-10">
         <div className="container mx-auto px-4">
-          <div className="w-full max-w-6xl mx-auto bg-transparent rounded-2xl border border-white/10 py-3 px-6 flex items-center justify-between gap-6 shadow-sm">
-            <div className="flex items-center gap-3">
-              <Search className="w-6 h-6 text-spanish-yellow" />
+          <div className="w-full max-w-6xl mx-auto bg-transparent rounded-2xl border border-white/10 py-4 px-6 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4 shadow-sm">
+            <div className="flex items-start gap-3 w-full md:w-auto">
+              <Search className="w-6 h-6 text-spanish-yellow mt-1" />
               <div className="text-left">
                 <h3 className="text-xl font-semibold text-white leading-tight">¿No encuentras lo que buscas?</h3>
                 <p className="text-slate-300 text-sm">Explora todo nuestro catálogo o pídenos ayuda personalizada. Tenemos miles de diseños.</p>
               </div>
-      
+            </div>
+
+            <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3 justify-start md:justify-end mt-3 md:mt-0">
               <button
-                className="inline-flex items-center gap-2 bg-spanish-yellow text-slate-900 px-5 py-2 rounded-md font-semibold hover:brightness-95 transition-all"
+                className="w-full md:w-auto inline-flex justify-center items-center gap-2 bg-spanish-yellow text-slate-900 px-5 py-2 rounded-md font-semibold hover:brightness-95 transition-colors duration-200"
                 onClick={() => navigateTo('/productos')}
               >
                 Ver catálogo
@@ -199,7 +201,7 @@ export const FeaturedPage: React.FC = () => {
               </button>
 
               <button
-                className="inline-flex items-center gap-2 bg-transparent border border-white/20 text-white px-4 py-2 rounded-md font-medium hover:bg-white/5 transition-all"
+                className="w-full md:w-auto inline-flex justify-center items-center gap-2 bg-transparent border border-white/20 text-white px-4 py-2 rounded-md font-medium hover:bg-white/5 transition-colors duration-200"
                 onClick={() => navigateTo('/contacto')}
               >
                 Pedir ayuda
@@ -280,18 +282,19 @@ export const FeaturedPage: React.FC = () => {
       {/* CTA Final Impactante */}
       <section className="py-20 bg-[url('/bar-image.webp')] bg-cover bg-center text-center relative">
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto relative z-10">
-            <div className="absolute inset-0 bg-black/60 pointer-events-none rounded-lg z-0"></div>
-            <h2 className="text-4xl md:text-5xl font-patriot font-bold text-white mb-6 relative">
-              ¿Preparado para ser la Estrella del Bar?
-            </h2>
-            <p className="text-xl text-white font-bold mb-8 drop-shadow-sm relative">
-              Únete a miles de cuñados que ya causan sensación con nuestras camisetas más populares
-            </p>
+            <div className="max-w-4xl mx-auto relative z-10">
+              <div className="absolute -top-6 -left-6 -right-6 bottom-0 bg-black/60 pointer-events-none rounded-xl z-0" style={{backdropFilter: 'blur(2px)'}}></div>
+              <h2 className="text-4xl md:text-5xl font-patriot font-bold text-white mb-6 relative z-10">
+                ¿Preparado para ser la Estrella del Bar?
+              </h2>
+              <p className="text-xl text-white font-bold mb-8 drop-shadow-sm relative z-10">
+                Únete a miles de cuñados que ya causan sensación con nuestras camisetas más populares
+              </p>
+            
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                 <button
-                  className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 text-lg font-bold rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center gap-2 relative"
+                  className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 text-lg font-bold rounded-lg shadow-xl transition-colors duration-300 inline-flex items-center gap-2 relative"
                   onClick={() => navigateTo('/productos')}
                 >
                   <Star className="w-5 h-5" />
@@ -307,13 +310,16 @@ export const FeaturedPage: React.FC = () => {
             </div>
 
             {/* Testimonios rápidos */}
-            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6">
-              <p className="text-white italic text-lg font-semibold drop-shadow-sm">
-                "Desde que llevo estas camisetas, soy el rey de la tertulia del bar. ¡Todo el mundo quiere saber dónde las compro!"
-              </p>
-              <p className="text-white font-bold mt-2 drop-shadow-sm">
-                - Paco, 52 años, Cuñado Profesional de Móstoles
-              </p>
+            <div className="max-w-4xl mx-auto relative z-10">
+              <div className="absolute -left-6 -right-6 top-0 bottom-0 bg-black/40 rounded-xl pointer-events-none" style={{backdropFilter: 'blur(2px)'}}></div>
+              <div className="relative z-10 p-6 px-8">
+                <p className="text-white italic text-lg font-semibold drop-shadow-sm">
+                  "Desde que llevo estas camisetas, soy el rey de la tertulia del bar. ¡Todo el mundo quiere saber dónde las compro!"
+                </p>
+                <p className="text-white font-bold mt-2 drop-shadow-sm">
+                  - Paco, 52 años, Cuñado Profesional de Móstoles
+                </p>
+              </div>
             </div>
           </div>
         </div>
