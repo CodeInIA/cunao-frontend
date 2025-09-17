@@ -92,36 +92,37 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Reducido verticalmente */}
-      <section className="relative bg-gradient-to-r from-spanish-red to-spanish-yellow text-white py-16">
+  {/* Hero Section - imagen de fondo */}
+  <section className="relative text-white py-16 bg-[url('/bar-image-2.webp')] bg-cover bg-center">
         <div className="absolute inset-0 spanish-pattern opacity-20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-patriot font-bold mb-4 text-shadow">
-              Cuñadismo Ilustrado
-            </h1>
-            <p className="text-lg md:text-xl mb-6 text-shadow">
-              La tienda más cuñao de España 
-              <span className="inline-block w-7 h-5 ml-2 relative rounded-sm overflow-hidden shadow-lg transform hover:scale-110 transition-transform duration-300" style={{boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2)'}}>
-                <span className="absolute top-0 left-0 w-full h-1/4 bg-spanish-red"></span>
-                <span className="absolute top-1/4 left-0 w-full h-1/2 bg-spanish-yellow"></span>
-                <span className="absolute bottom-0 left-0 w-full h-1/4 bg-spanish-red"></span>
-              </span>
-            </p>
-            <p className="text-base mb-8 opacity-90 max-w-2xl mx-auto">
-              Camisetas con las frases más auténticas del cuñadismo español. 
-              Porque siempre hay algo que opinar.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-3 text-lg rounded-lg shadow-lg border-2 border-slate-700 hover:border-slate-600 transition-all duration-200 inline-flex items-center justify-center"
+            <div className="inline-block bg-black/40 backdrop-blur-[4px] px-6 py-6 rounded-xl">
+              <h1 className="text-4xl md:text-6xl font-patriot font-bold mb-4 text-shadow">
+                Cuñadismo Ilustrado
+              </h1>
+              <p className="text-lg md:text-xl mb-6 text-shadow">
+                La tienda más cuñao de España 
+                <span className="inline-block w-7 h-5 ml-2 relative rounded-sm overflow-hidden shadow-lg transition-colors duration-200" style={{boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2)'}}>
+                  <span className="absolute top-0 left-0 w-full h-1/4 bg-spanish-red"></span>
+                  <span className="absolute top-1/4 left-0 w-full h-1/2 bg-spanish-yellow"></span>
+                  <span className="absolute bottom-0 left-0 w-full h-1/4 bg-spanish-red"></span>
+                </span>
+              </p>
+              <p className="text-base mb-8 opacity-90 max-w-2xl mx-auto">
+                Camisetas con las frases más auténticas del cuñadismo español. 
+                Porque siempre hay algo que opinar.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    className="bg-slate-900 text-white font-bold px-8 py-3 text-lg rounded-lg shadow hover:shadow-lg border-2 border-slate-700 hover:border-slate-600 transition-colors duration-200 inline-flex items-center justify-center"
                 onClick={() => navigateTo('/productos')}
               >
                 Ver Productos
                 <ArrowRight className="ml-2" size={20} />
               </button>
-              <button
-                className="bg-white hover:bg-gray-100 text-slate-900 font-bold px-8 py-3 text-lg rounded-lg shadow-lg border-2 border-gray-300 hover:border-gray-400 transition-all duration-200 inline-flex items-center justify-center"
+                  <button
+                    className="bg-white text-slate-900 font-bold px-8 py-3 text-lg rounded-lg shadow hover:shadow-lg border-2 border-gray-300 hover:border-gray-400 transition-colors duration-200 inline-flex items-center justify-center"
                 onClick={() => navigateTo('/destacados')}
               >
                 Productos Destacados
@@ -129,7 +130,8 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
         </div>
-        
+      </div>
+
         {/* Decoración patriótica */}
         <div className="absolute bottom-0 left-0 w-full h-16">
           <div className="wood-pattern h-full opacity-30"></div>
@@ -212,7 +214,7 @@ export const HomePage: React.FC = () => {
 
           <div className="text-center">
             <button
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white px-8 py-4 rounded-xl font-bold text-lg shadow hover:shadow-xl transition-colors transition-shadow duration-300"
               onClick={() => navigateTo('/productos')}
             >
               Ver Toda la Colección
@@ -230,7 +232,7 @@ export const HomePage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {phrases.map((phrase, index) => (
-              <div key={index} className="bg-slate-700 border border-slate-600 rounded-lg p-6 hover:shadow-xl hover:border-spanish-yellow text-center transition-all duration-300 hover:scale-105">
+              <div key={index} className="bg-slate-700 border border-slate-600 rounded-lg p-6 hover:shadow-xl hover:border-spanish-yellow text-center transition-colors transition-shadow duration-300">
                 <p className="text-lg font-cunao italic text-slate-200 mb-4">
                   "{phrase}"
                 </p>
@@ -300,7 +302,7 @@ export const HomePage: React.FC = () => {
             Únete a miles de cuñados que ya visten nuestras camisetas
           </p>
             <button
-              className="inline-block bg-white text-slate-900 hover:bg-slate-100 px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
+              className="inline-block bg-white text-slate-900 hover:bg-slate-100 px-8 py-3 text-lg font-semibold rounded-lg shadow hover:shadow-lg transition-colors transition-shadow duration-300"
               onClick={() => navigateTo('/productos')}
             >
               Empezar a Comprar
