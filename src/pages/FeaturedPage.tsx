@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Crown, Zap, TrendingUp, Award, Users, Clock, ArrowRight } from 'lucide-react';
+import { Star, Crown, Zap, TrendingUp, Award, Users, Clock, ArrowRight, Search } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
@@ -115,11 +115,11 @@ export const FeaturedPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="bg-slate-900">
 
-      {/* Productos Destacados Premium (moved to top) */}
-      <section className="py-6 bg-slate-900">
-        <div className="container mx-auto px-4">
+  {/* Productos Destacados Premium (moved to top) */}
+  <section className="min-h-[calc(100vh-72px)] pt-6 pb-0 mb-0 bg-slate-900">
+    <div className="container mx-auto px-4 pt-6">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-patriot font-bold text-white mb-4">
               Productos <span className="text-spanish-yellow">Destacados</span>
@@ -131,8 +131,8 @@ export const FeaturedPage: React.FC = () => {
             </p>
           </div>
 
-          {loadingState === 'loading' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max">
+            {loadingState === 'loading' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max mb-0">
               {[...Array(6)].map((_, index) => (
                 <div key={index} className="relative">
                   <div className="bg-slate-700 animate-pulse rounded-xl">
@@ -147,8 +147,8 @@ export const FeaturedPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max mb-16">
+            ) : featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max mb-0">
               {featuredProducts.slice(0, 6).map((product, index) => (
                 <FeaturedProductCard
                   key={product.id}
@@ -179,21 +179,47 @@ export const FeaturedPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Estadísticas Impresionantes */}
-      <section className="py-16 bg-slate-800">
+      {/* Panel CTA: no encuentro mi artículo (más ancho y horizontal) */}
+  <section className="pt-0 pb-6 mt-10">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+          <div className="w-full max-w-6xl mx-auto bg-transparent rounded-2xl border border-white/10 py-3 px-6 flex items-center justify-between gap-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Search className="w-6 h-6 text-spanish-yellow" />
+              <div className="text-left">
+                <h3 className="text-xl font-semibold text-white leading-tight">¿No encuentras lo que buscas?</h3>
+                <p className="text-slate-300 text-sm">Explora todo nuestro catálogo o pídenos ayuda personalizada. Tenemos miles de diseños.</p>
+              </div>
+      
+              <button
+                className="inline-flex items-center gap-2 bg-spanish-yellow text-slate-900 px-5 py-2 rounded-md font-semibold hover:brightness-95 transition-all"
+                onClick={() => navigateTo('/productos')}
+              >
+                Ver catálogo
+                <ArrowRight size={16} />
+              </button>
+
+              <button
+                className="inline-flex items-center gap-2 bg-transparent border border-white/20 text-white px-4 py-2 rounded-md font-medium hover:bg-white/5 transition-all"
+                onClick={() => navigateTo('/contacto')}
+              >
+                Pedir ayuda
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Estadísticas Impresionantes */}
+      <section className="py-4 bg-slate-900">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {cuñaoStats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="bg-slate-700 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-spanish-red transition-all duration-300 transform group-hover:scale-110">
-                  <stat.icon className={`w-8 h-8 ${stat.color} group-hover:text-white`} />
+              <div key={index} className="flex flex-col items-center justify-center text-center py-2">
+                <div className="group bg-slate-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-200 transform hover:scale-105 hover:bg-spanish-red">
+                  <stat.icon className={`w-5 h-5 ${stat.color} group-hover:text-white`} />
                 </div>
-                <div className={`text-3xl font-bold ${stat.color} mb-2`}>
-                  {stat.value}
-                </div>
-                <p className="text-white font-semibold text-sm drop-shadow-sm">
-                  {stat.label}
-                </p>
+                <div className={`text-2xl md:text-3xl font-bold ${stat.color} leading-tight`}>{stat.value}</div>
+                <p className="text-white text-sm font-semibold mt-1 drop-shadow-sm">{stat.label}</p>
               </div>
             ))}
           </div>
