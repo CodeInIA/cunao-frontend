@@ -81,10 +81,10 @@ export const FeaturedPage: React.FC = () => {
   };
 
   const cuñaoStats = [
-    { icon: Users, label: 'Cuñados satisfechos', value: '2,547', color: 'text-spanish-yellow' },
-    { icon: TrendingUp, label: 'Ventas este mes', value: '+189%', color: 'text-green-400' },
-    { icon: Award, label: 'Valoración media', value: '4.9★', color: 'text-spanish-yellow' },
-    { icon: Clock, label: 'Años de experiencia cuñao', value: '25+', color: 'text-spanish-red' }
+  { icon: Users, label: 'Cuñados satisfechos', value: '2,547', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { icon: TrendingUp, label: 'Ventas este mes', value: '+189%', color: 'text-green-400', bg: 'bg-green-500/10' },
+    { icon: Award, label: 'Valoración media', value: '4.9★', color: 'text-spanish-yellow', bg: 'bg-spanish-yellow/10' },
+    { icon: Clock, label: 'Años de experiencia cuñao', value: '25+', color: 'text-spanish-red', bg: 'bg-spanish-red/10' }
   ];
 
   const topPhrases = [
@@ -214,8 +214,8 @@ export const FeaturedPage: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {cuñaoStats.map((stat, index) => (
-              <div key={index} className="flex flex-col items-center justify-center text-center py-2">
-                <div className="group bg-slate-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-200 transform hover:scale-105 hover:bg-spanish-red">
+              <div key={index} className={`rounded-xl p-5 ${stat.bg} flex flex-col items-center justify-center text-center`}> 
+                <div className="group bg-slate-700 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 transition-all duration-200 transform hover:scale-105 hover:bg-spanish-red">
                   <stat.icon className={`w-5 h-5 ${stat.color} group-hover:text-white`} />
                 </div>
                 <div className={`text-2xl md:text-3xl font-bold ${stat.color} leading-tight`}>{stat.value}</div>
@@ -226,8 +226,8 @@ export const FeaturedPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Top Frases del Mes */}
-      <section className="py-20 bg-gradient-to-br from-slate-800 to-slate-900">
+  {/* Top Frases del Mes */}
+  <section className="py-20 bg-gradient-to-br from-slate-800 to-slate-900 mt-8">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-patriot font-bold text-white mb-4">
@@ -278,19 +278,20 @@ export const FeaturedPage: React.FC = () => {
       </section>
 
       {/* CTA Final Impactante */}
-      <section className="py-20 bg-gradient-to-r from-spanish-red via-spanish-yellow to-spanish-red text-center">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-patriot font-bold text-slate-900 mb-6">
+      <section className="py-20 bg-[url('/bar-image.webp')] bg-cover bg-center text-center relative">
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-4xl mx-auto relative z-10">
+            <div className="absolute inset-0 bg-black/60 pointer-events-none rounded-lg z-0"></div>
+            <h2 className="text-4xl md:text-5xl font-patriot font-bold text-white mb-6 relative">
               ¿Preparado para ser la Estrella del Bar?
             </h2>
-            <p className="text-xl text-slate-900 font-bold mb-8 drop-shadow-sm">
+            <p className="text-xl text-white font-bold mb-8 drop-shadow-sm relative">
               Únete a miles de cuñados que ya causan sensación con nuestras camisetas más populares
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                 <button
-                  className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 text-lg font-bold rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
+                  className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 text-lg font-bold rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center gap-2 relative"
                   onClick={() => navigateTo('/productos')}
                 >
                   <Star className="w-5 h-5" />
@@ -298,7 +299,7 @@ export const FeaturedPage: React.FC = () => {
                 </button>
               
                 <button
-                  className="border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white px-8 py-4 text-lg font-bold rounded-lg transition-all duration-300 inline-flex items-center gap-2"
+                  className="border-2 border-white text-white bg-white/10 hover:bg-white/20 px-8 py-4 text-lg font-bold rounded-lg transition-all duration-300 inline-flex items-center gap-2 relative"
                   onClick={() => navigateTo('/contacto')}
                 >
                   Solicitar Diseño Personalizado
@@ -306,11 +307,11 @@ export const FeaturedPage: React.FC = () => {
             </div>
 
             {/* Testimonios rápidos */}
-            <div className="bg-black bg-opacity-20 rounded-xl p-6">
-              <p className="text-slate-900 italic text-lg font-semibold drop-shadow-sm">
+            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6">
+              <p className="text-white italic text-lg font-semibold drop-shadow-sm">
                 "Desde que llevo estas camisetas, soy el rey de la tertulia del bar. ¡Todo el mundo quiere saber dónde las compro!"
               </p>
-              <p className="text-slate-900 font-bold mt-2 drop-shadow-sm">
+              <p className="text-white font-bold mt-2 drop-shadow-sm">
                 - Paco, 52 años, Cuñado Profesional de Móstoles
               </p>
             </div>
