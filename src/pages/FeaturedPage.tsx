@@ -196,7 +196,7 @@ export const FeaturedPage: React.FC = () => {
           </div>
 
           {loadingState === 'loading' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max">
               {[...Array(6)].map((_, index) => (
                 <div key={index} className="relative">
                   <div className="bg-slate-700 animate-pulse rounded-xl">
@@ -212,7 +212,7 @@ export const FeaturedPage: React.FC = () => {
               ))}
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max mb-16">
               {featuredProducts.slice(0, 6).map((product, index) => (
                 <FeaturedProductCard
                   key={product.id}
