@@ -40,13 +40,13 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Navegación desktop centrada y adaptable */}
-          <div className="hidden md:flex flex-1 justify-center min-w-[220px]">
+            <div className="hidden md:flex flex-1 justify-center min-w-[220px]">
             <nav className="flex items-center space-x-6">
-              <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-              <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-              <button onClick={() => handleNavClick('/destacados')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Destacados<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-              <button onClick={() => handleNavClick('/sobre-nosotros')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Sobre Nosotros<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-              <button onClick={() => handleNavClick('/contacto')} className="nav-link font-semibold transition-all duration-300 hover:text-spanish-yellow hover:scale-105 relative group bg-transparent border-none cursor-pointer">Contacto<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/destacados')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Destacados<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/sobre-nosotros')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Sobre Nosotros<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/contacto')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Contacto<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
             </nav>
           </div>
 
@@ -76,7 +76,7 @@ export const Header: React.FC = () => {
             {/* Carrito */}
             <button
               onClick={openCart}
-              className={`relative p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110 hover:shadow-lg ${
+              className={`relative p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800 hover:shadow-lg ${
                 cartShake ? 'animate-cart-shake' : ''
               }`}
               aria-label="Carrito de compras"
@@ -91,7 +91,7 @@ export const Header: React.FC = () => {
             {/* Menú móvil toggle */}
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-all duration-300 rounded-lg hover:bg-slate-800 hover:scale-110"
+              className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800"
               aria-label="Menú"
             >
               {isMobileMenuOpen ? <X size={25} /> : <Menu size={25} />}
