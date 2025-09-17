@@ -9,13 +9,15 @@ import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
 
 export const HomePage: React.FC = () => {
-  const { featuredProducts, fetchFeaturedProducts, loadingState } = useProductStore();
+  const { featuredProducts, fetchFeaturedProducts, products, fetchProducts, loadingState } = useProductStore();
   const { addItem } = useCartStore();
   const { navigateTo } = useSmartNavigation();
 
   useEffect(() => {
+    // Cargamos los productos recientes (todos) y también mantenemos fetchFeaturedProducts por compatibilidad
+    fetchProducts();
     fetchFeaturedProducts();
-  }, [fetchFeaturedProducts]);
+  }, [fetchProducts, fetchFeaturedProducts]);
 
   const handleAddToCart = (product: Product) => {
     // Obtener el precio real del producto
@@ -138,21 +140,20 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Productos Destacados */}
+      {/* Productos Recientes */}
       <section className="py-20 bg-slate-900 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-spanish-red px-4 py-2 rounded-full text-white font-semibold text-sm mb-4">
               <Star className="w-4 h-4 fill-current" />
-              PRODUCTOS DESTACADOS
+              PRODUCTOS RECIENTES
               <Star className="w-4 h-4 fill-current" />
             </div>
             <h2 className="text-4xl font-patriot font-bold text-white mb-4">
-              Los Más Cuñaos del Mes
+              Últimos Añadidos
             </h2>
             <p className="text-slate-300 max-w-2xl mx-auto text-lg">
-              Las camisetas que todo auténtico cuñao necesita en su armario. 
-              ¡Frases que marcan historia!
+              Lo último que hemos subido a la tienda. Aprovecha las novedades antes de que vuelen.
             </p>
           </div>
 
@@ -169,20 +170,24 @@ export const HomePage: React.FC = () => {
                 </div>
               ))}
             </div>
-          ) : featuredProducts.length > 0 ? (
+          ) : products.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-                {featuredProducts.slice(0, 4).map((product, index) => (
-                  <FeaturedProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                    featured={index === 0} // El primero es super destacado
-                  />
+                {products
+                  .slice() // clonar antes de ordenar
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .slice(0, 4)
+                  .map((product, index) => (
+                    <FeaturedProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      featured={index === 0}
+                    />
                 ))}
               </div>
               
-              {/* Estadísticas de productos destacados */}
+              {/* Estadísticas */}
               <div className="bg-slate-800 rounded-2xl p-8 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                   <div>
@@ -204,10 +209,10 @@ export const HomePage: React.FC = () => {
             <div className="text-center py-16">
               <div className="text-6xl mb-4">😢</div>
               <p className="text-slate-400 text-lg">
-                No hay productos destacados disponibles en este momento.
+                No hay productos recientes disponibles en este momento.
               </p>
               <p className="text-slate-500 text-sm mt-2">
-                Pero seguro que en el bar de tu pueblo sí hay opiniones...
+                Visita nuestra colección o vuelve más tarde para ver novedades.
               </p>
             </div>
           )}
@@ -293,14 +298,16 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* CTA Final */}
-      <section className="py-16 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-patriot font-bold mb-4">
-            ¿Listo para ser el cuñado más auténtico?
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Únete a miles de cuñados que ya visten nuestras camisetas
-          </p>
+  <section style={{ backgroundPosition: 'center 75%' }} className="py-28 md:py-32 bg-[url('/pool.webp')] bg-cover text-white text-center relative">
+        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="inline-block bg-black/60 backdrop-blur-[4px] px-8 py-10 rounded-xl mx-auto max-w-3xl">
+            <h2 className="text-3xl md:text-4xl font-patriot font-bold mb-4">
+              ¿Listo para ser el cuñado más auténtico?
+            </h2>
+            <p className="text-xl mb-8 opacity-90">
+              Únete a miles de cuñados que ya visten nuestras camisetas
+            </p>
             <button
               className="inline-block bg-white text-slate-900 hover:bg-slate-100 px-8 py-3 text-lg font-semibold rounded-lg shadow hover:shadow-lg transition-colors transition-shadow duration-300"
               onClick={() => navigateTo('/productos')}
@@ -308,6 +315,7 @@ export const HomePage: React.FC = () => {
               Empezar a Comprar
               <ArrowRight className="inline ml-2" size={20} />
             </button>
+          </div>
         </div>
       </section>
     </div>
