@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ShoppingCart, Star, Crown, Zap } from 'lucide-react';
+import { ShoppingCart, Star, Crown, Zap, TrendingUp } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import type { Product } from '../types';
 import { OptimizedImage } from './OptimizedImage';
@@ -26,6 +26,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
   const isDestacado = tagsLower.includes('destacado');
   const isPopular = tagsLower.includes('popular');
   const isClasico = tagsLower.includes('clásico');
+  const isTendencia = tagsLower.includes('tendencia');
 
   // Badge / color según categoría
   const visual = useMemo(() => {
@@ -56,6 +57,15 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
         label: 'CLÁSICO'
       };
     }
+    if (isTendencia) {
+      return {
+        ring: 'border-2 border-violet-600',
+        badgeBg: 'bg-violet-600 text-white',
+        starColor: 'text-violet-500',
+        icon: <TrendingUp size={14} />,
+        label: 'TENDENCIA'
+      };
+    }
     return {
       ring: 'border border-slate-700',
       badgeBg: 'bg-slate-700 text-white',
@@ -63,7 +73,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
       icon: null,
       label: ''
     };
-  }, [isDestacado, isPopular, isClasico]);
+  }, [isDestacado, isPopular, isClasico, isTendencia]);
 
   // Precio mínimo (si hay variantes)
   const { minPriceFormatted, hasPrice } = useMemo(() => {
@@ -147,7 +157,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
         {/* Contenido textual - con padding compacto */}
         <div className="p-4 flex flex-col">
           {/* rating */}
-          {(isDestacado || isPopular || isClasico) && (
+          {(isDestacado || isPopular || isClasico || isTendencia) && (
             <div className="flex items-center gap-2 mb-3" aria-hidden>
               <div className="flex items-center space-x-0.5">
                 {[...Array(5)].map((_, i) => (
@@ -171,7 +181,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
             {/* Precio */}
             <div className="flex items-center justify-between">
               <div>
-                <div className={`text-xl font-bold ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : 'text-white'}`}>
+                <div className={`text-xl font-bold ${isDestacado ? 'text-spanish-yellow' : isPopular ? 'text-spanish-red' : isClasico ? 'text-green-500' : isTendencia ? 'text-violet-500' : 'text-white'}`}>
                   {hasPrice ? minPriceFormatted : 'Sin precio'}
                 </div>
                 {hasPrice && (
@@ -182,7 +192,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
               </div>
 
               {/* etiqueta pequeña */}
-              {(isDestacado || isPopular || isClasico) && (
+              {(isDestacado || isPopular || isClasico || isTendencia) && (
                 <div className="text-xs font-semibold text-slate-300 flex items-center gap-1">
                   {visual.icon}
                 </div>
@@ -195,7 +205,7 @@ export const FeaturedProductCard: React.FC<FeaturedProductCardProps> = ({
               aria-label={`Añadir ${product.title} al carrito`}
               className={`
                 w-full py-3 rounded-lg font-semibold transition-all duration-200 focus:outline-none outline-none
-                ${isDestacado ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400' : isPopular ? 'bg-spanish-red text-white hover:bg-red-600' : 'bg-slate-700 text-white hover:bg-slate-600'}
+                ${isDestacado ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400' : isPopular ? 'bg-spanish-red text-white hover:bg-red-600' : isClasico ? 'bg-green-500 text-white hover:bg-green-600' : isTendencia ? 'bg-violet-600 text-white hover:bg-violet-500' : 'bg-slate-700 text-white hover:bg-slate-600'}
               `}
               style={{ outline: 'none' }}
             >
