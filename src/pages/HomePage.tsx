@@ -115,14 +115,14 @@ export const HomePage: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button
-                    className="bg-slate-900 text-white font-bold px-8 py-3 text-lg rounded-lg shadow hover:shadow-lg border-2 border-slate-700 hover:border-slate-600 transition-colors duration-200 inline-flex items-center justify-center"
+                    className="bg-slate-900 text-white font-bold px-6 py-2 text-base rounded-lg shadow hover:shadow-lg border-2 border-slate-700 hover:border-slate-600 transition-colors duration-200 inline-flex items-center justify-center"
                 onClick={() => navigateTo('/productos')}
               >
                 Ver Productos
-                <ArrowRight className="ml-2" size={20} />
+                <ArrowRight className="ml-2" size={18} />
               </button>
                   <button
-                    className="bg-white text-slate-900 font-bold px-8 py-3 text-lg rounded-lg shadow hover:shadow-lg border-2 border-gray-300 hover:border-gray-400 transition-colors duration-200 inline-flex items-center justify-center"
+                    className="bg-white text-slate-900 font-bold px-6 py-2 text-base rounded-lg shadow hover:shadow-lg border-2 border-gray-300 hover:border-gray-400 transition-colors duration-200 inline-flex items-center justify-center"
                 onClick={() => navigateTo('/destacados')}
               >
                 Productos Destacados
