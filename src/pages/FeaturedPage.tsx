@@ -116,82 +116,18 @@ export const FeaturedPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      {/* Hero Section Especial */}
-      <section className="relative bg-gradient-to-br from-spanish-red via-slate-800 to-spanish-yellow overflow-hidden py-24">
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-        
-        {/* Efectos de fondo */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-spanish-yellow opacity-20 rounded-full blur-xl"></div>
-        <div className="absolute bottom-10 right-10 w-32 h-32 bg-spanish-red opacity-20 rounded-full blur-xl"></div>
-        <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-white opacity-10 rounded-full blur-lg"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-spanish-red bg-opacity-90 px-6 py-3 rounded-full text-white font-bold text-sm mb-6 shadow-lg">
-              <Crown className="w-5 h-5" />
-              LO MÁS CUÑAO DE ESPAÑA
-              <Crown className="w-5 h-5" />
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-patriot font-bold text-white mb-6 text-shadow-lg">
+
+      {/* Productos Destacados Premium (moved to top) */}
+      <section className="py-6 bg-slate-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl md:text-5xl font-patriot font-bold text-white mb-4">
               Productos <span className="text-spanish-yellow">Destacados</span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-white font-medium max-w-3xl mx-auto mb-8 drop-shadow-lg">
-              Las camisetas más auténticas del cuñadismo español. 
+            </h2>
+            <p className="text-white font-medium max-w-3xl mx-auto text-lg drop-shadow-sm">
+              Las camisetas más auténticas del cuñadismo español.
               <br />
               <span className="text-spanish-yellow font-semibold">¡Las que todo el mundo quiere!</span>
-            </p>
-
-            {/* Badges de credibilidad */}
-            <div className="flex flex-wrap justify-center gap-4 mb-8">
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
-                <Star className="w-4 h-4 text-spanish-yellow fill-current" />
-                <span className="text-white font-semibold">Más vendidas</span>
-              </div>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
-                <Zap className="w-4 h-4 text-spanish-yellow" />
-                <span className="text-white font-semibold">Tendencias 2025</span>
-              </div>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
-                <Award className="w-4 h-4 text-spanish-yellow" />
-                <span className="text-white font-semibold">Calidad premium</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Estadísticas Impresionantes */}
-      <section className="py-16 bg-slate-800">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {cuñaoStats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="bg-slate-700 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-spanish-red transition-all duration-300 transform group-hover:scale-110">
-                  <stat.icon className={`w-8 h-8 ${stat.color} group-hover:text-white`} />
-                </div>
-                <div className={`text-3xl font-bold ${stat.color} mb-2`}>
-                  {stat.value}
-                </div>
-                <p className="text-white font-semibold text-sm drop-shadow-sm">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Productos Destacados Premium */}
-      <section className="py-20 bg-slate-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-patriot font-bold text-white mb-4">
-              🏆 Top Productos Cuñao 2025
-            </h2>
-            <p className="text-white font-medium max-w-2xl mx-auto text-lg drop-shadow-sm">
-              Los diseños que han conquistado bares, tertulias y reuniones familiares en toda España
             </p>
           </div>
 
@@ -240,6 +176,27 @@ export const FeaturedPage: React.FC = () => {
                 </button>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Estadísticas Impresionantes */}
+      <section className="py-16 bg-slate-800">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+            {cuñaoStats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="bg-slate-700 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-spanish-red transition-all duration-300 transform group-hover:scale-110">
+                  <stat.icon className={`w-8 h-8 ${stat.color} group-hover:text-white`} />
+                </div>
+                <div className={`text-3xl font-bold ${stat.color} mb-2`}>
+                  {stat.value}
+                </div>
+                <p className="text-white font-semibold text-sm drop-shadow-sm">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
