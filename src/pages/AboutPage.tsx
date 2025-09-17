@@ -8,24 +8,27 @@ export const AboutPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Hero section */}
-      <section className="bg-gradient-to-br from-spanish-red via-spanish-gold to-spanish-red text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-patriot font-bold mb-6 flex items-center justify-center gap-4">
-            <span className="inline-block w-10 h-7 relative rounded-sm overflow-hidden shadow-lg transform hover:scale-110 transition-transform duration-300" style={{boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2)'}}>
-              <span className="absolute top-0 left-0 w-full h-1/4 bg-spanish-red"></span>
-              <span className="absolute top-1/4 left-0 w-full h-1/2 bg-spanish-yellow"></span>
-              <span className="absolute bottom-0 left-0 w-full h-1/4 bg-spanish-red"></span>
-            </span>
-            Sobre Nosotros
-            <span className="inline-block w-10 h-7 relative rounded-sm overflow-hidden shadow-lg transform hover:scale-110 transition-transform duration-300" style={{boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2)'}}>
-              <span className="absolute top-0 left-0 w-full h-1/4 bg-spanish-red"></span>
-              <span className="absolute top-1/4 left-0 w-full h-1/2 bg-spanish-yellow"></span>
-              <span className="absolute bottom-0 left-0 w-full h-1/4 bg-spanish-red"></span>
-            </span>
-          </h1>
-          <p className="text-xl md:text-2xl font-bold max-w-3xl mx-auto">
-            "En mi pueblo lo hacemos mejor"
-          </p>
+      <section className="relative text-white py-20 bg-[url('/pueblo.webp')] bg-cover bg-center">
+        <div className="absolute inset-0 bg-black/50 pointer-events-none"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="inline-block bg-black/40 backdrop-blur-[1px] px-6 py-4 rounded-xl">
+            <h1 className="text-4xl md:text-6xl font-patriot font-bold mb-4 flex items-center justify-center gap-4">
+              <span className="inline-block w-10 h-7 relative rounded-sm overflow-hidden shadow-lg" style={{boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2)'}}>
+                <span className="absolute top-0 left-0 w-full h-1/4 bg-spanish-red"></span>
+                <span className="absolute top-1/4 left-0 w-full h-1/2 bg-spanish-yellow"></span>
+                <span className="absolute bottom-0 left-0 w-full h-1/4 bg-spanish-red"></span>
+              </span>
+              Sobre Nosotros
+              <span className="inline-block w-10 h-7 relative rounded-sm overflow-hidden shadow-lg" style={{boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2)'}}>
+                <span className="absolute top-0 left-0 w-full h-1/4 bg-spanish-red"></span>
+                <span className="absolute top-1/4 left-0 w-full h-1/2 bg-spanish-yellow"></span>
+                <span className="absolute bottom-0 left-0 w-full h-1/4 bg-spanish-red"></span>
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl font-bold max-w-3xl mx-auto">
+              "En mi pueblo lo hacemos mejor"
+            </p>
+          </div>
         </div>
       </section>
 
@@ -131,8 +134,8 @@ export const AboutPage: React.FC = () => {
             El Equipo Cuñao
           </h2>
           
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="bg-slate-800 rounded-lg shadow-lg p-8 mb-8">
+          <div className="max-w-6xl mx-auto text-center">
+            <div className="bg-slate-800 rounded-lg shadow-lg px-8 py-10 mb-8">
               <h3 className="text-2xl font-semibold text-spanish-yellow mb-4">
                 Somos un equipo de cuñados profesionales
               </h3>
@@ -141,20 +144,29 @@ export const AboutPage: React.FC = () => {
                 hemos recopilado cientos de frases auténticas de tertulias familiares, 
                 bares de pueblo y reuniones de vecinos.
               </p>
-              <div className="grid md:grid-cols-3 gap-6 text-sm">
-                <div className="bg-slate-700 p-4 rounded-lg">
+              <div className="grid md:grid-cols-3 gap-8 text-base mx-auto justify-center items-stretch">
+                <div className="bg-slate-700 p-6 md:p-8 rounded-lg">
+                  <div className="w-56 h-56 md:w-64 md:h-64 bg-slate-600 rounded-full p-3 mx-auto mb-4 flex items-center justify-center">
+                <img src="/people/cuñado-jefe.webp" alt="El Cuñado Jefe" className="w-52 h-52 md:w-60 md:h-60 object-contain rounded-full" />
+                  </div>
                   <strong className="text-spanish-yellow">El Cuñado Jefe</strong>
                   <p className="text-slate-300 mt-1">
                     Especialista en opiniones contundentes sobre cualquier tema
                   </p>
                 </div>
-                <div className="bg-slate-700 p-4 rounded-lg">
+                <div className="bg-slate-700 p-6 md:p-8 rounded-lg">
+                  <div className="w-56 h-56 md:w-64 md:h-64 bg-slate-600 rounded-full p-3 mx-auto mb-4 flex items-center justify-center">
+                <img src="/people/cuñada-experta.webp" alt="La Cuñada Experta" className="w-52 h-52 md:w-60 md:h-60 object-contain rounded-full" />
+                  </div>
                   <strong className="text-spanish-yellow">La Cuñada Experta</strong>
                   <p className="text-slate-300 mt-1">
                     Master en comparaciones con "en mi pueblo"
                   </p>
                 </div>
-                <div className="bg-slate-700 p-4 rounded-lg">
+                <div className="bg-slate-700 p-6 md:p-8 rounded-lg">
+                  <div className="w-56 h-56 md:w-64 md:h-64 bg-slate-600 rounded-full p-3 mx-auto mb-4 flex items-center justify-center">
+                <img src="/people/cuñado-millennial.webp" alt="El Cuñado Millennial" className="w-52 h-52 md:w-60 md:h-60 object-contain rounded-full" />
+                  </div>
                   <strong className="text-spanish-yellow">El Cuñado Millennial</strong>
                   <p className="text-slate-300 mt-1">
                     Traductor oficial del cuñadismo a las nuevas generaciones
