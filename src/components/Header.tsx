@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
@@ -131,7 +132,7 @@ export const Header: React.FC = () => {
           <>
             {/* Overlay de fondo */}
             <div
-              className="fixed inset-0 bg-black/30 z-40"
+              className="fixed inset-0 bg-black/30 z-[9000]"
               onClick={() => setIsMobileMenuOpen(false)}
             ></div>
             {/* Menú móvil: panel desplegable desde el header (no oculta el header) */}
@@ -152,15 +153,20 @@ export const Header: React.FC = () => {
             </div>
           </>
         )}
-        {/* Mobile search modal */}
-        {isMobileSearchOpen && (
-          <div className="fixed inset-0 z-60 flex items-start justify-center" onClick={() => setIsMobileSearchOpen(false)}>
-            <div className="absolute inset-0 bg-transparent" />
+        {/* Mobile search modal (renderizado en portal para cubrir todo el DOM) */}
+        {isMobileSearchOpen && typeof document !== 'undefined' && createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-start justify-center" role="dialog" aria-modal="true">
+            {/* Overlay negro semitransparente que evita scroll visual y captura clicks */}
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] pointer-events-auto"
+              onClick={() => setIsMobileSearchOpen(false)}
+            />
+
             <div className="w-full container mx-auto px-4 pointer-events-none">
-              <div onClick={e => e.stopPropagation()} className="pointer-events-auto fixed top-0 left-0 right-0 mx-auto w-full bg-slate-800/60 ring-1 ring-slate-700/40 rounded-b-2xl shadow-md p-3 backdrop-blur-sm max-w-[1200px]">
+              <div onClick={e => e.stopPropagation()} className="pointer-events-auto fixed top-0 left-0 right-0 mx-auto w-full bg-slate-800/60 ring-1 ring-slate-700/40 rounded-b-2xl shadow-md p-3 max-w-[1200px] z-[100000]">
               <div className="flex items-center space-x-3">
-                <button type="button" onClick={performMobileSearch} className="p-2 bg-slate-700/50 rounded-lg text-slate-300 hover:text-white">
-                  <Search size={20} />
+                <button type="button" onClick={() => setIsMobileSearchOpen(false)} aria-label="Cerrar búsqueda" className="p-2 text-slate-400 hover:text-white rounded-lg">
+                  <X size={20} />
                 </button>
                 <form className="flex-1" onSubmit={e => {
                   e.preventDefault();
@@ -174,14 +180,15 @@ export const Header: React.FC = () => {
                     className="w-full bg-white/5 text-white placeholder-slate-400 rounded-md px-3 py-2 focus:outline-none ring-0"
                   />
                 </form>
-                <button onClick={() => setIsMobileSearchOpen(false)} className="p-2 text-slate-400 hover:text-white rounded-lg">
-                  <X size={20} />
+                <button type="button" onClick={performMobileSearch} className="p-2 bg-slate-700/50 rounded-lg text-slate-300 hover:text-white" aria-label="Realizar búsqueda">
+                  <Search size={20} />
                 </button>
               </div>
-              <div className="mt-2 text-slate-400 text-sm">Presiona Enter para buscar o toca para cerrar.</div>
+              <div className="mt-2 text-slate-400 text-sm text-center">Presiona Enter para buscar o toca para cerrar.</div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </header>
