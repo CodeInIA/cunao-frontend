@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
@@ -13,6 +14,7 @@ export const Header: React.FC = () => {
   const totalItems = getTotalItems();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -26,6 +28,26 @@ export const Header: React.FC = () => {
     setIsMobileMenuOpen(false);
     navigateTo(path);
   };
+
+  const performMobileSearch = () => {
+    if (searchQuery.trim()) {
+      setIsMobileSearchOpen(false);
+      navigateTo(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
+  };
+
+  React.useEffect(() => {
+    // Disable body scroll when mobile menu or search modal is open
+    if (isMobileMenuOpen || isMobileSearchOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev || '';
+      };
+    }
+    return;
+  }, [isMobileMenuOpen, isMobileSearchOpen]);
 
   return (
   <header className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
@@ -52,6 +74,16 @@ export const Header: React.FC = () => {
 
           {/* Acciones a la derecha */}
           <div className="flex items-center space-x-4 min-w-[120px] justify-end">
+            {/* Mobile search button */}
+            {location.pathname !== '/productos' && (
+              <button
+                onClick={() => setIsMobileSearchOpen(true)}
+                className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800"
+                aria-label="Buscar"
+              >
+                <Search size={22} />
+              </button>
+            )}
             {/* Barra de búsqueda */}
             {location.pathname !== '/productos' && (
               <form onSubmit={e => {
@@ -99,7 +131,7 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Navegación móvil */}
+  {/* Navegación móvil */}
         {isMobileMenuOpen && (
           <>
             {/* Overlay de fondo */}
@@ -143,6 +175,43 @@ export const Header: React.FC = () => {
               </nav>
             </div>
           </>
+        )}
+        {/* Mobile search modal (renderizado en portal para cubrir todo el DOM) */}
+        {isMobileSearchOpen && typeof document !== 'undefined' && createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-start justify-center" role="dialog" aria-modal="true">
+            {/* Overlay negro semitransparente que evita scroll visual y captura clicks */}
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] pointer-events-auto"
+              onClick={() => setIsMobileSearchOpen(false)}
+            />
+
+            <div className="w-full container mx-auto px-4 pointer-events-none">
+              <div onClick={e => e.stopPropagation()} className="pointer-events-auto fixed top-0 left-0 right-0 mx-auto w-full bg-slate-800/60 ring-1 ring-slate-700/40 rounded-b-2xl shadow-md p-3 max-w-[1200px] z-[100000]">
+              <div className="flex items-center space-x-3">
+                <button type="button" onClick={() => setIsMobileSearchOpen(false)} aria-label="Cerrar búsqueda" className="p-2 text-slate-400 hover:text-white rounded-lg">
+                  <X size={20} />
+                </button>
+                <form className="flex-1" onSubmit={e => {
+                  e.preventDefault();
+                  performMobileSearch();
+                }}>
+                  <input
+                    autoFocus
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Buscar productos, categorías..."
+                    className="w-full bg-white/5 text-white placeholder-slate-400 rounded-md px-3 py-2 focus:outline-none ring-0"
+                  />
+                </form>
+                <button type="button" onClick={performMobileSearch} className="p-2 bg-slate-700/50 rounded-lg text-slate-300 hover:text-white" aria-label="Realizar búsqueda">
+                  <Search size={20} />
+                </button>
+              </div>
+              <div className="mt-2 text-slate-400 text-sm text-center">Presiona Enter para buscar o toca para cerrar.</div>
+              </div>
+            </div>
+          </div>,
+          document.body
         )}
       </div>
     </header>
