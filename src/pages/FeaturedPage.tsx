@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Crown, Zap, TrendingUp, Award, Users, Clock, ArrowRight, Search } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
@@ -9,13 +9,14 @@ import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
 
 export const FeaturedPage: React.FC = () => {
-  const { featuredProducts, fetchFeaturedProducts, loadingState } = useProductStore();
+  const { featuredProducts, fetchFeaturedProducts, products, fetchProducts, loadingState } = useProductStore();
   const { addItem } = useCartStore();
   const { navigateTo } = useSmartNavigation();
 
   useEffect(() => {
     fetchFeaturedProducts();
-  }, [fetchFeaturedProducts]);
+    fetchProducts();
+  }, [fetchFeaturedProducts, fetchProducts]);
 
   const handleAddToCart = (product: Product) => {
     // Obtener el precio real del producto
@@ -114,6 +115,19 @@ export const FeaturedPage: React.FC = () => {
     }
   ];
 
+  const highlightedProducts = useMemo(() => {
+    const cats = ['destacado', 'popular', 'clásico', 'tendencia'];
+    return cats.map(cat => {
+      const matches = (products || []).filter(p => (p.tags || []).map(t => String(t).toLowerCase()).includes(cat));
+      if (matches.length > 0) {
+        matches.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return matches[0];
+      }
+      const fb = (featuredProducts || []).find(p => (p.tags || []).map(t => String(t).toLowerCase()).includes(cat));
+      return fb || null;
+    });
+  }, [products, featuredProducts]);
+
   return (
     <div className="bg-slate-900">
 
@@ -132,33 +146,39 @@ export const FeaturedPage: React.FC = () => {
           </div>
 
             {loadingState === 'loading' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max mb-0">
-              {[...Array(6)].map((_, index) => (
-                <div key={index} className="relative">
-                  <div className="bg-slate-700 animate-pulse rounded-xl">
-                    <div className="absolute -top-3 -right-3 w-12 h-6 bg-slate-600 rounded-full"></div>
-                    <div className={`bg-slate-600 rounded-t-xl mb-4 ${index % 3 === 0 ? 'h-64' : index % 3 === 1 ? 'h-56' : 'h-72'}`}></div>
-                    <div className="p-4 space-y-3 pb-6">
-                      <div className="h-4 bg-slate-600 rounded w-3/4"></div>
-                      <div className="h-4 bg-slate-600 rounded w-1/2"></div>
-                      <div className="h-8 bg-slate-600 rounded"></div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-max mb-0">
+                {[...Array(6)].map((_, index) => (
+                  <div key={index} className="relative">
+                    <div className="bg-slate-700 animate-pulse rounded-xl">
+                      <div className="absolute -top-3 -right-3 w-12 h-6 bg-slate-600 rounded-full"></div>
+                      <div className={`bg-slate-600 rounded-t-xl mb-4 ${index % 3 === 0 ? 'h-64' : index % 3 === 1 ? 'h-56' : 'h-72'}`}></div>
+                      <div className="p-4 space-y-3 pb-6">
+                        <div className="h-4 bg-slate-600 rounded w-3/4"></div>
+                        <div className="h-4 bg-slate-600 rounded w-1/2"></div>
+                        <div className="h-8 bg-slate-600 rounded"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-max mb-0">
-              {featuredProducts.slice(0, 6).map((product, index) => (
-                <FeaturedProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  featured={true} // Todos son destacados aquí
-                />
-              ))}
-            </div>
-          ) : (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-max mb-0">
+                {highlightedProducts.map((product, index) => (
+                  product ? (
+                    <FeaturedProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      featured={true}
+                    />
+                  ) : (
+                    <div key={`empty-${index}`} className="bg-slate-800 rounded-xl p-6 flex items-center justify-center text-slate-400">
+                      Sin producto
+                    </div>
+                  )
+                ))}
+              </div>
+            ) : (
             <div className="text-center py-16">
               <div className="text-8xl mb-6">🤔</div>
               <h3 className="text-2xl font-bold text-white mb-4">
