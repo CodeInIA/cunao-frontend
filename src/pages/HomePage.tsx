@@ -111,10 +111,6 @@ export const HomePage: React.FC = () => {
                   <span className="absolute bottom-0 left-0 w-full h-1/4 bg-spanish-red"></span>
                 </span>
               </p>
-              <p className="text-base mb-8 opacity-90 max-w-2xl mx-auto">
-                Camisetas con las frases más auténticas del cuñadismo español. 
-                Porque siempre hay algo que opinar.
-              </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button
                     className="bg-slate-900 text-white font-bold px-6 py-2 text-base rounded-lg shadow hover:shadow-lg border-2 border-slate-700 hover:border-slate-600 transition-colors duration-200 inline-flex items-center justify-center"
@@ -141,7 +137,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* Productos Recientes */}
-      <section className="py-20 bg-slate-900 overflow-hidden">
+      <section className="py-6 bg-slate-900 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-spanish-red px-4 py-2 rounded-full text-white font-semibold text-sm mb-4">
@@ -149,12 +145,6 @@ export const HomePage: React.FC = () => {
               PRODUCTOS RECIENTES
               <Star className="w-4 h-4 fill-current" />
             </div>
-            <h2 className="text-4xl font-patriot font-bold text-white mb-4">
-              Últimos Añadidos
-            </h2>
-            <p className="text-slate-300 max-w-2xl mx-auto text-lg">
-              Lo último que hemos subido a la tienda. Aprovecha las novedades antes de que vuelen.
-            </p>
           </div>
 
           {loadingState === 'loading' ? (
