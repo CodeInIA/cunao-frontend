@@ -56,8 +56,8 @@ export const CartSidebar: React.FC = () => {
         onClick={closeCart}
       />
 
-      {/* Sidebar - Ancho responsivo: full en móvil, md en tablet, xl en PC */}
-      <div className="fixed right-0 top-0 h-full w-full sm:max-w-md lg:max-w-xl bg-slate-900 z-50 shadow-2xl flex flex-col border-l border-slate-800 animate-slide-in-right">
+  {/* Sidebar - Ancho responsivo: full en móvil, md en tablet, más ancho en PC */}
+  <div className="fixed right-0 top-0 h-full w-full sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-[45rem] bg-slate-900 z-50 shadow-2xl flex flex-col border-l border-slate-800 animate-slide-in-right">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800 shadow-sm flex-shrink-0">
           <h2 className="text-xl font-patriot font-bold text-white">
@@ -115,21 +115,23 @@ export const CartSidebar: React.FC = () => {
                 
                 return (
                   // Contenedor de item: espaciado responsivo
-                  <div key={item.variantId} className="flex space-x-4 lg:space-x-6 p-2 lg:p-4 bg-slate-800 rounded-lg border border-slate-700 items-start lg:items-center">
-                    {/* Imagen: tamaño más grande y responsivo */}
-                    {imageToUse ? (
-                      <OptimizedImage
-                        image={imageToUse}
-                        alt={item.title}
-                        className="w-36 h-36 sm:w-36 sm:h-36 lg:w-32 lg:h-32 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-36 h-36 sm:w-36 sm:h-36 lg:w-32 lg:h-32 bg-slate-700 rounded-md border-2 border-slate-600 flex-shrink-0 flex items-center justify-center">
-                        <span className="text-slate-400 text-3xl">👕</span>
-                      </div>
-                    )}
-                    <div className="flex-1 flex flex-col justify-between min-w-0 h-full lg:h-auto">
+                  <div key={item.variantId} className="flex space-x-4 lg:space-x-6 p-2 md:p-3 bg-slate-800 rounded-lg border border-slate-700 items-start lg:items-center">
+                    {/* Imagen: wrapper overflow-hidden con zoom por defecto */}
+                    <div className="w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-52 lg:h-52 xl:w-56 xl:h-56 overflow-hidden rounded-md flex-shrink-0">
+                      {imageToUse ? (
+                        <OptimizedImage
+                          image={imageToUse}
+                          alt={item.title}
+                          className="w-full h-full object-cover transform scale-110 md:scale-125"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-700 flex items-center justify-center">
+                          <span className="text-slate-400 text-3xl">👕</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between min-w-0 h-36 sm:h-40 md:h-48 lg:h-52 xl:h-56 pt-2 pb-2">
                       <div>
                         {/* Título y selectores: mantienen su estilo original en PC */}
                         <h4 className="font-patriot font-bold text-white mb-2 line-clamp-2">
@@ -160,7 +162,7 @@ export const CartSidebar: React.FC = () => {
                           </select>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center mt-2">
+                      <div className="flex justify-between items-center">
                         {/* Precio y controles de cantidad: mantienen su estilo original en PC */}
                         <span className="text-lg font-bold text-spanish-yellow">
                           {formatPrice(item.price)}
