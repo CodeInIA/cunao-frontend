@@ -82,14 +82,15 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
 
   return (
     <div ref={containerRef} className={`relative ${className || ''}`}>
-      <div className="absolute -left-16 top-1/2 transform -translate-y-1/2 z-50">
-        <button onClick={prev} aria-label="Anterior" className="bg-white/10 hover:bg-white/20 text-white p-4 rounded-full shadow-lg border border-slate-700">
-          <ChevronLeft size={22} />
+      {/* Arrows: moved slightly inside and responsive sizes/offsets for mobile */}
+      <div className="absolute left-2 sm:-left-8 top-1/2 transform -translate-y-1/2 z-50">
+        <button onClick={prev} aria-label="Anterior" className="bg-white/10 hover:bg-white/20 text-white p-2 sm:p-4 rounded-full shadow-lg border border-slate-700">
+          <ChevronLeft size={18} className="sm:!w-5 sm:!h-5" />
         </button>
       </div>
 
       <div className="overflow-hidden h-full">
-        <div ref={trackRef} style={{ ...trackStyle, alignItems: 'center', height: '100%', minHeight: '420px' }} className="h-full flex items-center">
+        <div ref={trackRef} style={{ ...trackStyle, alignItems: 'center', height: '100%', minHeight: undefined }} className="h-full flex items-center min-h-[300px] sm:min-h-[380px] md:min-h-[420px]">
           {products.map((product, idx) => (
             <div
               key={product.id}
@@ -104,9 +105,9 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
         </div>
       </div>
 
-      <div className="absolute -right-16 top-1/2 transform -translate-y-1/2 z-50">
-        <button onClick={next} aria-label="Siguiente" className="bg-white/10 hover:bg-white/20 text-white p-4 rounded-full shadow-lg border border-slate-700">
-          <ChevronRight size={22} />
+      <div className="absolute right-2 sm:-right-8 top-1/2 transform -translate-y-1/2 z-50">
+        <button onClick={next} aria-label="Siguiente" className="bg-white/10 hover:bg-white/20 text-white p-2 sm:p-4 rounded-full shadow-lg border border-slate-700">
+          <ChevronRight size={18} className="sm:!w-5 sm:!h-5" />
         </button>
       </div>
     </div>

@@ -17,7 +17,7 @@ const RecentProductCard: React.FC<Props> = ({ product, className }) => {
   const price = uniquePrices.length === 1 ? uniquePrices[0] / 100 : Math.min(...uniquePrices) / 100;
 
   return (
-  <div className={`group relative overflow-hidden min-w-0 hover:shadow-xl transition-shadow duration-300 ${className || ''}`}>
+  <div className={`group relative overflow-hidden min-w-0 hover:shadow-xl transition-shadow duration-300 ${className || ''} pb-4 sm:pb-2` }>
       <Link
         to={`/producto/${slugify(product.title)}`}
         className="block h-full"
