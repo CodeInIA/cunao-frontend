@@ -95,13 +95,17 @@ export const Header: React.FC = () => {
 
           {/* Navegación desktop centrada y adaptable */}
           <div className="hidden lg:flex flex-1 justify-center min-w-[220px]">
-            <nav className="flex items-center space-x-6">
+            {/* Ajuste: envolver nav para desplazarlo ligeramente a la derecha en pantallas anchas
+                para evitar solapamiento con el logo a la izquierda y la lupa a la derecha. */}
+            <div className="nav-shift w-full max-w-[780px] flex justify-center">
+              <nav className="flex items-center space-x-4 ml-6 lg:ml-12 xl:ml-16">
               <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
               <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
               <button onClick={() => handleNavClick('/destacados')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Destacados<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
               <button onClick={() => handleNavClick('/sobre-nosotros')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Sobre Nosotros<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
               <button onClick={() => handleNavClick('/contacto')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Contacto<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
-            </nav>
+              </nav>
+            </div>
           </div>
 
           {/* Right: actions - search (mobile icon + desktop input) and cart */}
