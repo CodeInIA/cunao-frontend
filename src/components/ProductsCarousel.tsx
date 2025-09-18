@@ -10,9 +10,14 @@ type Props = {
 };
 
 function getVisibleCount(width: number) {
-  if (width >= 1024) return 4;
+  // Larger screens show 4
+  if (width >= 1200) return 4;
+  // Intermediate large screens show 3 before dropping to 2
+  if (width >= 992) return 3;
+  // Medium screens show 2
   if (width >= 768) return 2;
-  return 1;
+  // Small screens show 2
+  return 2;
 }
 
 const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className }) => {

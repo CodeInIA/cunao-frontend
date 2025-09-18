@@ -25,7 +25,7 @@ const RecentProductCard: React.FC<Props> = ({ product, className }) => {
       >
         <div className="aspect-square overflow-hidden relative flex items-center justify-center">
           {image ? (
-            <div className="w-full h-full flex items-center justify-center p-3 box-border">
+            <div className="w-full h-full flex items-center justify-center p-2 box-border">
               <OptimizedImage
                 image={image}
                 alt={product.title}
@@ -41,8 +41,8 @@ const RecentProductCard: React.FC<Props> = ({ product, className }) => {
           )}
         </div>
 
-        <div className="px-3 pb-2 pt-2 text-center">
-          <h3 className="font-display font-semibold text-white mb-1 text-sm line-clamp-2 group-hover:underline transition-all duration-150" title={product.title}>
+  <div className="px-3 pb-2 pt-1 text-center">
+          <h3 className="font-display font-semibold text-white mb-1 text-xs sm:text-sm line-clamp-2 group-hover:underline transition-all duration-150 whitespace-normal break-words" title={product.title}>
             {product.title}
           </h3>
           <div>
