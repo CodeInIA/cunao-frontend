@@ -34,7 +34,6 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
 
   const trackStyle: React.CSSProperties = {
     display: 'flex',
-    gap: '0.5rem',
     transition: 'transform 350ms ease',
     transform: `translateX(-${index * (100 / visible)}%)`,
     width: `${(products.length * 100) / visible}%`
@@ -42,25 +41,27 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
 
   return (
     <div className={`relative ${className || ''}`}>
-  <div className="absolute -left-8 top-[40%] transform -translate-y-1/2 z-50">
-        <button onClick={prev} aria-label="Anterior" className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full shadow-lg border border-slate-700">
-          <ChevronLeft size={20} />
+      <div className="absolute -left-16 top-1/2 transform -translate-y-1/2 z-50">
+        <button onClick={prev} aria-label="Anterior" className="bg-white/10 hover:bg-white/20 text-white p-4 rounded-full shadow-lg border border-slate-700">
+          <ChevronLeft size={22} />
         </button>
       </div>
 
-      <div className="overflow-hidden">
-        <div ref={trackRef} style={{ ...trackStyle, alignItems: 'stretch', height: '100%' }}>
+      <div className="overflow-hidden h-full">
+        <div ref={trackRef} style={{ ...trackStyle, alignItems: 'stretch', height: '100%' }} className="h-full">
           {products.map(product => (
-            <div key={product.id} style={{ flex: `0 0 ${100 / visible}%`, padding: '0.25rem', height: '100%', boxSizing: 'border-box', maxWidth: visible >= 4 ? 260 : '100%' }} className="h-full overflow-hidden">
-              <RecentProductCard product={product} className="h-full" />
+            <div key={product.id} style={{ flex: `0 0 ${100 / visible}%`, padding: '0', height: '100%', boxSizing: 'border-box', maxWidth: visible >= 4 ? 320 : '100%' }} className="h-full overflow-visible flex min-h-0">
+              <div className="w-full h-full min-h-0 px-3">
+                <RecentProductCard product={product} className="h-full" />
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-  <div className="absolute -right-8 top-[40%] transform -translate-y-1/2 z-50">
-        <button onClick={next} aria-label="Siguiente" className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full shadow-lg border border-slate-700">
-          <ChevronRight size={20} />
+      <div className="absolute -right-16 top-1/2 transform -translate-y-1/2 z-50">
+        <button onClick={next} aria-label="Siguiente" className="bg-white/10 hover:bg-white/20 text-white p-4 rounded-full shadow-lg border border-slate-700">
+          <ChevronRight size={22} />
         </button>
       </div>
     </div>

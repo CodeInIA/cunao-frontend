@@ -20,8 +20,10 @@ const CarouselSection: React.FC<{ products: Product[] }> = ({ products }) => {
         const badge = document.getElementById('recent-badge');
         const viewportHeight = window.innerHeight;
         const badgeBottom = badge ? (badge.getBoundingClientRect().bottom) : 0;
-        // Si el hero ocupa la parte superior de la página, medimos desde el badge hasta el bottom del viewport
-        const available = Math.max(200, viewportHeight - badgeBottom - 16); // mínimo razonable
+  // Si el hero ocupa la parte superior de la página, medimos desde el badge hasta el bottom del viewport
+  // Reservamos un pequeño margen inferior (10% del viewport) para que no toque el borde
+  const bottomMargin = Math.round(viewportHeight * 0.10);
+  const available = Math.max(220, viewportHeight - badgeBottom - bottomMargin); // mínimo razonable
         setHeight(`${available}px`);
       } catch (e) {
         setHeight(undefined);
@@ -34,7 +36,7 @@ const CarouselSection: React.FC<{ products: Product[] }> = ({ products }) => {
   }, []);
 
   return (
-    <div ref={containerRef} className="mb-8 px-8 overflow-visible">
+  <div ref={containerRef} className="mb-8 px-12 overflow-visible">
       <div style={{ height }} className="relative overflow-visible">
         <ProductsCarousel products={products.slice().sort((a,b)=> new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} maxVisible={4} className="h-full" />
       </div>

@@ -17,9 +17,9 @@ const RecentProductCard: React.FC<Props> = ({ product, className }) => {
   const price = prices.length ? Math.min(...prices) / 100 : 0;
 
   return (
-    <div className={`group bg-slate-800 rounded-lg overflow-hidden border border-slate-700 h-full flex flex-col ${className || ''}`}>
-      <Link to={`/producto/${slugify(product.title)}`} className="block h-full">
-        <div className="bg-slate-700 p-2 md:p-3 flex items-center justify-center flex-1 min-h-[180px] overflow-hidden">
+    <div className={`group bg-slate-800 rounded-lg overflow-hidden border border-slate-700 h-full flex flex-col min-h-0 ${className || ''}`}>
+      <Link to={`/producto/${slugify(product.title)}`} className="block h-full flex flex-col">
+        <div className="bg-slate-700 p-2 md:p-3 flex items-center justify-center flex-1 min-h-0 overflow-hidden">
           {image ? (
             <OptimizedImage image={image} alt={product.title} className="max-w-full max-h-full object-contain" responsive />
           ) : (
