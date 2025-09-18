@@ -51,14 +51,14 @@ function OptimizedImageComponent({
     <div className="relative overflow-hidden">
       {/* Skeleton/loading state */}
       {isLoading && (
-        <div className={`absolute inset-0 ${fallbackClassName} animate-pulse flex items-center justify-center`}>
+        <div className={`${fallbackClassName} animate-pulse flex items-center justify-center w-full h-full`}>
           <div className="w-8 h-8 bg-slate-600 rounded"></div>
         </div>
       )}
 
       {/* Error state */}
       {hasError && !isLoading && (
-        <div className={`absolute inset-0 bg-slate-700 flex items-center justify-center`}>
+        <div className={`bg-slate-700 flex items-center justify-center w-full h-full`}>
           <span className="text-slate-400 text-2xl">👕</span>
         </div>
       )}
@@ -71,7 +71,7 @@ function OptimizedImageComponent({
         loading={loading}
         onLoad={handleLoad}
         onError={handleError}
-        style={{ display: hasError ? 'none' : 'block', width: '100%', height: '100%', objectFit: 'contain' }}
+        style={{ display: hasError ? 'none' : 'block', maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }}
       />
     </div>
   );

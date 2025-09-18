@@ -166,7 +166,7 @@ export const HomePage: React.FC = () => {
           ) : products.length > 0 ? (
             <>
                 <div className="mb-8">
-                  <ProductsCarousel products={products.slice().sort((a,b)=> new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} />
+                  <ProductsCarousel maxVisible={4} products={products.slice().sort((a,b)=> new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} />
                 </div>
 
               {/* Estadísticas */}

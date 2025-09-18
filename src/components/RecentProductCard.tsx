@@ -17,21 +17,25 @@ const RecentProductCard: React.FC<Props> = ({ product, className }) => {
   const price = uniquePrices.length === 1 ? uniquePrices[0] / 100 : Math.min(...uniquePrices) / 100;
 
   return (
-    <div className={`group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700 ${className || ''}`}>
+    <div className={`group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700 min-w-0 ${className || ''}`}>
       <Link
         to={`/producto/${slugify(product.title)}`}
         className="block h-full"
         onClick={() => { setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100); }}
       >
-        <div className="aspect-square bg-slate-700 overflow-hidden relative">
+        <div className="aspect-square bg-slate-700 overflow-hidden relative flex items-center justify-center">
           {image ? (
-            <OptimizedImage
-              image={image}
-              alt={product.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="eager"
-              responsive={true}
-            />
+            <div className="w-full h-full flex items-center justify-center p-6 box-border">
+              <div className="max-w-full max-h-full w-full h-full flex items-center justify-center">
+                <OptimizedImage
+                  image={image}
+                  alt={product.title}
+                  className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  loading="eager"
+                  responsive={true}
+                />
+              </div>
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-500">
               <span className="text-4xl">👕</span>
