@@ -140,7 +140,7 @@ export const HomePage: React.FC = () => {
       {/* Productos Recientes */}
       <section className="py-6 bg-slate-900 overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className="text-center mb-1">
             <div className="inline-flex items-center gap-2 bg-spanish-red px-4 py-2 rounded-full text-white font-semibold text-sm mb-4">
               <Star className="w-4 h-4 fill-current" />
               PRODUCTOS RECIENTES
