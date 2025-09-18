@@ -121,12 +121,12 @@ export const CartSidebar: React.FC = () => {
                       <OptimizedImage
                         image={imageToUse}
                         alt={item.title}
-                        className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
+                        className="w-36 h-36 sm:w-36 sm:h-36 lg:w-32 lg:h-32 object-cover rounded-md border-2 border-slate-700 flex-shrink-0"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 bg-slate-700 rounded-md border-2 border-slate-600 flex-shrink-0 flex items-center justify-center">
-                        <span className="text-slate-400 text-2xl">👕</span>
+                      <div className="w-36 h-36 sm:w-36 sm:h-36 lg:w-32 lg:h-32 bg-slate-700 rounded-md border-2 border-slate-600 flex-shrink-0 flex items-center justify-center">
+                        <span className="text-slate-400 text-3xl">👕</span>
                       </div>
                     )}
                     <div className="flex-1 flex flex-col justify-between min-w-0 h-full lg:h-auto">
