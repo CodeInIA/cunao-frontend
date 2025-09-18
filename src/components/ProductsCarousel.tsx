@@ -91,7 +91,7 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
   return (
     <div ref={containerRef} className={`relative ${className || ''}`}>
       {/* Arrows: moved slightly inside and responsive sizes/offsets for mobile */}
-      <div className="absolute left-2 sm:-left-8 top-1/2 transform -translate-y-1/2 z-50">
+  <div className="absolute left-2 sm:-left-8 top-1/2 transform -translate-y-1/2 z-10">
         <button
           onClick={prev}
           aria-label="Anterior"
@@ -119,7 +119,7 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
         </div>
       </div>
 
-      <div className="absolute right-2 sm:-right-8 top-1/2 transform -translate-y-1/2 z-50">
+  <div className="absolute right-2 sm:-right-8 top-1/2 transform -translate-y-1/2 z-10">
         <button
           onClick={next}
           aria-label="Siguiente"

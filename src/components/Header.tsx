@@ -15,6 +15,8 @@ export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
+  const headerRef = React.useRef<HTMLElement | null>(null);
+  const [headerHeight, setHeaderHeight] = React.useState<number>(72);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -48,8 +50,18 @@ export const Header: React.FC = () => {
     }
     return;
   }, [isMobileMenuOpen, isMobileSearchOpen]);
+
+  React.useLayoutEffect(() => {
+    const update = () => {
+      const rect = headerRef.current ? headerRef.current.getBoundingClientRect() : { height: 72, bottom: 72 };
+      setHeaderHeight(Math.round(rect.height));
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
   return (
-    <header className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
+  <header ref={headerRef} className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
       {/* Barra superior patriótica */}
       <div className="brand-header h-1"></div>
 
@@ -141,11 +153,12 @@ export const Header: React.FC = () => {
         {/* Navegación móvil */}
         {isMobileMenuOpen && (
           <>
-            {/* Overlay de fondo */}
+            {/* Overlay de fondo: empieza justo debajo del header para no ocultarlo */}
             <div
-              className="fixed inset-0 bg-black/30 z-[9000]"
+              className="fixed left-0 right-0 bottom-0 bg-black/70 backdrop-blur-sm z-50] pointer-events-auto"
+              style={{ top: `${headerHeight}px` }}
               onClick={() => setIsMobileMenuOpen(false)}
-            ></div>
+            />
             {/* Menú móvil: panel desplegable desde el header (no oculta el header) */}
             <div className="absolute top-full left-0 right-0 z-50">
               <div className="w-full px-0">
