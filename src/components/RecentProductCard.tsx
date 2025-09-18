@@ -17,24 +17,22 @@ const RecentProductCard: React.FC<Props> = ({ product, className }) => {
   const price = uniquePrices.length === 1 ? uniquePrices[0] / 100 : Math.min(...uniquePrices) / 100;
 
   return (
-    <div className={`group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700 min-w-0 ${className || ''}`}>
+  <div className={`group relative overflow-hidden min-w-0 hover:shadow-xl transition-shadow duration-300 ${className || ''}`}>
       <Link
         to={`/producto/${slugify(product.title)}`}
         className="block h-full"
         onClick={() => { setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100); }}
       >
-        <div className="aspect-square bg-slate-700 overflow-hidden relative flex items-center justify-center">
+        <div className="aspect-square overflow-hidden relative flex items-center justify-center">
           {image ? (
-            <div className="w-full h-full flex items-center justify-center p-6 box-border">
-              <div className="max-w-full max-h-full w-full h-full flex items-center justify-center">
-                <OptimizedImage
-                  image={image}
-                  alt={product.title}
-                  className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                  loading="eager"
-                  responsive={true}
-                />
-              </div>
+            <div className="w-full h-full flex items-center justify-center p-3 box-border">
+              <OptimizedImage
+                image={image}
+                alt={product.title}
+                className="max-w-full max-h-full w-full h-full object-contain scale-110 group-hover:scale-125 transition-transform duration-300 will-change-transform"
+                loading="eager"
+                responsive={true}
+              />
             </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-500">
@@ -43,8 +41,8 @@ const RecentProductCard: React.FC<Props> = ({ product, className }) => {
           )}
         </div>
 
-        <div className="px-3 pb-3 pt-2">
-          <h3 className="font-display font-semibold text-white mb-2 line-clamp-2 group-hover:underline transition-all duration-200" title={product.title}>
+        <div className="px-3 pb-2 pt-2 text-center">
+          <h3 className="font-display font-semibold text-white mb-1 text-sm line-clamp-2 group-hover:underline transition-all duration-150" title={product.title}>
             {product.title}
           </h3>
           <div>
