@@ -66,11 +66,20 @@ export const Header: React.FC = () => {
             </button>
           </div>
 
-          {/* Center: Brand logo - centered on mobile, left on desktop */}
-          <div className="flex-1 flex justify-center md:justify-start items-center">
-            <div className="flex items-center">
-              <BrandLogo size="md" showText={true} onClick={() => handleNavClick('/')} />
-            </div>
+          {/* Logo: left on desktop, centered on mobile */}
+          <div className="flex items-center flex-shrink-0 min-w-[180px]">
+            <BrandLogo size="md" showText={true} onClick={() => handleNavClick('/')} />
+          </div>
+
+          {/* Navegación desktop centrada y adaptable */}
+          <div className="hidden md:flex flex-1 justify-center min-w-[220px]">
+            <nav className="flex items-center space-x-6">
+              <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/destacados')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Destacados<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/sobre-nosotros')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Sobre Nosotros<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+              <button onClick={() => handleNavClick('/contacto')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Contacto<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
+            </nav>
           </div>
 
           {/* Right: actions - search (mobile icon + desktop input) and cart */}
