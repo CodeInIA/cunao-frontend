@@ -13,23 +13,41 @@ interface Props {
 const RecentProductCard: React.FC<Props> = ({ product, className }) => {
   const image = getMainProductImage(product.images);
   const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
-  const prices = Array.from(new Set(enabledVariants.map((v: any) => v.price)));
-  const price = prices.length ? Math.min(...prices) / 100 : 0;
+  const uniquePrices = Array.from(new Set(enabledVariants.map((v: any) => v.price)));
+  const price = uniquePrices.length === 1 ? uniquePrices[0] / 100 : Math.min(...uniquePrices) / 100;
 
   return (
-    <div className={`group bg-slate-800 rounded-lg overflow-hidden border border-slate-700 h-full flex flex-col min-h-0 ${className || ''}`}>
-      <Link to={`/producto/${slugify(product.title)}`} className="block h-full flex flex-col">
-        <div className="bg-slate-700 p-2 md:p-3 flex items-center justify-center flex-1 min-h-0 overflow-hidden">
+    <div className={`group relative bg-slate-800 rounded-xl shadow-dark hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-700 ${className || ''}`}>
+      <Link
+        to={`/producto/${slugify(product.title)}`}
+        className="block h-full"
+        onClick={() => { setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100); }}
+      >
+        <div className="aspect-square bg-slate-700 overflow-hidden relative">
           {image ? (
-            <OptimizedImage image={image} alt={product.title} className="max-w-full max-h-full object-contain" responsive />
+            <OptimizedImage
+              image={image}
+              alt={product.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="eager"
+              responsive={true}
+            />
           ) : (
-            <div className="text-4xl">👕</div>
+            <div className="w-full h-full flex items-center justify-center text-slate-500">
+              <span className="text-4xl">👕</span>
+            </div>
           )}
         </div>
 
-        <div className="px-3 py-2">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 card-title" title={product.title}>{product.title}</h3>
-          <div className="text-spanish-yellow font-bold mt-1">{price.toFixed(2)}€</div>
+        <div className="px-3 pb-3 pt-2">
+          <h3 className="font-display font-semibold text-white mb-2 line-clamp-2 group-hover:underline transition-all duration-200" title={product.title}>
+            {product.title}
+          </h3>
+          <div>
+            <span className="text-lg font-bold text-spanish-yellow">
+              {price.toFixed(2)}€
+            </span>
+          </div>
         </div>
       </Link>
     </div>

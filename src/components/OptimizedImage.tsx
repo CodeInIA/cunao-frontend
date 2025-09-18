@@ -10,7 +10,7 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager';
   responsive?: boolean;
   fallbackClassName?: string;
-  onLoad?: () => void;
+  onLoad?: (width: number, height: number) => void;
 }
 
 function OptimizedImageComponent({ 
@@ -29,10 +29,17 @@ function OptimizedImageComponent({
   // Obtener la URL optimizada directamente (sin precarga doble)
   const imageUrl = getOptimizedImageUrl(image, size);
   
-  const handleLoad = () => {
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     setIsLoading(false);
     setHasError(false);
-    onLoad?.();
+    try {
+      const img = e.currentTarget;
+      const w = img.naturalWidth || img.width || 1;
+      const h = img.naturalHeight || img.height || 1;
+      onLoad?.(w, h);
+    } catch (err) {
+      onLoad?.(0, 0);
+    }
   };
 
   const handleError = () => {
@@ -64,7 +71,7 @@ function OptimizedImageComponent({
         loading={loading}
         onLoad={handleLoad}
         onError={handleError}
-        style={{ display: hasError ? 'none' : 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+        style={{ display: hasError ? 'none' : 'block', width: '100%', height: '100%', objectFit: 'contain' }}
       />
     </div>
   );
