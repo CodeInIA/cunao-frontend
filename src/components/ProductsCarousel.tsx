@@ -16,15 +16,15 @@ function getVisibleCount(width: number) {
 }
 
 const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className }) => {
-  const [visible, setVisible] = React.useState(getVisibleCount(typeof window !== 'undefined' ? window.innerWidth : 1024));
+  const [visible, setVisible] = React.useState(() => Math.min(getVisibleCount(typeof window !== 'undefined' ? window.innerWidth : 1024), maxVisible));
   const [index, setIndex] = React.useState(0);
   const trackRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    const onResize = () => setVisible(getVisibleCount(window.innerWidth));
+    const onResize = () => setVisible(Math.min(getVisibleCount(window.innerWidth), maxVisible));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, []);
+  }, [maxVisible]);
 
   React.useEffect(() => setIndex(0), [products.length, visible]);
 
@@ -42,9 +42,9 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
 
   return (
     <div className={`relative ${className || ''}`}>
-      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-40">
-        <button onClick={prev} aria-label="Anterior" className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full shadow-lg border border-slate-700">
-          <ChevronLeft size={18} />
+  <div className="absolute -left-8 top-[40%] transform -translate-y-1/2 z-50">
+        <button onClick={prev} aria-label="Anterior" className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full shadow-lg border border-slate-700">
+          <ChevronLeft size={20} />
         </button>
       </div>
 
@@ -58,9 +58,9 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
         </div>
       </div>
 
-      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-40">
-        <button onClick={next} aria-label="Siguiente" className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full shadow-lg border border-slate-700">
-          <ChevronRight size={18} />
+  <div className="absolute -right-8 top-[40%] transform -translate-y-1/2 z-50">
+        <button onClick={next} aria-label="Siguiente" className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full shadow-lg border border-slate-700">
+          <ChevronRight size={20} />
         </button>
       </div>
     </div>

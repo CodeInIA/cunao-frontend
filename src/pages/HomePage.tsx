@@ -9,6 +9,39 @@ import ProductsCarousel from '../components/ProductsCarousel';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
 
+// Componente auxiliar para manejar la altura del carrusel desde el badge hasta el bottom del hero
+const CarouselSection: React.FC<{ products: Product[] }> = ({ products }) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const [height, setHeight] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    const calc = () => {
+      try {
+        const badge = document.getElementById('recent-badge');
+        const viewportHeight = window.innerHeight;
+        const badgeBottom = badge ? (badge.getBoundingClientRect().bottom) : 0;
+        // Si el hero ocupa la parte superior de la página, medimos desde el badge hasta el bottom del viewport
+        const available = Math.max(200, viewportHeight - badgeBottom - 16); // mínimo razonable
+        setHeight(`${available}px`);
+      } catch (e) {
+        setHeight(undefined);
+      }
+    };
+
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="mb-8 px-8 overflow-visible">
+      <div style={{ height }} className="relative overflow-visible">
+        <ProductsCarousel products={products.slice().sort((a,b)=> new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} maxVisible={4} className="h-full" />
+      </div>
+    </div>
+  );
+};
+
 export const HomePage: React.FC = () => {
   const { featuredProducts, fetchFeaturedProducts, products, fetchProducts, loadingState } = useProductStore();
   const { addItem } = useCartStore();
@@ -141,7 +174,7 @@ export const HomePage: React.FC = () => {
       <section className="py-6 bg-slate-900 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-1">
-            <div className="inline-flex items-center gap-2 bg-spanish-red px-4 py-2 rounded-full text-white font-semibold text-sm mb-4">
+            <div id="recent-badge" className="inline-flex items-center gap-2 bg-spanish-red px-4 py-2 rounded-full text-white font-semibold text-sm mb-4">
               <Star className="w-4 h-4 fill-current" />
               PRODUCTOS RECIENTES
               <Star className="w-4 h-4 fill-current" />
@@ -163,9 +196,7 @@ export const HomePage: React.FC = () => {
             </div>
           ) : products.length > 0 ? (
             <>
-              <div className="mb-8">
-                <ProductsCarousel products={products.slice().sort((a,b)=> new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} />
-              </div>
+              <CarouselSection products={products} />
 
               {/* Estadísticas */}
               <div className="bg-slate-800 rounded-2xl p-8 mb-8">
