@@ -465,6 +465,16 @@ html {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+/* Card title utility: limitar a 2 líneas con ellipsis */
+.card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .text-patriot {
   background: linear-gradient(45deg, #AA151B, #F1BF00, #AA151B);
   background-size: 200% auto;

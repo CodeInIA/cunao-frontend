@@ -41,7 +41,7 @@ function OptimizedImageComponent({
   };
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
       {/* Skeleton/loading state */}
       {isLoading && (
         <div className={`absolute inset-0 ${fallbackClassName} animate-pulse flex items-center justify-center`}>
@@ -64,7 +64,7 @@ function OptimizedImageComponent({
         loading={loading}
         onLoad={handleLoad}
         onError={handleError}
-        style={{ display: hasError ? 'none' : 'block' }}
+        style={{ display: hasError ? 'none' : 'block', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
       />
     </div>
   );

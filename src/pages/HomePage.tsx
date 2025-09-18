@@ -5,6 +5,7 @@ import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
 import { FeaturedProductCard } from '../components/FeaturedProductCard';
+import ProductsCarousel from '../components/ProductsCarousel';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
 
@@ -95,7 +96,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
   {/* Hero Section - imagen de fondo */}
-  <section className="relative text-white py-16 bg-[url('/bar-image-2.webp')] bg-cover bg-center">
+  <section style={{ backgroundPosition: 'center 60%' }} className="relative text-white py-6 bg-[url('/bar-image-2.webp')] bg-cover bg-center">
         <div className="absolute inset-0 spanish-pattern opacity-20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
@@ -162,21 +163,10 @@ export const HomePage: React.FC = () => {
             </div>
           ) : products.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-                {products
-                  .slice() // clonar antes de ordenar
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                  .slice(0, 4)
-                  .map((product, index) => (
-                    <FeaturedProductCard
-                      key={product.id}
-                      product={product}
-                      onAddToCart={handleAddToCart}
-                      featured={index === 0}
-                    />
-                ))}
+              <div className="mb-8">
+                <ProductsCarousel products={products.slice().sort((a,b)=> new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} />
               </div>
-              
+
               {/* Estadísticas */}
               <div className="bg-slate-800 rounded-2xl p-8 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
