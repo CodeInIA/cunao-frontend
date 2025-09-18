@@ -22,6 +22,16 @@ export const Header: React.FC = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const closeMenuThen = (action: () => void) => {
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+      // Esperar la animación de cierre para mejor UX antes de ejecutar la acción
+      setTimeout(action, 150);
+    } else {
+      action();
+    }
+  };
+
   const handleNavClick = (path: string) => {
     navigateTo(path);
   };
@@ -80,7 +90,7 @@ export const Header: React.FC = () => {
 
           {/* Logo: left on desktop, centered on mobile */}
           <div className="flex items-center flex-shrink-0 min-w-[180px]">
-            <BrandLogo size="md" showText={true} onClick={() => handleNavClick('/')} />
+            <BrandLogo size="md" showText={true} onClick={() => closeMenuThen(() => handleNavClick('/'))} />
           </div>
 
           {/* Navegación desktop centrada y adaptable */}
@@ -99,7 +109,7 @@ export const Header: React.FC = () => {
             {/* Mobile search button */}
             {location.pathname !== '/productos' && (
               <button
-                onClick={() => setIsMobileSearchOpen(true)}
+                onClick={() => closeMenuThen(() => setIsMobileSearchOpen(true))}
                 className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800"
                 aria-label="Buscar"
               >
@@ -134,7 +144,7 @@ export const Header: React.FC = () => {
 
             {/* Cart */}
             <button
-              onClick={openCart}
+              onClick={() => closeMenuThen(openCart)}
               className={`relative p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800 hover:shadow-lg ${
                 cartShake ? 'animate-cart-shake' : ''
               }`}
