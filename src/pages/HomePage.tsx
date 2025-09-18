@@ -201,7 +201,7 @@ export const HomePage: React.FC = () => {
 
           <div className="text-center">
             <button
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white px-8 py-4 rounded-xl font-bold text-lg shadow hover:shadow-xl transition-colors transition-shadow duration-300"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white px-8 py-4 rounded-xl font-bold text-lg shadow transition-shadow transition-filter duration-200 ease-in-out hover:shadow-xl hover:brightness-105 focus:outline-none"
               onClick={() => navigateTo('/productos')}
             >
               Ver Toda la Colección
