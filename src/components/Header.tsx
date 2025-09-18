@@ -81,7 +81,7 @@ export const Header: React.FC = () => {
           <div className="flex items-center min-w-[44px]">
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800"
+              className="lg:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800"
               aria-label="Menú"
             >
               {isMobileMenuOpen ? <X size={25} /> : <Menu size={25} />}
@@ -94,7 +94,7 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Navegación desktop centrada y adaptable */}
-          <div className="hidden md:flex flex-1 justify-center min-w-[220px]">
+          <div className="hidden lg:flex flex-1 justify-center min-w-[220px]">
             <nav className="flex items-center space-x-6">
               <button onClick={() => handleNavClick('/')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Inicio<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
               <button onClick={() => handleNavClick('/productos')} className="nav-link font-semibold transition-colors duration-200 hover:text-spanish-yellow relative group bg-transparent border-none cursor-pointer">Productos<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-spanish-yellow transition-all duration-300 group-hover:w-full"></span></button>
@@ -110,7 +110,7 @@ export const Header: React.FC = () => {
             {location.pathname !== '/productos' && (
               <button
                 onClick={() => closeMenuThen(() => setIsMobileSearchOpen(true))}
-                className="md:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800"
+                className="lg:hidden p-2 text-slate-400 hover:text-spanish-yellow transition-colors duration-200 rounded-lg hover:bg-slate-800"
                 aria-label="Buscar"
               >
                 <Search size={22} />
@@ -127,7 +127,7 @@ export const Header: React.FC = () => {
                     setSearchQuery('');
                   }
                 }}
-                className="hidden md:flex w-80 xl:w-96 justify-end"
+                className="hidden lg:flex w-80 xl:w-96 justify-end"
               >
                 <div className="relative">
                   <input
@@ -135,7 +135,7 @@ export const Header: React.FC = () => {
                     placeholder="Buscar..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-48 md:w-56 pl-10 pr-4 py-2 bg-slate-700/80 border border-slate-600 text-white placeholder-slate-400 rounded-lg transition-all duration-300 ease-out focus:outline-none focus:border-spanish-yellow focus:w-80 xl:focus:w-96 focus:placeholder-slate-300"
+                    className="w-48 lg:w-56 pl-10 pr-4 py-2 bg-slate-700/80 border border-slate-600 text-white placeholder-slate-400 rounded-lg transition-all duration-300 ease-out focus:outline-none focus:border-spanish-yellow focus:w-80 xl:focus:w-96 focus:placeholder-slate-300"
                   />
                   <Search size={20} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
