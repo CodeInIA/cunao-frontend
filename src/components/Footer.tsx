@@ -306,13 +306,13 @@ export const Footer: React.FC = () => {
                 Recibe las últimas frases cuñao
               </p>
               <form onSubmit={handleNewsletterSubmit} className="space-y-2">
-                <div className="flex flex-col xl:flex-row items-center w-full">
+                <div className="flex flex-col lg:flex-row w-full">
                   <input
                     type="email"
                     value={email}
                     onChange={handleEmailChange}
                     placeholder="tu@email.com"
-                    className={`flex-1 min-w-0 w-full xl:w-auto px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-md xl:rounded-l-md xl:rounded-r-none focus:outline-none transition-colors ${
+                    className={`flex-1 min-w-0 w-full lg:w-auto px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-md lg:rounded-l-md lg:rounded-r-none focus:outline-none transition-colors ${
                       emailError 
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
                         : 'border-slate-600 focus:ring-spanish-yellow focus:border-spanish-yellow'
@@ -322,7 +322,7 @@ export const Footer: React.FC = () => {
                   <button 
                     type="submit"
                     disabled={isSubscribing}
-                    className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md xl:rounded-r-md xl:ml-4 w-full xl:w-auto mt-3 xl:mt-0 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md lg:rounded-l-none lg:rounded-r-md lg:-ml-px w-full lg:w-auto mt-3 lg:mt-0 flex-shrink-0 border-l-0 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{minWidth: 0}}
                   >
                     {isSubscribing ? 'Suscribiendo...' : 'Suscribirse'}
