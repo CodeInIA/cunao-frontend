@@ -4,9 +4,9 @@ export const config = {
   PRINTIFY_API_URL: 'https://api.printify.com/v1',
   DOMAIN: import.meta.env.VITE_APP_URL || 'http://localhost:5173',
   SOCIAL: {
-    instagram: import.meta.env.VITE_INSTAGRAM_URL || 'https://instagram.com/cunadismo_ilustrado',
+    instagram: import.meta.env.VITE_INSTAGRAM_URL || 'https://www.instagram.com/cunadismo_ilustrado',
     x: import.meta.env.VITE_TWITTER_URL || 'https://x.com/cunadismo_ilustrado',
-    tiktok: import.meta.env.VITE_FACEBOOK_URL || 'https://tiktok.com/cunadismo_ilustrado',
+    tiktok: import.meta.env.VITE_TIKTOK_URL || 'https://www.tiktok.com/@cunadismo_ilustrado',
   },
   EMAILS: {
     main: `info@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
