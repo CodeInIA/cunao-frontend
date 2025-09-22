@@ -194,7 +194,7 @@ export const Footer: React.FC = () => {
       {/* Barra superior patriótica */}
       <div className="brand-header h-1"></div>
       
-      <div className="container mx-auto px-4 py-12">
+  <div className="container mx-auto px-4 py-12 contain-width">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo y descripción */}
           <div className="col-span-1 md:col-span-2">
@@ -283,12 +283,12 @@ export const Footer: React.FC = () => {
           {/* Información de contacto */}
           <div>
             <h4 className="text-lg font-semibold mb-4 text-white">Contacto</h4>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-2">
-                <Mail size={16} className="text-spanish-yellow" />
+              <ul className="space-y-3">
+              <li className="flex items-start gap-2">
+                <Mail size={16} className="text-spanish-yellow w-4 h-4 flex-shrink-0 mt-1" />
                 <a 
                   href={`mailto:${config.EMAILS.main}`}
-                  className="text-slate-300 hover:text-spanish-yellow transition-colors duration-300 hover:underline"
+                  className="text-slate-300 hover:text-spanish-yellow transition-colors duration-300 hover:underline max-w-full break-words"
                 >
                   {config.EMAILS.main}
                 </a>
@@ -306,13 +306,13 @@ export const Footer: React.FC = () => {
                 Recibe las últimas frases cuñao
               </p>
               <form onSubmit={handleNewsletterSubmit} className="space-y-2">
-                <div className="flex">
+                <div className="flex flex-col xl:flex-row items-center w-full">
                   <input
                     type="email"
                     value={email}
                     onChange={handleEmailChange}
                     placeholder="tu@email.com"
-                    className={`flex-1 px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-l-md focus:outline-none transition-colors ${
+                    className={`flex-1 min-w-0 w-full xl:w-auto px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-md xl:rounded-l-md xl:rounded-r-none focus:outline-none transition-colors ${
                       emailError 
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
                         : 'border-slate-600 focus:ring-spanish-yellow focus:border-spanish-yellow'
@@ -322,7 +322,8 @@ export const Footer: React.FC = () => {
                   <button 
                     type="submit"
                     disabled={isSubscribing}
-                    className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-r-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md xl:rounded-r-md xl:ml-4 w-full xl:w-auto mt-3 xl:mt-0 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{minWidth: 0}}
                   >
                     {isSubscribing ? 'Suscribiendo...' : 'Suscribirse'}
                   </button>
