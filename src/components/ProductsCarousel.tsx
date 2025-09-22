@@ -26,6 +26,12 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
   const trackRef = React.useRef<HTMLDivElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = React.useState<number>(0);
+  // Swipe / pointer tracking refs
+  const pointerActive = React.useRef(false);
+  const startX = React.useRef(0);
+  const lastX = React.useRef(0);
+  const dragged = React.useRef(false);
+  const animationFrame = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     // Use ResizeObserver on the container if available, otherwise fallback to window resize
@@ -85,11 +91,111 @@ const ProductsCarousel: React.FC<Props> = ({ products, maxVisible = 4, className
     display: 'flex',
     transition: 'transform 350ms ease',
     transform: itemWidth ? `translateX(-${index * itemWidth}px)` : `translateX(-${index * (100 / visible)}%)`,
-    width: itemWidth ? `${itemWidth * products.length}px` : `${(products.length * 100) / visible}%`
+    width: itemWidth ? `${itemWidth * products.length}px` : `${(products.length * 100) / visible}%`,
+    touchAction: 'pan-y' // allow vertical scroll but handle horizontal pointer movement
   };
 
+  // Pointer (touch/mouse) handlers for swipe
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !trackRef.current) return;
+
+    const THRESHOLD = 50; // pixels needed to trigger a slide
+
+    const getDelta = (clientX: number) => clientX - startX.current;
+
+    const onPointerDown = (e: PointerEvent) => {
+      // Only handle primary pointer
+      if ((e as any).isPrimary === false) return;
+      pointerActive.current = true;
+      startX.current = e.clientX;
+      lastX.current = e.clientX;
+      dragged.current = false;
+      // Capture pointer so we receive events outside target
+      try { (e.target as Element).setPointerCapture?.((e as any).pointerId); } catch {}
+      // temporarily disable transition for direct dragging
+      if (trackRef.current) trackRef.current.style.transition = 'none';
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!pointerActive.current) return;
+      const dx = getDelta(e.clientX);
+      // if vertical motion is dominant, ignore horizontal dragging to allow page scroll
+      const dy = Math.abs((e as any).clientY - ((e as any).startY || 0));
+      // mark dragged if moved more than a few pixels
+      if (Math.abs(dx) > 5) dragged.current = true;
+      lastX.current = e.clientX;
+      // update transform to follow finger
+      if (trackRef.current && itemWidth) {
+        // compute base translate for current index
+        const base = -index * itemWidth;
+        let appliedDx = dx;
+        // apply damping when trying to drag beyond bounds to create resistance
+        if (index <= 0 && dx > 0) appliedDx = dx * 0.25;
+        if (index >= maxIndex && dx < 0) appliedDx = dx * 0.25;
+        const translate = base + appliedDx;
+        // apply in rAF
+        if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+        animationFrame.current = requestAnimationFrame(() => {
+          if (trackRef.current) trackRef.current.style.transform = `translateX(${translate}px)`;
+        });
+      }
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!pointerActive.current) return;
+      pointerActive.current = false;
+      // release capture
+      try { (e.target as Element).releasePointerCapture?.((e as any).pointerId); } catch {}
+      // restore transition
+      if (trackRef.current) trackRef.current.style.transition = 'transform 350ms ease';
+
+      const dx = lastX.current - startX.current;
+      if (Math.abs(dx) >= THRESHOLD) {
+        if (dx < 0) {
+          // swipe left -> next only if not at end
+          if (index < maxIndex) next();
+          else if (trackRef.current && itemWidth) trackRef.current.style.transform = `translateX(-${index * itemWidth}px)`;
+        } else {
+          // swipe right -> prev only if not at start
+          if (index > 0) prev();
+          else if (trackRef.current && itemWidth) trackRef.current.style.transform = `translateX(-${index * itemWidth}px)`;
+        }
+      } else {
+        // small move: reset to current index
+        if (trackRef.current && itemWidth) {
+          // short bounce animation on reset
+          trackRef.current.style.transition = 'transform 220ms cubic-bezier(.2, .8, .3, 1.2)';
+          trackRef.current.style.transform = `translateX(-${index * itemWidth}px)`;
+          // restore main transition after animation
+          window.setTimeout(() => {
+            if (trackRef.current) trackRef.current.style.transition = 'transform 350ms ease';
+          }, 240);
+        }
+      }
+
+      if (animationFrame.current) {
+        cancelAnimationFrame(animationFrame.current);
+        animationFrame.current = null;
+      }
+    };
+
+    el.addEventListener('pointerdown', onPointerDown as EventListener);
+    window.addEventListener('pointermove', onPointerMove as EventListener);
+    window.addEventListener('pointerup', onPointerUp as EventListener);
+    window.addEventListener('pointercancel', onPointerUp as EventListener);
+
+    return () => {
+      el.removeEventListener('pointerdown', onPointerDown as EventListener);
+      window.removeEventListener('pointermove', onPointerMove as EventListener);
+      window.removeEventListener('pointerup', onPointerUp as EventListener);
+      window.removeEventListener('pointercancel', onPointerUp as EventListener);
+      if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+    };
+  }, [index, itemWidth, next, prev]);
+
   return (
-    <div ref={containerRef} className={`relative ${className || ''}`}>
+    <div ref={containerRef} style={{ touchAction: 'pan-y' }} className={`relative ${className || ''}`}>
       {/* Arrows: moved slightly inside and responsive sizes/offsets for mobile */}
   <div className="absolute left-2 sm:-left-8 top-1/2 transform -translate-y-1/2 z-10">
         <button
