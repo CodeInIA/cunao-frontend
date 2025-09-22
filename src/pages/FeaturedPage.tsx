@@ -162,7 +162,7 @@ export const FeaturedPage: React.FC = () => {
                 ))}
               </div>
             ) : featuredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-max mb-0">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 auto-rows-max mb-0">
                 {highlightedProducts.map((product, index) => (
                   product ? (
                     <FeaturedProductCard
