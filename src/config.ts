@@ -6,7 +6,7 @@ export const config = {
   SOCIAL: {
     instagram: import.meta.env.VITE_INSTAGRAM_URL || 'https://instagram.com/cunadismo_ilustrado',
     x: import.meta.env.VITE_TWITTER_URL || 'https://x.com/cunadismo_ilustrado',
-    tiktok: import.meta.env.VITE_FACEBOOK_URL || 'https://tiktok.com/cunadismo.ilustrado',
+    tiktok: import.meta.env.VITE_FACEBOOK_URL || 'https://tiktok.com/cunadismo_ilustrado',
   },
   EMAILS: {
     main: `info@${import.meta.env.VITE_EMAIL_DOMAIN || 'cunadismoilustrado.me'}`,
