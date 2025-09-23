@@ -2,6 +2,59 @@ import { useEffect } from 'react';
 
 const GA_MEASUREMENT_ID = 'G-B2YZBLFSS5';
 
+const SERVER_FALLBACK_PATH = '/api/analytics/collect';
+const CLIENT_ID_KEY = 'cunao.ga.client_id';
+
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function getOrCreateClientId() {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    // Try to read the _ga cookie (format GA1.2.XXXXXXXXXX.YYYYYYYYY)
+    const match = document.cookie.match(/_ga=GA1\.2\.([0-9]+)\.([0-9]+)/);
+    if (match) return `${match[1]}.${match[2]}`;
+  } catch (e) {}
+
+  let id = localStorage.getItem(CLIENT_ID_KEY);
+  if (!id) {
+    id = uuidv4();
+    try { localStorage.setItem(CLIENT_ID_KEY, id); } catch (e) {}
+  }
+  return id;
+}
+
+async function sendToServerFallback(eventName: string, params: Record<string, any> = {}) {
+  try {
+    const client_id = getOrCreateClientId() || 'unknown_client';
+    const payload = {
+      client_id,
+      events: [
+        {
+          name: eventName,
+          params: {
+            ...params
+          }
+        }
+      ]
+    };
+
+    await fetch(SERVER_FALLBACK_PATH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    try { console.info('[gtag-fallback] sent', eventName, params); } catch (e) {}
+  } catch (e) {
+    try { console.warn('[gtag-fallback] error', e); } catch (err) {}
+  }
+}
+
 function injectGtag(id: string) {
   if (typeof document === 'undefined') return;
   if (document.querySelector(`script[data-gtag='${id}']`)) return;
@@ -28,8 +81,17 @@ export function useGtag(enabled: boolean) {
 }
 
 export function trackPageview(path: string) {
-  if (!(window as any).gtag) return;
-  (window as any).gtag('event', 'page_view', { page_path: path });
+  const send = () => {
+    if (!(window as any).gtag) return false;
+    try {
+      (window as any).gtag('event', 'page_view', { page_path: path });
+      return true;
+    } catch (e) { return false; }
+  };
+
+  if (send()) return;
+  // if not available, fallback to server MP
+  sendToServerFallback('page_view', { page_path: path });
 }
 
 export function trackEvent(name: string, params: Record<string, any> = {}) {
@@ -53,6 +115,10 @@ export function trackEvent(name: string, params: Record<string, any> = {}) {
     attempts += 1;
     if (send() || attempts >= maxAttempts) {
       clearInterval(iv);
+      if (!send()) {
+        // final fallback to server
+        sendToServerFallback(name, params);
+      }
     }
   }, 500);
 }
@@ -63,17 +129,24 @@ export function trackPurchase(payload: {
   currency: string;
   items?: Array<{ id: string; name?: string; price?: number; quantity?: number }>;
 }) {
-  if (!(window as any).gtag) {
-    try { console.warn('[gtag] trackPurchase called but gtag not loaded'); } catch (e) {}
-    return;
-  }
-  try {
-    console.info('[gtag] trackPurchase', payload);
-  } catch (e) {}
-  (window as any).gtag('event', 'purchase', {
+  const name = 'purchase';
+  const params = {
     transaction_id: payload.transaction_id,
     value: payload.value,
     currency: payload.currency,
     items: payload.items || []
-  });
+  };
+
+  const send = () => {
+    if (!(window as any).gtag) return false;
+    try {
+      (window as any).gtag('event', name, params);
+      try { console.info('[gtag] trackPurchase', params); } catch (e) {}
+      return true;
+    } catch (e) { return false; }
+  };
+
+  if (send()) return;
+  // fallback to server
+  sendToServerFallback(name, params);
 }
