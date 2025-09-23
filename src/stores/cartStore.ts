@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CartItem } from '../types';
 import { useProductStore } from './productStore'; // Importar productStore
+import { trackEvent } from '../hooks/useGtag';
+import { getConsent } from '../utils/consent';
 
 interface CartStore {
   items: CartItem[];
@@ -48,6 +50,20 @@ export const useCartStore = create<CartStore>()(
             return { items: [...state.items, newItem] };
           }
         });
+        // Tracking add_to_cart si hay consentimiento
+        try {
+          const consent = getConsent();
+          if (consent?.analytics) {
+            trackEvent('add_to_cart', {
+              currency: 'EUR',
+              value: newItem.price * newItem.quantity,
+              items: [{ id: newItem.productId, name: newItem.title || '', price: newItem.price, quantity: newItem.quantity }]
+            });
+          }
+        } catch (e) {
+          console.warn('add_to_cart tracking failed', e);
+        }
+
         get().triggerCartShake(); // <-- LLAMAR A LA ANIMACIÓN
       },
 

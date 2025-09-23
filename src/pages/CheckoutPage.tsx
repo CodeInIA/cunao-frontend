@@ -5,6 +5,10 @@ import { apiService } from '../services/api';
 import { formatPrice } from '../utils/formatters';
 import { Lock, ArrowLeft, MapPin, ChevronDown, Check } from 'lucide-react'; // Importaciones añadidas
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
+import { getConsent } from '../utils/consent';
+
+// Import dynamic tracking helper
+import { trackEvent } from '../hooks/useGtag';
 import toast from 'react-hot-toast';
 import { Listbox } from '@headlessui/react'; // Importación de Headless UI
 import { getWebPImageUrl } from '../utils/imageUtils';
@@ -171,6 +175,19 @@ export const CheckoutPage: React.FC = () => {
     toast.loading('Redirigiendo a la pasarela de pago...');
 
     try {
+      // Track begin_checkout if consent
+      try {
+        const consent = getConsent();
+        if (consent?.analytics) {
+          trackEvent('begin_checkout', {
+            currency: 'EUR',
+            value: subtotal,
+            items: items.map(i => ({ id: i.productId, name: i.title, price: i.price, quantity: i.quantity }))
+          });
+        }
+      } catch (e) {
+        console.warn('begin_checkout tracking failed', e);
+      }
       const sessionData = await apiService.createCheckoutSession(
         items,
         shippingRegion,
@@ -179,6 +196,19 @@ export const CheckoutPage: React.FC = () => {
         appliedDiscount?.appliesTo
       );
       if (sessionData.checkout_url) {
+        // Track add_payment_info (user is being redirected to payment)
+        try {
+          const consent = getConsent();
+          if (consent?.analytics) {
+            trackEvent('add_payment_info', {
+              currency: 'EUR',
+              value: subtotal,
+              items: items.map(i => ({ id: i.productId, name: i.title, price: i.price, quantity: i.quantity }))
+            });
+          }
+        } catch (e) {
+          console.warn('add_payment_info tracking failed', e);
+        }
         window.location.href = sessionData.checkout_url;
       } else {
         throw new Error('No se pudo obtener la URL de checkout.');

@@ -6,7 +6,7 @@ import './swRegister'
 import App from './App.tsx'
 import CookieBanner from './components/CookieBanner'
 import { getConsent } from './utils/consent'
-import { useGtag } from './hooks/useGtag'
+import { useGtag, trackPageview } from './hooks/useGtag'
 
 function Root() {
   const [consent, setConsent] = useState(() => getConsent());
@@ -19,6 +19,18 @@ function Root() {
 
   const analyticsEnabled = !!consent?.analytics;
   useGtag(analyticsEnabled);
+
+  // Si el consentimiento se activa después de cargar la página, forzar un pageview
+  useEffect(() => {
+    if (analyticsEnabled) {
+      try {
+        console.info('[consent] analytics enabled, sending initial pageview');
+        trackPageview(window.location.pathname + window.location.search);
+      } catch (e) {
+        console.warn('Failed to send initial pageview', e);
+      }
+    }
+  }, [analyticsEnabled]);
 
   return (
     <StrictMode>

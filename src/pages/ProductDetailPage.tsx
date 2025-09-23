@@ -79,6 +79,24 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, [slug, fetchProduct, fetchProductGPSR]);
 
+  // Track view_item when product and variant are ready
+  useEffect(() => {
+    try {
+      const consent = (window.localStorage.getItem('cunao.consent') && JSON.parse(window.localStorage.getItem('cunao.consent') || '{}')) || null;
+      if (consent?.analytics && currentProduct) {
+        const item = {
+          id: currentProduct.id,
+          name: currentProduct.title,
+          price: currentProduct.variants?.[0]?.price ?? 0
+        };
+        // Dynamically import trackEvent to avoid circular deps
+        import('../hooks/useGtag').then(mod => mod.trackEvent('view_item', { items: [item] }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [currentProduct, selectedVariant]);
+
   const allProductOptions = useMemo(() => {
     if (!currentProduct?.options) return { colors: [], sizes: [] };
     const optionsMap: { [key: string]: any[] } = { colors: [], sizes: [] };
