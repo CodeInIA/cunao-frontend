@@ -27,7 +27,7 @@ export const TermsPage: React.FC = () => {
           {/* Información general */}
           <div className="mb-8">
             <p className="text-slate-400 mb-4">
-              <strong>Última actualización:</strong> 6 de septiembre de 2025
+              <strong>Última actualización:</strong> 24 de septiembre de 2025
             </p>
             <p className="text-slate-300">
               Bienvenido a <strong>Cuñadismo Ilustrado</strong>. Al utilizar nuestro sitio web y servicios, 
@@ -48,9 +48,11 @@ export const TermsPage: React.FC = () => {
                 <div>
                   <p className="text-slate-300"><strong>Nombre:</strong> Cuñadismo Ilustrado</p>
                   <p className="text-slate-300"><strong>Email:</strong> {config.EMAILS.main}</p>
+                  <p className="text-slate-300"><strong>Dirección:</strong> [dato eliminado], Madrid, España</p>
+                  <p className="text-slate-300"><strong>Titular:</strong> Sergio Barrios Paz</p>
+                  <p className="text-slate-300"><strong>NIF:</strong> [dato eliminado]</p>
                 </div>
                 <div>
-                  <p className="text-slate-300"><strong>País:</strong> España</p>
                   <p className="text-slate-300"><strong>Actividad:</strong> Venta de camisetas temáticas</p>
                   <p className="text-slate-300"><strong>Web:</strong> {config.DOMAIN}</p>
                 </div>
@@ -255,6 +257,15 @@ export const TermsPage: React.FC = () => {
                 <p className="text-slate-300">
                 <strong>Email:</strong> {config.EMAILS.legal}
               </p>
+            </div>
+          </section>
+
+          {/* Newsletter (RGPD) */}
+          <section className="mt-6">
+            <h2 className="text-xl font-semibold text-white mb-3">Newsletter</h2>
+            <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+              <p className="text-slate-300 mb-2">La suscripción a nuestra newsletter es totalmente voluntaria. Tratamos los datos personales facilitados únicamente para enviar comunicaciones comerciales relacionadas con nuestros productos y ofertas.</p>
+              <p className="text-slate-300">Puedes darte de baja en cualquier momento mediante el enlace de baja incluido en cada correo o solicitándolo por email a {config.EMAILS.legal}. El tratamiento de datos se realiza conforme al RGPD y nuestra <Link to="/privacidad" className="underline text-spanish-yellow">Política de Privacidad</Link>.</p>
             </div>
           </section>
         </div>
