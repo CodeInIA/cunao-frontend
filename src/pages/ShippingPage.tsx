@@ -209,7 +209,7 @@ export const ShippingPage: React.FC = () => {
                 Información clave
               </h3>
               <ul className="text-yellow-300 text-sm space-y-1">
-                <li>• No aceptamos devoluciones por cambio de opinión en productos POD.</li>
+                <li>• No aceptamos devoluciones por cambio de opinión en nuestros productos.</li>
                 <li>• Vídeo unboxing obligatorio para tramitar cualquier reclamación por defecto o daño.</li>
                 <li>• Conserva embalaje y etiquetas hasta resolver la reclamación.</li>
                 <li>• Productos personalizados no son retornables salvo defecto de fabricación.</li>
@@ -326,9 +326,9 @@ export const ShippingPage: React.FC = () => {
                 <h3 className="font-semibold text-spanish-red mb-2">
                   ¿Puedo devolver por talla incorrecta?
                 </h3>
-                <p className="text-slate-300 text-sm">
-                  En general <strong>no aceptamos devoluciones o cambios por talla</strong> en productos fabricados bajo demanda. Solo se admitirán cambios de talla si existe un defecto de fabricación comprobado o si te hemos autorizado expresamente el cambio. Los gastos de envío de cualquier devolución o cambio autorizados correrán, salvo excepción, a cargo del cliente. Revisa la guía de tallas antes de comprar.
-                </p>
+                  <p className="text-slate-300 text-sm">
+                    <strong>No aceptamos devoluciones ni cambios por talla salvo defecto de fabricación comprobado.</strong> Debido a que nuestros productos se fabrican por encargo, los cambios por motivo de talla o por cambio de opinión <strong>no se admitirán</strong>. Si crees que tu producto tiene un defecto, sigue el procedimiento de reclamación y envía el vídeo de unboxing y las fotografías solicitadas. <strong>Revisa cuidadosamente la guía de tallas antes de comprar</strong> para evitar errores de elección.
+                  </p>
               </div>
               
               <div>
