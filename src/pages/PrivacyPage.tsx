@@ -147,7 +147,7 @@ export const PrivacyPage: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-spanish-red">•</span>
-                  <span>Envío semanal automático los sábados a las 20:00 (hora de España peninsular)</span>
+                  <span>Envío semanal automático los domingos a las 20:00 (hora de España peninsular). Este envío está dedicado a <strong>novedades</strong> (productos añadidos y contenido editorial).</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-spanish-red">•</span>
@@ -183,6 +183,33 @@ export const PrivacyPage: React.FC = () => {
             </div>
           </section>
 
+
+          {/* Promociones y notificaciones de productos */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4 flex items-center gap-2">
+              <Mail className="w-6 h-6 text-spanish-yellow" />
+              Promociones y notificaciones de productos
+            </h2>
+
+            <div className="bg-slate-700 border border-slate-600 p-6 rounded-lg">
+              <h3 className="font-semibold text-spanish-yellow mb-3">Notificaciones semanales y códigos exclusivos</h3>
+              <p className="text-slate-300 mb-3">Si das tu consentimiento, podrás recibir dos tipos de comunicaciones por email: 1) un resumen semanal de <strong>novedades</strong> (productos añadidos la última semana) y 2) comunicaciones <strong>promocionales puntuales</strong> con ofertas o códigos exclusivos. Las comunicaciones de novedades se envían de forma recurrente; las promocionales se envían solo cuando lancemos campañas específicas.</p>
+
+              <ul className="list-disc list-inside text-slate-300 text-sm space-y-1">
+                <li><strong>Finalidad:</strong> Envío de comunicaciones sobre productos nuevos (novedades) y, cuando proceda, promociones y códigos de descuento exclusivos.</li>
+                <li><strong>Frecuencia y hora (novedades):</strong> Semanal, los domingos a las 20:00 (hora de España peninsular). Cuando sea posible, adaptamos la entrega a la zona horaria del usuario.</li>
+                <li><strong>Frecuencia (promociones):</strong> Puntual — las comunicaciones promocionales no son recurrentes y se envían únicamente cuando corresponda una campaña u oferta específica.</li>
+                <li><strong>Base legal:</strong> Tratamiento basado en tu consentimiento explícito (opt‑in). Puedes retirar tu consentimiento en cualquier momento sin afectar la licitud del tratamiento previo a la retirada.</li>
+                <li><strong>Datos tratados:</strong> Dirección de email y, solo si das permiso, datos de interacción (historial de compras o navegación) para personalizar las ofertas y seleccionar códigos relevantes.</li>
+                <li><strong>Destinatarios:</strong> Encargados de tratamiento (proveedor de mailing) como SendGrid, Mailchimp u otros. En caso de transferencias fuera de la UE aplicaremos las garantías adecuadas.</li>
+                <li><strong>Conservación:</strong> Mantendremos tus datos de marketing mientras exista tu consentimiento. Tras un periodo prolongado de inactividad (p. ej. 3 años) tus datos podrán ser eliminados o anonimizados.</li>
+                <li><strong>Baja y gestión de preferencias:</strong> Cada email contiene un enlace para darte de baja o gestionar preferencias. También puedes solicitar baja contactando a {config.EMAILS.privacy}.</li>
+                <li><strong>Registro de consentimiento:</strong> Guardamos prueba de tu opt‑in (origen del consentimiento: footer/checkout, timestamp y versión del texto mostrado). Recomendamos implementar doble opt‑in para mayor seguridad probatoria.</li>
+                <li><strong>Códigos de descuento exclusivos:</strong> Los códigos enviados por email son exclusivos para la campaña o suscriptores; su uso es regulado por las condiciones comunicadas en cada email y pueden tener limitaciones de tiempo o uso.</li>
+              </ul>
+            </div>
+          </section>
+
           {/* Protección de datos */}
           <section className="mb-8">
             <h2 className="text-2xl font-patriot font-bold text-white mb-4">
@@ -209,6 +236,15 @@ export const PrivacyPage: React.FC = () => {
                 </li>
               </ul>
             </div>
+            <p className="text-slate-300 mt-4">
+              <strong>Cesión de datos:</strong> No cedemos tus datos a terceros salvo obligación legal o a proveedores que actúan en nuestro nombre para procesar pagos/envíos.
+            </p>
+          </section>
+
+          {/* Menores de edad */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">Menores de edad</h2>
+            <p className="text-slate-300">No aceptamos compras ni suscripciones de menores de 18 años. Si eres menor, pide a tu tutor legal que realice la compra por ti.</p>
           </section>
 
           {/* Tus derechos */}
@@ -264,6 +300,9 @@ export const PrivacyPage: React.FC = () => {
               <p className="text-slate-300 mb-4">
                 Si tienes dudas sobre esta política o quieres ejercer tus derechos, contáctanos:
               </p>
+              <p className="text-slate-300 mb-4">
+                <strong>Responsable del tratamiento:</strong> Sergio Barrios Paz, titular de la web Cuñadismo Ilustrado, NIF [dato eliminado], [dato eliminado], Madrid, España.
+              </p>
               <div className="space-y-2">
                 <p className="text-slate-300">
                   <strong>Email:</strong> {config.EMAILS.privacy}
@@ -305,7 +344,13 @@ export const PrivacyPage: React.FC = () => {
           </div>
         </div>
       </div>
+    {/* Aviso sobre correos automáticos */}
+    <div className="bg-slate-900 border-t border-spanish-yellow mt-12 pt-8 pb-8 text-center">
+      <p className="text-sm text-spanish-yellow italic">
+        {config.EMAIL_INFO_TEXT}
+      </p>
     </div>
+  </div>
   );
 };
 
