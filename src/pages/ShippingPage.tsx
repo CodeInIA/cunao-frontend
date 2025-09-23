@@ -28,7 +28,7 @@ export const ShippingPage: React.FC = () => {
         {/* Fecha de actualización */}
         <div className="text-center mb-8">
           <p className="text-slate-400">
-            <strong>Última actualización:</strong> 6 de septiembre de 2025
+            <strong>Última actualización:</strong> 23 de septiembre de 2025
           </p>
         </div>
         
@@ -154,114 +154,66 @@ export const ShippingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Devoluciones */}
+          {/* Devoluciones adaptadas a Print‑On‑Demand */}
           <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-8">
             <h2 className="text-3xl font-patriot font-bold text-white mb-6 flex items-center gap-3">
               <RefreshCw className="w-8 h-8 text-spanish-red" />
-              Devoluciones y Cambios
+              Devoluciones y Reclamaciones
             </h2>
 
-            {/* Derecho de desistimiento */}
-            <div className="mb-8">
-              <div className="bg-green-900 border border-green-700 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold text-green-400 mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  14 Días de Garantía
-                </h3>
-                <p className="text-green-300">
-                  Tienes 14 días desde la recepción para devolver tu producto 
-                  sin necesidad de justificación.
-                </p>
-              </div>
-
-              <h3 className="text-xl font-semibold text-spanish-yellow mb-4">
-                Condiciones para Devoluciones
-              </h3>
-              
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-white">Producto en estado original, sin usar</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-white">Con todas las etiquetas originales</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-white">En su embalaje original</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-white">Sin lavados ni alteraciones</span>
-                </div>
-              </div>
+            <div className="mb-6">
+              <p className="text-slate-300">
+                Nuestros productos se fabrican bajo demanda mediante proveedores externos. Por este motivo <strong>no realizamos devoluciones por desistimiento o por cambio de opinión</strong> en productos fabricados bajo pedido.
+              </p>
+              <p className="text-slate-300 mt-3 text-sm">
+                <strong>Base legal:</strong> De acuerdo con el art. 103.c del Real Decreto Legislativo 1/2007, los productos confeccionados conforme a las especificaciones del consumidor o claramente personalizados quedan excluidos del derecho de desistimiento.
+              </p>
             </div>
 
-            {/* Proceso de devolución */}
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-spanish-yellow mb-4">
-                ¿Cómo Hacer una Devolución?
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    1
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-white">Contáctanos</h4>
-                    <p className="text-slate-300 text-sm">
-                      Email: {config.EMAILS.returns}<br />
-                      Incluye: número de pedido y motivo de devolución
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    2
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-white">Autorización</h4>
-                    <p className="text-slate-300 text-sm">Te enviamos las instrucciones y etiqueta de devolución</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    3
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-white">Envío</h4>
-                    <p className="text-slate-300 text-sm">Envías el producto siguiendo nuestras instrucciones</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    4
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-white">Reembolso</h4>
-                    <p className="text-slate-300 text-sm">Procesamos el reembolso en 5-7 días laborables</p>
-                  </div>
-                </div>
-              </div>
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-spanish-yellow mb-3">Qué sí cubrimos</h3>
+              <ul className="space-y-2 text-slate-200 text-sm">
+                <li>• Defectos de fabricación (impresión incorrecta, costuras sueltas, material defectuoso).</li>
+                <li>• Producto distinto al pedido o faltantes atribuibles a la preparación/envío.</li>
+                <li>• Producto seriamente dañado en tránsito, siempre que se aporte la prueba requerida.</li>
+              </ul>
             </div>
 
-            {/* Información importante */}
-            <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-spanish-yellow mb-3">Requisitos obligatorios para tramitar la reclamación</h3>
+              <ol className="list-decimal list-inside space-y-2 text-slate-200 text-sm">
+                <li>Contactar en un plazo máximo: <strong>7 días</strong> desde la recepción para daños por transporte o <strong>14 días</strong> para defectos de fabricación, a: <a className="text-spanish-yellow underline" href={`mailto:${config.EMAILS.returns}`}>{config.EMAILS.returns}</a>.</li>
+                <li>Enviar un <strong>vídeo</strong> (unboxing) donde se muestre el paquete cerrado y la apertura por primera vez, la etiqueta/envelope con número de seguimiento y el producto tal y como se extrae del paquete. Adjuntar además fotografías en alta resolución.</li>
+                <li>No utilizar, lavar ni alterar el producto hasta recibir instrucciones. Conservar embalaje y etiquetas.</li>
+                <li>Indicar número de pedido, fecha de recepción y descripción del defecto.</li>
+              </ol>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-spanish-yellow mb-3">Gastos de envío en devoluciones</h3>
+              <p className="text-slate-200 text-sm">
+                Los gastos de devolución correrán a cargo del cliente salvo que, tras nuestra evaluación, confirmemos que se trata de un defecto de fabricación o un error imputable a nosotros o al proveedor. En ese caso, aceptaremos y cubriremos los costes razonables de devolución o gestionaremos la reposición.
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-spanish-yellow mb-3">Plazo y resolución</h3>
+              <p className="text-slate-200 text-sm">
+                Tras recibir la reclamación y las pruebas solicitadas realizaremos una evaluación en un plazo de hasta <strong>10–14 días hábiles</strong>. Si la reclamación se admite, ofreceremos, a nuestra elección y según disponibilidad: reposición, reparación o reembolso total/parcial. El reembolso se realizará por el mismo método de pago y puede tardar hasta 14 días laborables en reflejarse.
+              </p>
+            </div>
+
+            <div className="mb-6 bg-yellow-900 border border-yellow-700 rounded-lg p-6">
               <h3 className="font-semibold text-yellow-400 mb-3 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" />
-                Información Importante
+                Información clave
               </h3>
               <ul className="text-yellow-300 text-sm space-y-1">
-                <li>• Los gastos de devolución corren a cargo del cliente</li>
-                <li>• El reembolso se realiza por el mismo método de pago</li>
-                <li>• No se reembolsan los gastos de envío originales</li>
-                <li>• Productos personalizados no admiten devolución</li>
-                <li>• En caso de defecto, asumimos todos los gastos</li>
+                <li>• No aceptamos devoluciones por cambio de opinión en productos POD.</li>
+                <li>• Vídeo unboxing obligatorio para tramitar cualquier reclamación por defecto o daño.</li>
+                <li>• Conserva embalaje y etiquetas hasta resolver la reclamación.</li>
+                <li>• Productos personalizados no son retornables salvo defecto de fabricación.</li>
+                <li>• Nos reservamos el derecho a solicitar la devolución para inspección por el proveedor antes de autorizar reembolso.</li>
               </ul>
             </div>
           </div>
@@ -284,6 +236,9 @@ export const ShippingPage: React.FC = () => {
                 <p className="text-slate-300">
                   Una vez que tu pedido salga de nuestras instalaciones, recibirás un email 
                   con el número de seguimiento y enlace directo para trackear tu paquete.
+                </p>
+                <p className="text-slate-300 text-sm">
+                  <strong>Nota:</strong> en algunos casos puede que se envíen artículos desde distintos proveedores, por lo que tu pedido puede llegar en paquetes separados y recibirás varios emails de seguimiento.
                 </p>
                 
                 <div className="bg-slate-700 border border-slate-600 p-4 rounded-lg">
@@ -315,7 +270,7 @@ export const ShippingPage: React.FC = () => {
                 <div className="bg-red-900 border border-red-700 rounded-lg p-4">
                   <h4 className="font-semibold text-red-400 mb-2">Producto Defectuoso</h4>
                   <p className="text-red-300 text-sm">
-                    Envía fotos del problema y te enviamos reposición inmediata.
+                    En caso de defecto, envía un <strong>vídeo de unboxing</strong> (mostrando el paquete cerrado, la etiqueta de envío y la apertura por primera vez) y fotografías del defecto a <a className="underline text-spanish-yellow" href={`mailto:${config.EMAILS.returns}`}>{config.EMAILS.returns}</a>. No uses ni laves el producto hasta recibir instrucciones.
                   </p>
                 </div>
                 
@@ -333,7 +288,7 @@ export const ShippingPage: React.FC = () => {
         {/* Preguntas frecuentes */}
         <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-8 mb-8">
           <h2 className="text-3xl font-patriot font-bold text-white mb-6">
-            Preguntas Frecuentes
+            Preguntas Frecuentes (FAQ)
           </h2>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -372,7 +327,7 @@ export const ShippingPage: React.FC = () => {
                   ¿Puedo devolver por talla incorrecta?
                 </h3>
                 <p className="text-slate-300 text-sm">
-                  Sí, puedes cambiar por otra talla dentro de los 14 días. Consulta nuestra guía de tallas antes de comprar.
+                  En general <strong>no aceptamos devoluciones o cambios por talla</strong> en productos fabricados bajo demanda. Solo se admitirán cambios de talla si existe un defecto de fabricación comprobado o si te hemos autorizado expresamente el cambio. Los gastos de envío de cualquier devolución o cambio autorizados correrán, salvo excepción, a cargo del cliente. Revisa la guía de tallas antes de comprar.
                 </p>
               </div>
               
@@ -385,12 +340,12 @@ export const ShippingPage: React.FC = () => {
                 </p>
               </div>
               
-              <div>
+              <div className="mt-6">
                 <h3 className="font-semibold text-spanish-red mb-2">
-                  ¿Emitís factura?
+                  ¿Por qué no aceptáis devoluciones estándar?
                 </h3>
                 <p className="text-slate-300 text-sm">
-                  Sí, se incluye automáticamente en el paquete. Para empresas, contacta para factura personalizada.
+                Nuestros productos son personalizados y fabricados bajo demanda para cada cliente. Por esta razón, la normativa permite excluir el derecho de desistimiento en productos confeccionados conforme a las especificaciones del consumidor o claramente personalizados. Por ello solo aceptamos devoluciones en los casos expresados en esta página (defecto de fabricación o error atribuible al proveedor).
                 </p>
               </div>
             </div>
