@@ -27,24 +27,22 @@ export const config = {
   COMPANY: {
     name: import.meta.env.VITE_APP_NAME || 'Cuñadismo Ilustrado',
     description: import.meta.env.VITE_APP_DESCRIPTION || 'La tienda más patriótica de España - Camisetas con frases auténticas',
-    email: `hola@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.com'}`,
-    phone: '+34 666 123 456'
+    email: `info@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.me'}`,
   },
 
   EMAILS: {
-    main: `hola@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.com'}`,
-    legal: `legal@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.com'}`,
-    privacy: `privacidad@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.com'}`,
-    shipping: `envios@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.com'}`,
-    returns: `devoluciones@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.com'}`
+    main: `info@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.me'}`,
+    legal: `legal@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.me'}`,
+    privacy: `privacidad@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.me'}`,
+    shipping: `envios@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.me'}`,
+    returns: `devoluciones@${import.meta.env.VITE_DOMAIN || 'cunadismoilustrado.me'}`
   },
   
   // Redes sociales
   SOCIAL: {
     instagram: import.meta.env.VITE_INSTAGRAM_URL || 'https://instagram.com/cunadismo_ilustrado',
     x: import.meta.env.VITE_X_URL || 'https://x.com/cunadismo_ilustrado',
-    tiktok: import.meta.env.VITE_TIKTOK_URL || 'https://tiktok.com/@cunadismo_ilustrado',
-    facebook: import.meta.env.VITE_FACEBOOK_URL || 'https://facebook.com/cunadismo.ilustrado'
+    tiktok: import.meta.env.VITE_TIKTOK_URL || 'https://tiktok.com/@cunadismo_ilustrado'
   }
 } as const;
 

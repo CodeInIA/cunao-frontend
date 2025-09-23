@@ -48,7 +48,6 @@ export const TermsPage: React.FC = () => {
                 <div>
                   <p className="text-slate-300"><strong>Nombre:</strong> Cuñadismo Ilustrado</p>
                   <p className="text-slate-300"><strong>Email:</strong> {config.EMAILS.main}</p>
-                  <p className="text-slate-300"><strong>Teléfono:</strong> +34 666 123 456</p>
                 </div>
                 <div>
                   <p className="text-slate-300"><strong>País:</strong> España</p>
@@ -75,7 +74,7 @@ export const TermsPage: React.FC = () => {
               <div className="flex items-start gap-3">
                 <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
                 <p className="text-slate-300">
-                  <strong>Edad mínima:</strong> Debes ser mayor de 18 años o tener autorización de tus padres.
+                  <strong>Edad mínima:</strong> Debes ser mayor de 18 años. Información adicional sobre menores y consentimiento disponible en nuestra <Link to="/privacidad" className="underline text-spanish-yellow">Política de Privacidad</Link>.
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -161,63 +160,25 @@ export const TermsPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Envíos y entregas */}
+          {/* Envíos (resumen con enlace) */}
           <section className="mb-8">
             <h2 className="text-2xl font-patriot font-bold text-white mb-4 flex items-center gap-2">
               <Truck className="w-6 h-6 text-spanish-red" />
-              Envíos y Entregas
+              Envíos
             </h2>
-            
-            <div className="space-y-4">
-              <div className="bg-slate-700 p-4 rounded-lg">
-                <h3 className="font-semibold text-white mb-2">Plazos de Entrega</h3>
-                <ul className="space-y-1 text-slate-300">
-                  <li>• <strong>España peninsular:</strong> 2-4 días laborables</li>
-                  <li>• <strong>Islas Baleares:</strong> 3-5 días laborables</li>
-                  <li>• <strong>Islas Canarias:</strong> 5-7 días laborables</li>
-                  <li>• <strong>Internacional (UE):</strong> 5-10 días laborables</li>
-                </ul>
+            <div className="bg-slate-700 p-6 rounded-lg">
+              <p className="text-slate-300 mb-3">La información detallada sobre plazos, costes y condiciones de envío está disponible en nuestra página de <Link to="/envios" className="underline text-spanish-yellow">Envíos y Devoluciones</Link>. Consulta allí los plazos por zona, tarifas actualizadas y la política de envío gratuito.</p>
+              <div className="mt-4">
+                <button onClick={() => navigateTo('/envios')} className="px-5 py-3 bg-spanish-red text-white rounded-lg">Ver información de envíos</button>
               </div>
-              
-              <p className="text-slate-300 text-sm">
-                <strong>Nota:</strong> Los plazos son orientativos y pueden variar en épocas de alta demanda 
-                o circunstancias excepcionales (como cuando todo el mundo quiere opinar sobre algo).
-              </p>
             </div>
           </section>
 
-          {/* Devoluciones */}
+          {/* Devoluciones (resumen y enlace) */}
           <section className="mb-8">
-            <h2 className="text-2xl font-patriot font-bold text-white mb-4">
-              Derecho de Desistimiento
-            </h2>
-            
-            <div className="bg-green-900 border border-green-700 rounded-lg p-6">
-              <p className="text-green-300 mb-4">
-                Tienes <strong>14 días naturales</strong> desde la recepción del producto para desistir 
-                de tu compra sin necesidad de justificación.
-              </p>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold text-green-400 mb-2">Condiciones</h4>
-                  <ul className="text-sm text-green-300 space-y-1">
-                    <li>• Producto en estado original</li>
-                    <li>• Con etiquetas y embalaje</li>
-                    <li>• Sin usar ni lavar</li>
-                    <li>• Comunicar la devolución por escrito</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-green-400 mb-2">Proceso</h4>
-                  <ul className="text-sm text-green-300 space-y-1">
-                    <li>1. Contacta con nosotros</li>
-                    <li>2. Envía el producto (gastos a tu cargo)</li>
-                    <li>3. Reembolso en 14 días tras recepción</li>
-                    <li>4. Mismo método de pago utilizado</li>
-                  </ul>
-                </div>
-              </div>
+            <h2 className="text-2xl font-patriot font-bold text-white mb-4">Devoluciones y Derecho de Desistimiento</h2>
+            <div className="bg-slate-700 p-6 rounded-lg">
+              <p className="text-slate-300 mb-3">Algunos de nuestros productos se fabrican bajo demanda y pueden estar excluidos del derecho de desistimiento según la normativa aplicable. Para conocer los plazos, condiciones, requisitos de reclamación (incluido el vídeo de unboxing) y los supuestos en los que cubrimos gastos de devolución, consulta nuestra página de <Link to="/envios" className="underline text-spanish-yellow">Envíos y Devoluciones</Link>.</p>
             </div>
           </section>
 
@@ -291,9 +252,8 @@ export const TermsPage: React.FC = () => {
               <p className="text-slate-300 mb-3">
                 Si tienes preguntas sobre estos términos y condiciones, no dudes en contactarnos:
               </p>
-              <p className="text-slate-300">
-                <strong>Email:</strong> {config.EMAILS.legal}<br />
-                <strong>Teléfono:</strong> +34 666 123 456
+                <p className="text-slate-300">
+                <strong>Email:</strong> {config.EMAILS.legal}
               </p>
             </div>
           </section>
