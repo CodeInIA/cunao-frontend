@@ -18,7 +18,7 @@ type ShippingRegion = 'spain' | 'europa' | '';
 // Pequeño componente auxiliar para las opciones del Listbox para no repetir código
 const shippingOptions = [
   { id: 'spain', name: 'España' },
-  { id: 'europa', name: 'Resto de Europa (UE, no incluye España)' },
+  { id: 'europa', name: 'Resto de Europa' },
 ];
 
 export const CheckoutPage: React.FC = () => {
@@ -28,7 +28,7 @@ export const CheckoutPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [shippingRegion, setShippingRegion] = useState<ShippingRegion>('');
   const [shippingCost, setShippingCost] = useState<number | null>(null);
-  const [emailMarketing, setEmailMarketing] = useState(true); // Activado por defecto
+  const [emailMarketing, setEmailMarketing] = useState(false); // Opt-in desmarcado por defecto
   
   // Estados para el código de descuento
   const [discountCode, setDiscountCode] = useState('');
@@ -435,7 +435,7 @@ export const CheckoutPage: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-base font-semibold text-white">
-                    Acepto recibir newsletter, ofertas y promociones exclusivas por email
+                    Acepto recibir newsletter, ofertas y promociones exclusivas por email. Consulta nuestra <a href="/privacidad" className="underline text-spanish-yellow">Política de Privacidad</a>
                   </span>
                   <div className="px-2 py-0.5 bg-spanish-yellow/20 text-spanish-yellow text-xs font-medium rounded-full border border-spanish-yellow/30">
                     Recomendado

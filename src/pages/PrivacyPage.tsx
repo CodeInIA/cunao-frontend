@@ -26,7 +26,7 @@ export const PrivacyPage: React.FC = () => {
         <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-8 mb-8">
           <div className="mb-8">
             <p className="text-slate-400 mb-4">
-              <strong>Última actualización:</strong> 6 de septiembre de 2025
+              <strong>Última actualización:</strong> 23 de septiembre de 2025
             </p>
             <p className="text-slate-300">
               En <strong>Cuñadismo Ilustrado</strong> respetamos tu privacidad tanto como respetamos las opiniones cuñao. 
@@ -49,17 +49,13 @@ export const PrivacyPage: React.FC = () => {
                   <li>Nombre y apellidos</li>
                   <li>Dirección de email</li>
                   <li>Dirección postal para envíos</li>
-                  <li>Número de teléfono (opcional)</li>
+                  <li>Número de teléfono (obligatorio para la gestión del envío y contacto relacionado con el pedido)</li>
                 </ul>
               </div>
-
               <div className="bg-slate-700 border border-slate-600 p-4 rounded-lg">
                 <h3 className="font-semibold text-spanish-yellow mb-2">Información de Navegación</h3>
                 <ul className="list-disc list-inside text-slate-300 space-y-1">
-                  <li>Dirección IP</li>
-                  <li>Tipo de navegador y dispositivo</li>
-                  <li>Páginas visitadas y tiempo en la web</li>
-                  <li>Preferencias de idioma</li>
+                  <li>Páginas visitadas y tiempo en la web (solo si das tu consentimiento para analítica)</li>
                 </ul>
               </div>
 
@@ -116,20 +112,20 @@ export const PrivacyPage: React.FC = () => {
             </h2>
             
             <p className="text-slate-300 mb-4">
-              Utilizamos cookies y almacenamiento local para mejorar tu experiencia (y no las comestibles, esas no las compartimos):
+              Usamos cookies y almacenamiento local para funciones esenciales (por ejemplo, mantener el carrito) y para análisis cuando das tu consentimiento. No usamos técnicas invasivas ni vendemos tus datos.
             </p>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-slate-700 border border-spanish-red p-4 rounded-lg">
                 <h4 className="font-semibold text-spanish-yellow mb-2">Cookies Necesarias</h4>
                 <p className="text-sm text-slate-400">
-                  Para que el carrito de compras funcione y puedas hacer pedidos. El carrito utiliza `localStorage` para persistir los artículos entre visitas.
+                  Necesarias para el funcionamiento de la tienda (por ejemplo, persistencia del carrito). Guardamos el carrito en `localStorage` bajo la clave <code>cunao-cart-storage</code> y el consentimiento en <code>cunao.consent</code>.
                 </p>
               </div>
               <div className="bg-slate-700 border border-spanish-red p-4 rounded-lg">
                 <h4 className="font-semibold text-spanish-yellow mb-2">Cookies de Análisis</h4>
                 <p className="text-sm text-slate-400">
-                  Para entender cómo usas la web y mejorarla (anónimas). Actualmente usamos Google Analytics (gtag) si das tu consentimiento.
+                  Solo se activan si aceptas el uso de analítica. Estas cookies ayudan a mejorar la web y se usan de forma agregada.
                 </p>
               </div>
             </div>
@@ -147,11 +143,11 @@ export const PrivacyPage: React.FC = () => {
               <ul className="space-y-2 text-slate-300 mb-4">
                 <li className="flex items-start gap-2">
                   <span className="text-spanish-red">•</span>
-                  <span>Suscripción 100% voluntaria desde el footer de la web</span>
+                  <span>Suscripción 100% voluntaria desde el footer de la web o mediante opt-in explícito durante el proceso de compra</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-spanish-red">•</span>
-                  <span>Envío semanal automático los sábados a las 18:00</span>
+                  <span>Envío semanal automático los sábados a las 20:00 (hora de España peninsular)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-spanish-red">•</span>
@@ -163,7 +159,7 @@ export const PrivacyPage: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-spanish-red">•</span>
-                  <span>Puedes darte de baja o modificar preferencias en cualquier momento</span>
+                  <span>Puedes darte de baja o modificar preferencias en cualquier momento mediante los enlaces únicos de gestión en cada email o contactando a {config.EMAILS.privacy}.</span>
                 </li>
               </ul>
               
