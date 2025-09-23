@@ -120,7 +120,7 @@ export const apiService = {
   },
 
   // Procesar pedido después del pago
-  async processOrder(paymentIntentId?: string, sessionId?: string): Promise<any> {
+  async processOrder(paymentIntentId?: string, sessionId?: string): Promise<{ order_id: string; status: string; total: number; items: Array<{productId:string; variantId:number; title?:string; price:number; quantity:number}> }> {
     const response = await api.post<ApiResponse<any>>('/orders/process', {
       payment_intent_id: paymentIntentId,
       session_id: sessionId

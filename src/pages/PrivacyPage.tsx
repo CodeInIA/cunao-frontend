@@ -116,20 +116,20 @@ export const PrivacyPage: React.FC = () => {
             </h2>
             
             <p className="text-slate-300 mb-4">
-              Utilizamos cookies para mejorar tu experiencia (y no las comestibles, esas no las compartimos):
+              Utilizamos cookies y almacenamiento local para mejorar tu experiencia (y no las comestibles, esas no las compartimos):
             </p>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-slate-700 border border-spanish-red p-4 rounded-lg">
                 <h4 className="font-semibold text-spanish-yellow mb-2">Cookies Necesarias</h4>
                 <p className="text-sm text-slate-400">
-                  Para que el carrito de compras funcione y puedas hacer pedidos.
+                  Para que el carrito de compras funcione y puedas hacer pedidos. El carrito utiliza `localStorage` para persistir los artículos entre visitas.
                 </p>
               </div>
               <div className="bg-slate-700 border border-spanish-red p-4 rounded-lg">
                 <h4 className="font-semibold text-spanish-yellow mb-2">Cookies de Análisis</h4>
                 <p className="text-sm text-slate-400">
-                  Para entender cómo usas la web y mejorarla (anónimas).
+                  Para entender cómo usas la web y mejorarla (anónimas). Actualmente usamos Google Analytics (gtag) si das tu consentimiento.
                 </p>
               </div>
             </div>

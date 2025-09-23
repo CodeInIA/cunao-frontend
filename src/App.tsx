@@ -1,4 +1,7 @@
 import React, { useEffect, Suspense, lazy } from 'react';
+import { trackPageview } from './utils/analytics';
+import { getConsent } from './utils/consent';
+import PageViewTracker from './components/PageViewTracker';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Header } from './components/Header';
@@ -30,6 +33,7 @@ import './App.css';
 function App() {
   // Precarga crítica de imágenes para primera visita
   useCriticalImagePreloader();
+  // Precarga terminada, el tracking de páginas se realiza por el componente
 
   // =================================================================
   // ▼▼▼ CÓDIGO DE REDIRECCIÓN AÑADIDO AQUÍ ▼▼▼
@@ -64,6 +68,7 @@ useEffect(() => {
   return (
     <ErrorBoundary>
       <Router>
+        <PageViewTracker />
         <div className="min-h-screen bg-slate-900 flex flex-col">
           <Header />
           <main className="flex-1">

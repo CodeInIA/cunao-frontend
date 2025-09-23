@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'; // Importar useRef
 import { useLocation, Link } from 'react-router-dom';
+import { trackPurchase } from '../utils/analytics';
+import { getConsent } from '../utils/consent';
 import { useCartStore } from '../stores/cartStore';
 import { apiService } from '../services/api';
 import { CheckCircle, Loader, AlertTriangle } from 'lucide-react';
@@ -26,6 +28,21 @@ export const SuccessPage: React.FC = () => {
         // Llamar a la API para procesar el pedido
         await apiService.processOrder(undefined, sessionId);
         setStatus('success');
+        // Track purchase si el usuario dio consentimiento. Usar la respuesta de la API
+        try {
+          const consent = getConsent();
+          if (consent?.analytics) {
+            const orderData = await apiService.processOrder(undefined, sessionId);
+            trackPurchase({
+              transaction_id: orderData.order_id || sessionId,
+              value: orderData.total || 0,
+              currency: 'EUR',
+              items: (orderData.items || []).map((it: any) => ({ id: it.productId, name: it.title, price: it.price, quantity: it.quantity }))
+            });
+          }
+        } catch (err) {
+          console.warn('Tracking purchase failed', err);
+        }
         clearCart();
       } catch (err: any) {
         setStatus('error');
