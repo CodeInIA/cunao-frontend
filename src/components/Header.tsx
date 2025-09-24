@@ -18,6 +18,7 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
   const headerRef = React.useRef<HTMLElement | null>(null);
+  const bannerRef = React.useRef<HTMLDivElement | null>(null);
   const [headerHeight, setHeaderHeight] = React.useState<number>(72);
   const [showBanner, setShowBanner] = React.useState<boolean>(true);
 
@@ -75,8 +76,20 @@ export const Header: React.FC = () => {
   }, []);
   React.useEffect(() => {
     // Update header height whenever banner visibility changes (so overlays position correctly)
-    const rect = headerRef.current ? headerRef.current.getBoundingClientRect() : { height: 72 };
-    setHeaderHeight(Math.round(rect.height));
+    const update = () => {
+      const rect = headerRef.current ? headerRef.current.getBoundingClientRect() : { height: 72 };
+      setHeaderHeight(Math.round(rect.height));
+    };
+    update();
+    const el = bannerRef.current;
+    const onTransitionEnd = () => update();
+    if (el) el.addEventListener('transitionend', onTransitionEnd as EventListener);
+    // fallback: ensure headerHeight is correct after transition duration
+    const timer = setTimeout(update, 350);
+    return () => {
+      if (el) el.removeEventListener('transitionend', onTransitionEnd as EventListener);
+      clearTimeout(timer);
+    };
   }, [showBanner]);
 
   React.useEffect(() => {
@@ -94,23 +107,24 @@ export const Header: React.FC = () => {
 
   return (
   <header ref={headerRef} className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
-      {/* Barra superior de beneficios (más alta para permitir texto en bucle) */}
+      {/* Barra superior de beneficios (presente en DOM, se oculta con transición) */}
       <div
-        className={`w-full bg-gradient-to-r from-spanish-red to-orange-600 text-white overflow-hidden transition-none ${showBanner ? 'h-10 opacity-100' : 'h-0 opacity-0'}`}>
+        ref={bannerRef}
+        className={`w-full bg-gradient-to-r from-spanish-red to-orange-600 text-white overflow-hidden transition-[height,opacity] duration-300 ease-in-out ${showBanner ? 'h-10 opacity-100' : 'h-0 opacity-0'}`}>
           <div className="marquee-track h-10 w-full">
-          <div className="marquee-content animate-marquee text-sm lg:text-base">
-            {Array.from({ length: 4 }).map((_, groupIdx) => (
-              <div className="marquee-group flex items-center mr-12 lg:mr-16" key={`marquee-${groupIdx}`}>
-                {MARQUEE_ITEMS.map((t, i) => (
-                  <React.Fragment key={`m${groupIdx}-${i}`}>
-                    <span className="marquee-item">{t.replace('{FREE_SHIPPING_THRESHOLD}', String(FREE_SHIPPING_THRESHOLD))}</span>
-                    {i < MARQUEE_ITEMS.length - 1 && <span className="marquee-sep">|</span>}
-                  </React.Fragment>
-                ))}
-              </div>
-            ))}
+            <div className="marquee-content animate-marquee text-sm lg:text-base">
+              {Array.from({ length: 4 }).map((_, groupIdx) => (
+                <div className="marquee-group flex items-center mr-12 lg:mr-16" key={`marquee-${groupIdx}`}>
+                  {MARQUEE_ITEMS.map((t, i) => (
+                    <React.Fragment key={`m${groupIdx}-${i}`}>
+                      <span className="marquee-item">{t.replace('{FREE_SHIPPING_THRESHOLD}', String(FREE_SHIPPING_THRESHOLD))}</span>
+                      {i < MARQUEE_ITEMS.length - 1 && <span className="marquee-sep">|</span>}
+                    </React.Fragment>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
       </div>
 
       <div className="container mx-auto px-4">
