@@ -17,6 +17,8 @@ export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
+  const [newsletterModalOpen, setNewsletterModalOpen] = React.useState(false);
+  const [newsletterEmail, setNewsletterEmail] = React.useState('');
   const headerRef = React.useRef<HTMLElement | null>(null);
   const bannerRef = React.useRef<HTMLDivElement | null>(null);
   const marqueeContentRef = React.useRef<HTMLDivElement | null>(null);
@@ -55,8 +57,8 @@ export const Header: React.FC = () => {
   };
 
   React.useEffect(() => {
-    // Disable body scroll when mobile menu or search modal is open
-    if (isMobileMenuOpen || isMobileSearchOpen) {
+    // Disable body scroll when mobile menu, search modal or newsletter modal is open
+    if (isMobileMenuOpen || isMobileSearchOpen || newsletterModalOpen) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
@@ -64,7 +66,7 @@ export const Header: React.FC = () => {
       };
     }
     return;
-  }, [isMobileMenuOpen, isMobileSearchOpen]);
+  }, [isMobileMenuOpen, isMobileSearchOpen, newsletterModalOpen]);
 
   React.useLayoutEffect(() => {
     const updateHeaderHeight = () => {
@@ -103,6 +105,47 @@ export const Header: React.FC = () => {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Newsletter modal: show 5s after entering any route if not shown before
+  React.useEffect(() => {
+    const key = 'newsletter_shown_v1';
+    // If already shown, do nothing
+    if (typeof window === 'undefined') return;
+    try {
+      if (localStorage.getItem(key)) return;
+    } catch (e) {
+      // ignore localStorage errors
+    }
+
+    let timer: number | undefined;
+    // show only when at top-level document (not during server render)
+    timer = window.setTimeout(() => {
+      setNewsletterModalOpen(true);
+    }, 5000);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [location.pathname]);
+
+  const closeNewsletter = (persist = false) => {
+    const key = 'newsletter_shown_v1';
+    if (persist) {
+      try {
+        localStorage.setItem(key, '1');
+      } catch (e) {
+        // ignore
+      }
+    }
+    setNewsletterModalOpen(false);
+  };
+
+  const submitNewsletter = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    // Here you would call your newsletter API; for now persist the flag and close
+    closeNewsletter(true);
+    setNewsletterEmail('');
+  };
 
   React.useEffect(() => {
     // Adjust marquee duration to keep constant px/s across screen sizes
@@ -270,6 +313,46 @@ export const Header: React.FC = () => {
               </div>
             </div>
           </>
+        )}
+        {/* Newsletter modal (aparece 5s después de entrar por primera vez) */}
+        {newsletterModalOpen && typeof document !== 'undefined' && createPortal(
+          <div className="fixed inset-0 z-[100000] flex items-center justify-center" role="dialog" aria-modal="true">
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[100000]" onClick={() => closeNewsletter(false)} />
+
+            <div className="pointer-events-none w-full max-w-full px-4 flex items-center justify-center">
+              <div onClick={e => e.stopPropagation()} className="pointer-events-auto relative w-full max-w-md bg-[#0f172a] text-white rounded-lg shadow-2xl p-6 z-[100001]">
+                <button aria-label="Cerrar" onClick={() => closeNewsletter(false)} className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/10 transition-colors">
+                  <X size={18} />
+                </button>
+                <h3 className="text-lg font-semibold mb-2 text-center pr-5">Dame tu mail y te mando las mejores perlas del cuñao</h3>
+                <p className="text-sm text-slate-300 mb-4 text-center">Es para las frases de cuñao semanales: te enviamos consejos, trucos y perlas para ser el mejor cuñao de España. Nada de spam.</p>
+                <form onSubmit={submitNewsletter} className="space-y-3">
+                  <div className="w-full">
+                    <input
+                      type="email"
+                      value={newsletterEmail}
+                      onChange={e => setNewsletterEmail(e.target.value)}
+                      placeholder="Escribe tu correo"
+                      required
+                      className="w-full px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-md focus:outline-none transition-colors border-slate-600 focus:ring-spanish-yellow focus:border-spanish-yellow"
+                    />
+                  </div>
+                  <div className="w-full">
+                    <button
+                      type="submit"
+                      className="w-full px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md"
+                    >
+                      Quiero ser un supercuñao
+                    </button>
+                  </div>
+                </form>
+                <div className="mt-3 text-center">
+                  <button onClick={() => closeNewsletter(true)} className="text-sm text-slate-300 hover:text-slate-100">Paso, gracias</button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
         )}
         {/* Mobile search modal (renderizado en portal para cubrir todo el DOM) */}
         {isMobileSearchOpen && typeof document !== 'undefined' && createPortal(
