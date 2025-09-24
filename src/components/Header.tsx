@@ -19,6 +19,7 @@ export const Header: React.FC = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
   const headerRef = React.useRef<HTMLElement | null>(null);
   const [headerHeight, setHeaderHeight] = React.useState<number>(72);
+  const [showBanner, setShowBanner] = React.useState<boolean>(true);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -64,13 +65,29 @@ export const Header: React.FC = () => {
   }, [isMobileMenuOpen, isMobileSearchOpen]);
 
   React.useLayoutEffect(() => {
-    const update = () => {
+    const updateHeaderHeight = () => {
       const rect = headerRef.current ? headerRef.current.getBoundingClientRect() : { height: 72, bottom: 72 };
       setHeaderHeight(Math.round(rect.height));
     };
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
+  React.useEffect(() => {
+    // Update header height whenever banner visibility changes (so overlays position correctly)
+    const rect = headerRef.current ? headerRef.current.getBoundingClientRect() : { height: 72 };
+    setHeaderHeight(Math.round(rect.height));
+  }, [showBanner]);
+
+  React.useEffect(() => {
+    // Hide banner as soon as the user scrolls down; show only when at top
+    const onScroll = () => {
+      setShowBanner(window.scrollY === 0);
+    };
+    // run once to set initial state (in case page loaded scrolled)
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
   const shippingConfig = useShippingConfig(import.meta.env.VITE_API_URL || config.API_URL);
   const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold || 55;
@@ -78,7 +95,8 @@ export const Header: React.FC = () => {
   return (
   <header ref={headerRef} className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
       {/* Barra superior de beneficios (más alta para permitir texto en bucle) */}
-      <div className="w-full bg-gradient-to-r from-spanish-red to-orange-600 text-white">
+      <div
+        className={`w-full bg-gradient-to-r from-spanish-red to-orange-600 text-white overflow-hidden transition-none ${showBanner ? 'h-10 opacity-100' : 'h-0 opacity-0'}`}>
           <div className="marquee-track h-10 w-full">
           <div className="marquee-content animate-marquee text-sm lg:text-base">
             {Array.from({ length: 4 }).map((_, groupIdx) => (
