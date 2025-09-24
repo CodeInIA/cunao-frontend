@@ -149,7 +149,7 @@ export const TermsPage: React.FC = () => {
                     <li>✓ Google Pay</li>
                     <li>✓ Link (Stripe)</li>
                     <li>✓ PayPal</li>
-                    <li>✓ Klarna (pago a plazos, sujeto a aprobación)</li>
+                    <li>✓ Klarna (pago a plazos, sujeto a aprobación — aplica solo para pedidos ≥ €65)</li>
                   </ul>
                 </div>
                 <div>
