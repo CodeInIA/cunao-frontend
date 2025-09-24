@@ -34,3 +34,11 @@ export const config = {
 
 // Export default para compatibilidad
 export default config;
+
+// Items para la barra superior (plantillas — pueden contener el placeholder {FREE_SHIPPING_THRESHOLD})
+export const MARQUEE_ITEMS: string[] = [
+  'Envío gratis +{FREE_SHIPPING_THRESHOLD}€',
+  'Preparación 1-2 días',
+  'Entrega 2-7 días (España)',
+  'Pago seguro con Stripe'
+];

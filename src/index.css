@@ -541,3 +541,19 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #8b5f42, #714e3a);
 }
+
+/* Marquee estilo - desplazamiento contínuo de derecha a izquierda */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Marquee utilities */
+.marquee-track { overflow: hidden; }
+.marquee-track { display: flex; align-items: center; }
+.marquee-content { display: flex; align-items: center; gap: 1.5rem; min-width: 200%; height: 100%; }
+.marquee-group { display: inline-flex; align-items: center; gap: 0.5rem; height: 100%; }
+.marquee-item { white-space: nowrap; font-weight: 600; padding: 0 0.25rem; display: inline-flex; align-items: center; height: 100%; }
+.marquee-sep { white-space: nowrap; padding: 0 0.25rem; opacity: 0.95; display: inline-flex; align-items: center; height: 100%; }
+.marquee-break { display: inline-block; width: 1px; margin: 0 1rem; align-self: center; height: 60%; background: rgba(255,255,255,0.16); }
+.animate-marquee { animation: marquee 22s linear infinite; will-change: transform; }

@@ -2,6 +2,8 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
+import { useShippingConfig } from '../hooks/useShippingConfig';
+import config, { MARQUEE_ITEMS } from '../config';
 import { useCartStore } from '../stores/cartStore';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import BrandLogo from './BrandLogo';
@@ -70,10 +72,28 @@ export const Header: React.FC = () => {
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
+  const shippingConfig = useShippingConfig(import.meta.env.VITE_API_URL || config.API_URL);
+  const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold || 55;
+
   return (
   <header ref={headerRef} className="bg-slate-900 shadow-dark-lg sticky top-0 z-50 border-b border-slate-700 relative">
-      {/* Barra superior patriótica */}
-      <div className="brand-header h-1"></div>
+      {/* Barra superior de beneficios (más alta para permitir texto en bucle) */}
+      <div className="w-full bg-gradient-to-r from-spanish-red to-orange-600 text-white">
+          <div className="marquee-track h-10 w-full">
+          <div className="marquee-content animate-marquee text-sm lg:text-base">
+            {Array.from({ length: 4 }).map((_, groupIdx) => (
+              <div className="marquee-group flex items-center mr-12 lg:mr-16" key={`marquee-${groupIdx}`}>
+                {MARQUEE_ITEMS.map((t, i) => (
+                  <React.Fragment key={`m${groupIdx}-${i}`}>
+                    <span className="marquee-item">{t.replace('{FREE_SHIPPING_THRESHOLD}', String(FREE_SHIPPING_THRESHOLD))}</span>
+                    {i < MARQUEE_ITEMS.length - 1 && <span className="marquee-sep">|</span>}
+                  </React.Fragment>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-18 py-3 gap-y-2">
