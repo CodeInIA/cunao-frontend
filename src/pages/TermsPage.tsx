@@ -144,9 +144,12 @@ export const TermsPage: React.FC = () => {
                   <h3 className="font-semibold text-spanish-yellow mb-3">Métodos de Pago</h3>
                   <ul className="space-y-1 text-slate-300">
                     <li>✓ Tarjetas de crédito/débito (Visa, Mastercard)</li>
+                    <li>✓ Amazon Pay</li>
+                    <li>✓ Apple Pay</li>
+                    <li>✓ Google Pay</li>
+                    <li>✓ Link (Stripe)</li>
                     <li>✓ PayPal</li>
-                    <li>✓ Apple Pay / Google Pay</li>
-                    <li>✓ Transferencia bancaria (solo empresas)</li>
+                    <li>✓ Klarna (pago a plazos, sujeto a aprobación)</li>
                   </ul>
                 </div>
                 <div>
