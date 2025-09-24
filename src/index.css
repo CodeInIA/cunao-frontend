@@ -556,4 +556,4 @@ html {
 .marquee-item { white-space: nowrap; font-weight: 600; padding: 0 0.25rem; display: inline-flex; align-items: center; height: 100%; }
 .marquee-sep { white-space: nowrap; padding: 0 0.25rem; opacity: 0.95; display: inline-flex; align-items: center; height: 100%; }
 .marquee-break { display: inline-block; width: 1px; margin: 0 1rem; align-self: center; height: 60%; background: rgba(255,255,255,0.16); }
-.animate-marquee { animation: marquee 22s linear infinite; will-change: transform; }
+.animate-marquee { animation: marquee var(--marquee-duration, 22s) linear infinite; will-change: transform; }

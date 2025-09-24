@@ -19,6 +19,7 @@ export const Header: React.FC = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
   const headerRef = React.useRef<HTMLElement | null>(null);
   const bannerRef = React.useRef<HTMLDivElement | null>(null);
+  const marqueeContentRef = React.useRef<HTMLDivElement | null>(null);
   const [headerHeight, setHeaderHeight] = React.useState<number>(72);
   const [showBanner, setShowBanner] = React.useState<boolean>(true);
 
@@ -102,6 +103,30 @@ export const Header: React.FC = () => {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  React.useEffect(() => {
+    // Adjust marquee duration to keep constant px/s across screen sizes
+    const updateMarqueeDuration = () => {
+      try {
+        const content = marqueeContentRef.current;
+        const track = bannerRef.current;
+        if (!content || !track) return;
+        const contentWidth = content.getBoundingClientRect().width;
+        const trackWidth = track.getBoundingClientRect().width || window.innerWidth;
+        // Distance to travel equals contentWidth/2 (animation translates -50%) + trackWidth
+        const distance = Math.max(contentWidth / 2 + trackWidth, 300);
+        const pxPerSecond = 120; // adjust speed here (px per second)
+        const seconds = Math.max(distance / pxPerSecond, 6); // minimum 6s for readability
+        const root = document.documentElement;
+        root.style.setProperty('--marquee-duration', `${seconds}s`);
+      } catch (e) {
+        // noop
+      }
+    };
+    updateMarqueeDuration();
+    window.addEventListener('resize', updateMarqueeDuration);
+    return () => window.removeEventListener('resize', updateMarqueeDuration);
+  }, []);
   const shippingConfig = useShippingConfig(import.meta.env.VITE_API_URL || config.API_URL);
   const FREE_SHIPPING_THRESHOLD = shippingConfig.freeShippingThreshold || 55;
 
@@ -112,7 +137,7 @@ export const Header: React.FC = () => {
         ref={bannerRef}
         className={`w-full bg-gradient-to-r from-spanish-red to-orange-600 text-white overflow-hidden transition-[height,opacity] duration-300 ease-in-out ${showBanner ? 'h-10 opacity-100' : 'h-0 opacity-0'}`}>
           <div className="marquee-track h-10 w-full">
-            <div className="marquee-content animate-marquee text-sm lg:text-base">
+            <div ref={marqueeContentRef} className="marquee-content animate-marquee text-sm lg:text-base">
               {Array.from({ length: 4 }).map((_, groupIdx) => (
                 <div className="marquee-group flex items-center mr-12 lg:mr-16" key={`marquee-${groupIdx}`}>
                   {MARQUEE_ITEMS.map((t, i) => (
