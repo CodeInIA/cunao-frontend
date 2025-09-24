@@ -7,6 +7,8 @@ import config, { MARQUEE_ITEMS } from '../config';
 import { useCartStore } from '../stores/cartStore';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import BrandLogo from './BrandLogo';
+import { apiService } from '../services/api';
+import toast from 'react-hot-toast';
 
 export const Header: React.FC = () => {
   const { openCart, getTotalItems } = useCartStore();
@@ -19,6 +21,8 @@ export const Header: React.FC = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
   const [newsletterModalOpen, setNewsletterModalOpen] = React.useState(false);
   const [newsletterEmail, setNewsletterEmail] = React.useState('');
+  const [isSubscribingNewsletter, setIsSubscribingNewsletter] = React.useState(false);
+  const [newsletterEmailError, setNewsletterEmailError] = React.useState('');
   const headerRef = React.useRef<HTMLElement | null>(null);
   const bannerRef = React.useRef<HTMLDivElement | null>(null);
   const marqueeContentRef = React.useRef<HTMLDivElement | null>(null);
@@ -106,7 +110,7 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Newsletter modal: show 5s after entering any route if not shown before
+  // Newsletter modal: show 5s after initial page load (not on SPA route changes)
   React.useEffect(() => {
     const key = 'newsletter_shown_v1';
     // If already shown, do nothing
@@ -126,7 +130,7 @@ export const Header: React.FC = () => {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [location.pathname]);
+  }, []);
 
   const closeNewsletter = (persist = false) => {
     const key = 'newsletter_shown_v1';
@@ -142,9 +146,115 @@ export const Header: React.FC = () => {
 
   const submitNewsletter = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    // Here you would call your newsletter API; for now persist the flag and close
-    closeNewsletter(true);
-    setNewsletterEmail('');
+
+    // Limpiar errores previos
+    setNewsletterEmailError('');
+
+    if (!newsletterEmail) {
+      setNewsletterEmailError('Por favor, introduce tu email');
+      toast.error('Por favor, introduce tu email');
+      return;
+    }
+
+    // Validación básica de email - regex más estricto
+    const emailRegex = /^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
+    if (!emailRegex.test(newsletterEmail.trim()) || newsletterEmail.length > 100) {
+      setNewsletterEmailError('El formato del email no es válido');
+      toast.error('El formato del email no es válido');
+      return;
+    }
+
+    const emailParts = newsletterEmail.trim().split('@');
+    if (emailParts.length !== 2 || emailParts[0].length < 1 || emailParts[1].length < 3) {
+      setNewsletterEmailError('El formato del email no es válido');
+      toast.error('El formato del email no es válido');
+      return;
+    }
+
+    // Validación del dominio (usamos la misma lógica que el Footer)
+    const validateEmailDomain = (emailToCheck: string): { isValid: boolean; suggestion?: string } => {
+      const blockedDomains = [
+        '10minutemail.com', 'guerrillamail.com', 'mailinator.com', 'tempmail.org',
+        'yopmail.com', 'temp-mail.org', 'throwaway.email', 'getnada.com',
+        'maildrop.cc', 'mailnesia.com', 'trashmail.com', '33mail.com',
+        'dispostable.com', 'fake-mail.ml', 'mohmal.com', 'emailfake.com'
+      ];
+
+      const trustedDomains = [
+        'gmail.com', 'googlemail.com', 'google.com',
+        'outlook.com', 'outlook.es', 'hotmail.com', 'hotmail.es', 'live.com', 'live.es', 'msn.com',
+        'yahoo.com', 'yahoo.es', 'yahoo.fr', 'yahoo.it', 'yahoo.de', 'yahoo.co.uk',
+        'telefonica.es', 'movistar.es', 'orange.es', 'vodafone.es', 'jazztel.es',
+        'icloud.com', 'me.com', 'mac.com',
+        'aol.com', 'protonmail.com', 'proton.me', 'tutanota.com',
+        'uma.es', 'ucm.es', 'uam.es', 'upm.es', 'uc3m.es', 'urjc.es', 'uned.es',
+        'gov.es', 'junta-andalucia.es', 'madrid.org',
+        'empresa.com', 'company.com', 'corp.com', 'group.com',
+        'mail.com', 'gmx.com', 'gmx.de', 'web.de', 'freenet.de',
+        'libero.it', 'tin.it', 'alice.it',
+        'free.fr', 'orange.fr', 'wanadoo.fr', 'laposte.net',
+        'btinternet.com', 'sky.com', 'virgin.net', 'tiscali.co.uk'
+      ];
+
+      const emailPartsLocal = emailToCheck.toLowerCase().split('@');
+      if (emailPartsLocal.length !== 2) return { isValid: false };
+      const emailDomain = emailPartsLocal[1];
+
+      // Validaciones de formato
+      if (!emailDomain || emailDomain.length < 3 || emailDomain.length > 255) return { isValid: false };
+      const domainParts = emailDomain.split('.');
+      if (domainParts.length < 2) return { isValid: false };
+      const extension = domainParts[domainParts.length - 1];
+      if (extension.length < 2 || extension.length > 6) return { isValid: false };
+      if (!/^[a-zA-Z]+$/.test(extension)) return { isValid: false };
+      for (const part of domainParts) {
+        if (!part || part.length < 1 || !/^[a-zA-Z0-9-]+$/.test(part)) return { isValid: false };
+      }
+
+      if (blockedDomains.includes(emailDomain)) return { isValid: false };
+
+      if (!trustedDomains.includes(emailDomain)) {
+        const commonDomains: Record<string, string> = {
+          'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gmeil.com': 'gmail.com',
+          'hotmial.com': 'hotmail.com', 'hotmeil.com': 'hotmail.com',
+          'yahooo.com': 'yahoo.com', 'yaho.com': 'yahoo.com',
+          'outlok.com': 'outlook.com', 'outlock.com': 'outlook.com', 'email.xom': 'gmail.com'
+        };
+        if (commonDomains[emailDomain]) return { isValid: false, suggestion: emailToCheck.replace(emailDomain, commonDomains[emailDomain]) };
+        return { isValid: false };
+      }
+
+      return { isValid: true };
+    };
+
+    const domainValidation = validateEmailDomain(newsletterEmail.trim());
+    if (!domainValidation.isValid) {
+      if (domainValidation.suggestion) {
+        setNewsletterEmailError(`¿Quisiste decir ${domainValidation.suggestion}?`);
+        toast.error(`¿Quisiste decir ${domainValidation.suggestion}?`);
+      } else {
+        setNewsletterEmailError('Por favor, usa un proveedor de email conocido (Gmail, Outlook, Yahoo, etc.)');
+        toast.error('Por favor, usa un proveedor de email conocido (Gmail, Outlook, Yahoo, etc.)');
+      }
+      return;
+    }
+
+    setIsSubscribingNewsletter(true);
+    (async () => {
+      try {
+        await apiService.subscribeToNewsletter(newsletterEmail.trim());
+        toast.success('¡Te has suscrito correctamente al newsletter!');
+        setNewsletterEmail('');
+        setNewsletterEmailError('');
+        closeNewsletter(true);
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.error || 'Error al suscribirse';
+        setNewsletterEmailError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setIsSubscribingNewsletter(false);
+      }
+    })();
   };
 
   React.useEffect(() => {
@@ -331,18 +441,23 @@ export const Header: React.FC = () => {
                     <input
                       type="email"
                       value={newsletterEmail}
-                      onChange={e => setNewsletterEmail(e.target.value)}
+                      onChange={e => {
+                        setNewsletterEmail(e.target.value);
+                        if (newsletterEmailError) setNewsletterEmailError('');
+                      }}
                       placeholder="Escribe tu correo"
                       required
-                      className="w-full px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-md focus:outline-none transition-colors border-slate-600 focus:ring-spanish-yellow focus:border-spanish-yellow"
+                      className={`w-full px-3 py-2 bg-slate-700 border text-white placeholder-slate-400 rounded-md focus:outline-none transition-colors border-slate-600 focus:ring-spanish-yellow focus:border-spanish-yellow ${newsletterEmailError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}`}
                     />
+                    {newsletterEmailError && <div className="mt-2 text-sm text-red-400">{newsletterEmailError}</div>}
                   </div>
                   <div className="w-full">
                     <button
                       type="submit"
-                      className="w-full px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md"
+                      disabled={isSubscribingNewsletter}
+                      className={`w-full px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md ${isSubscribingNewsletter ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                      Quiero ser un supercuñao
+                      {isSubscribingNewsletter ? 'Enviando...' : 'Quiero ser un supercuñao'}
                     </button>
                   </div>
                 </form>

@@ -99,6 +99,7 @@ useEffect(() => {
           <CartSidebar />
           <Toaster 
             position="top-right"
+            containerStyle={{ zIndex: 110000 }}
             toastOptions={{
               duration: 4000,
               style: {
