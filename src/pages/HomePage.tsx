@@ -18,7 +18,7 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     // Cargamos los productos recientes (todos) y también mantenemos fetchFeaturedProducts por compatibilidad
-    fetchProducts();
+    fetchProducts(12);
     fetchFeaturedProducts();
   }, [fetchProducts, fetchFeaturedProducts]);
 

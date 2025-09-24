@@ -20,8 +20,9 @@ api.interceptors.response.use(
 
 export const apiService = {
   // Productos
-  async getProducts(): Promise<Product[]> {
-    const response = await api.get<ApiResponse<Product[]>>('/products');
+  async getProducts(limit?: number): Promise<Product[]> {
+    const qs = typeof limit === 'number' && limit > 0 ? `?limit=${limit}` : '';
+    const response = await api.get<ApiResponse<Product[]>>(`/products${qs}`);
     return response.data.data || [];
   },
 

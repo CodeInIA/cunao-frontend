@@ -11,7 +11,7 @@ interface ProductStore {
   loadingState: LoadingState;
   error: string | null;
   // Acciones
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (limit?: number) => Promise<void>;
   fetchFeaturedProducts: () => Promise<void>;
   fetchProduct: (id: string) => Promise<void>;
   fetchProductGPSR: (id: string) => Promise<void>;
@@ -38,10 +38,10 @@ export const useProductStore = create<ProductStore>((set, get) => ({
     }
   },
 
-  fetchProducts: async () => {
+  fetchProducts: async (limit?: number) => {
     set({ loadingState: 'loading', error: null });
     try {
-      const products = await apiService.getProducts();
+      const products = await apiService.getProducts(limit);
       set({ products, loadingState: 'success' });
     } catch (error) {
       set({ 
