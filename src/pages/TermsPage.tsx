@@ -295,7 +295,13 @@ export const TermsPage: React.FC = () => {
           </div>
         </div>
       </div>
+    {/* Aviso sobre correos automáticos */}
+    <div className="bg-slate-900 border-t border-spanish-yellow mt-12 pt-8 pb-8 text-center">
+      <p className="text-sm text-spanish-yellow italic">
+        {config.EMAIL_INFO_TEXT}
+      </p>
     </div>
-  );
+  </div>
+);
 };
 
