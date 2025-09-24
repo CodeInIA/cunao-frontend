@@ -430,7 +430,16 @@ export const Header: React.FC = () => {
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[100000]" onClick={() => closeNewsletter(false)} />
 
             <div className="pointer-events-none w-full max-w-full px-4 flex items-center justify-center">
-              <div onClick={e => e.stopPropagation()} className="pointer-events-auto relative w-full max-w-md bg-[#0f172a] text-white rounded-lg shadow-2xl p-6 z-[100001]">
+              <div
+                onClick={e => e.stopPropagation()}
+                className="pointer-events-auto relative w-full max-w-md text-white rounded-lg shadow-2xl p-6 z-[100001]"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(15,23,42,0.65), rgba(15,23,42,0.65)), url('/newsletter-modal.webp')`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
+                }}
+              >
                 <button aria-label="Cerrar" onClick={() => closeNewsletter(false)} className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/10 transition-colors">
                   <X size={18} />
                 </button>
