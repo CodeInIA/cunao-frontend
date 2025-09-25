@@ -276,7 +276,7 @@ export const ProductsPage: React.FC = () => {
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error}</p>
             <button
-              onClick={fetchProducts}
+              onClick={() => fetchProducts()}
               className="px-6 py-2 bg-spanish-red text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               Intentar de nuevo
