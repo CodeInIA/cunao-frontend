@@ -281,6 +281,27 @@ html {
   @apply scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-spanish-yellow;
 }
 
+/* Scrollbar amarillo consistente para controles que necesiten la estética principal */
+.scrollbar-spanish {
+  scrollbar-width: thin;
+  scrollbar-color: #F1BF00 #0f172a; /* thumb, track for Firefox */
+}
+.scrollbar-spanish::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scrollbar-spanish::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.scrollbar-spanish::-webkit-scrollbar-thumb {
+  background: #F1BF00;
+  border-radius: 9999px;
+  border: 2px solid rgba(15,23,42,0.0);
+}
+.scrollbar-spanish::-webkit-scrollbar-thumb:hover {
+  background: #ffd54d;
+}
+
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }

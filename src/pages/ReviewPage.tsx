@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { UploadCloud, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { getOptimizedImageUrl, getVariantImages, getMainProductImage } from '../utils/imageUtils';
 
@@ -11,11 +12,14 @@ export const ReviewPage: React.FC = () => {
   const [selectedProducts, setSelectedProducts] = useState<Record<string, boolean>>({});
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [texts, setTexts] = useState<Record<string, string>>({});
-  const [files, setFiles] = useState<Record<string, File[]>>({});
+  const [files, setFiles] = useState<Record<string, { file: File; preview: string }[]>>({});
   const [productImages, setProductImages] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [textareaActive, setTextareaActive] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, { files?: string; text?: string }>>({});
 
+  const MAX_IMAGES_PER_LINE = 5;
+  const MAX_REVIEW_CHARS = 1000;
   useEffect(() => {
     if (!token) return;
     axios.get(`/api/reviews/validate/${token}`).then(res => {
@@ -152,6 +156,14 @@ export const ReviewPage: React.FC = () => {
     }).catch(() => setValid(false));
   }, [token]);
 
+  // cleanup on unmount (always declared to keep hooks order stable)
+  React.useEffect(() => {
+    return () => {
+      Object.values(files).flat().forEach(a => { try { URL.revokeObjectURL(a.preview); } catch (e) {} });
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (valid === false) {
     return (
       <div className="container mx-auto p-8 text-center text-white">
@@ -165,10 +177,80 @@ export const ReviewPage: React.FC = () => {
     return <div className="p-8 text-white">Comprobando token...</div>;
   }
 
+  const addFiles = (lineKey: string, newFiles: File[]) => {
+    setFiles(prev => {
+      const existing = prev[lineKey] || [];
+      const allowed = Math.max(0, MAX_IMAGES_PER_LINE - existing.length);
+      if (allowed <= 0) {
+        // set error: no more allowed
+        setErrors(errPrev => ({ ...errPrev, [lineKey]: { ...(errPrev[lineKey]||{}), files: `Sólo se permiten ${MAX_IMAGES_PER_LINE} imágenes por producto.` } }));
+        return prev;
+      }
+      const toAdd = newFiles.slice(0, allowed);
+      const mapped = toAdd.map(f => ({ file: f, preview: URL.createObjectURL(f) }));
+      const combined = existing.concat(mapped);
+      // if attempted to add more than allowed, set an error message
+      if (newFiles.length > allowed) {
+        setErrors(errPrev => ({ ...errPrev, [lineKey]: { ...(errPrev[lineKey]||{}), files: `Has intentado añadir ${newFiles.length} archivos, pero sólo se permiten ${MAX_IMAGES_PER_LINE}.` } }));
+      } else {
+        // clear files error
+        setErrors(errPrev => {
+          const copy = { ...(errPrev || {}) };
+          if (copy[lineKey]) { copy[lineKey] = { ...copy[lineKey], files: undefined }; }
+          return copy;
+        });
+      }
+      return { ...prev, [lineKey]: combined };
+    });
+  };
+
   const handleFileChange = (lineKey: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files ? Array.from(e.target.files) : [];
-    setFiles(prev => ({ ...prev, [lineKey]: selected.slice(0,5) }));
+    if (selected.length === 0) return;
+    addFiles(lineKey, selected);
   };
+
+  const handleDrop = (lineKey: string, e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const dtFiles = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+    if (dtFiles.length === 0) return;
+    addFiles(lineKey, dtFiles);
+  };
+
+  const removeFile = (lineKey: string, idx: number) => {
+    setFiles(prev => {
+      const arr = prev[lineKey] || [];
+      if (!arr[idx]) return prev;
+      // revoke object url
+      try { URL.revokeObjectURL(arr[idx].preview); } catch (e) {}
+      const next = arr.slice(0, idx).concat(arr.slice(idx+1));
+      // clear files error if now under limit
+      setErrors(errPrev => {
+        const copy = { ...(errPrev || {}) };
+        if (copy[lineKey] && copy[lineKey].files) copy[lineKey] = { ...copy[lineKey], files: undefined };
+        return copy;
+      });
+      return { ...prev, [lineKey]: next };
+    });
+  };
+
+  const clearFiles = (lineKey: string) => {
+    setFiles(prev => {
+      const arr = prev[lineKey] || [];
+      arr.forEach(a => { try { URL.revokeObjectURL(a.preview); } catch (e) {} });
+      const next = { ...prev };
+      next[lineKey] = [];
+      // clear files error
+      setErrors(errPrev => {
+        const copy = { ...(errPrev || {}) };
+        if (copy[lineKey]) copy[lineKey] = { ...copy[lineKey], files: undefined };
+        return copy;
+      });
+      return next;
+    });
+  };
+
+
 
   const toggleProduct = (lineKey: string) => {
     setSelectedProducts(prev => ({ ...prev, [lineKey]: !prev[lineKey] }));
@@ -176,7 +258,29 @@ export const ReviewPage: React.FC = () => {
 
   const submit = async () => {
     if (!token) return;
-    // doble confirmación
+    // validar antes de enviar: texto y número de imágenes
+    const selectedKeys = Object.keys(selectedProducts).filter(k => selectedProducts[k]);
+    let hasValidationError = false;
+    const newErrors: Record<string, { files?: string; text?: string }> = {};
+    selectedKeys.forEach(lineKey => {
+      const txt = texts[lineKey] || '';
+      if (txt.length > MAX_REVIEW_CHARS) {
+        hasValidationError = true;
+        newErrors[lineKey] = { ...(newErrors[lineKey] || {}), text: `Máximo ${MAX_REVIEW_CHARS} caracteres.` };
+      }
+      const filesCount = (files[lineKey] || []).length;
+      if (filesCount > MAX_IMAGES_PER_LINE) {
+        hasValidationError = true;
+        newErrors[lineKey] = { ...(newErrors[lineKey] || {}), files: `Sólo se permiten ${MAX_IMAGES_PER_LINE} imágenes por producto.` };
+      }
+    });
+    if (hasValidationError) {
+      setErrors(prev => ({ ...prev, ...newErrors }));
+      alert('Hay errores en las reseñas (texto o número de imágenes). Corrígelos antes de enviar.');
+      return;
+    }
+
+  // doble confirmación
     if (!window.confirm('¿Estás seguro de que quieres publicar estas reseñas?')) return;
     setSubmitting(true);
 
@@ -199,8 +303,17 @@ export const ReviewPage: React.FC = () => {
 
     // Adjuntar archivos con fieldname product-<lineKey>
     Object.entries(files).forEach(([lineKey, fileArr]) => {
-      fileArr.forEach((f, idx) => form.append(`product-${lineKey}`, f));
+      fileArr.forEach((obj) => form.append(`product-${lineKey}`, obj.file));
     });
+
+    // final sanity-check on payload bodies
+    for (const p of payload) {
+      if ((p.body || '').length > MAX_REVIEW_CHARS) {
+        alert('Hay reseñas que exceden el límite de caracteres. Corrige antes de enviar.');
+        setSubmitting(false);
+        return;
+      }
+    }
 
     try {
       const res = await axios.post(`/api/reviews/submit/${token}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -217,6 +330,16 @@ export const ReviewPage: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  // determine if there are active errors to disable submit
+  const hasErrors = Object.keys(selectedProducts).some(key => {
+    if (!selectedProducts[key]) return false;
+    const txtErr = errors[key]?.text;
+    const fileErr = errors[key]?.files;
+    const txtLen = (texts[key] || '').length;
+    const fileCount = (files[key] || []).length;
+    return !!txtErr || !!fileErr || txtLen > MAX_REVIEW_CHARS || fileCount > MAX_IMAGES_PER_LINE;
+  });
 
   return (
     <div className="container mx-auto p-8 text-white">
@@ -268,21 +391,61 @@ export const ReviewPage: React.FC = () => {
                       ))}
                     </div>
                     <textarea
-                      className={`w-full p-2 bg-slate-900 rounded mb-2 border transition-colors duration-150 ${textareaActive[lineKey] ? 'border-yellow-400' : 'border-transparent'} focus:border-yellow-400 focus:ring-0 outline-none`}
+                      className={`w-full p-2 bg-slate-900 rounded mb-2 border transition-colors duration-150 scrollbar-spanish ${textareaActive[lineKey] ? 'border-yellow-400' : 'border-transparent'} focus:border-yellow-400 focus:ring-0 outline-none`}
                       placeholder="Escribe tu opinión"
                       value={texts[lineKey]||''}
-                      onChange={(e) => setTexts(prev => ({ ...prev, [lineKey]: e.target.value }))}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v.length > MAX_REVIEW_CHARS) {
+                          setErrors(prev => ({ ...prev, [lineKey]: { ...(prev[lineKey]||{}), text: `Máximo ${MAX_REVIEW_CHARS} caracteres.` } }));
+                          setTexts(prev => ({ ...prev, [lineKey]: v.slice(0, MAX_REVIEW_CHARS) }));
+                        } else {
+                          setErrors(prev => ({ ...prev, [lineKey]: { ...(prev[lineKey]||{}), text: undefined } }));
+                          setTexts(prev => ({ ...prev, [lineKey]: v }));
+                        }
+                      }}
                       onClick={() => setTextareaActive(prev => ({ ...prev, [lineKey]: true }))}
                       onFocus={() => setTextareaActive(prev => ({ ...prev, [lineKey]: true }))}
                       onBlur={() => setTextareaActive(prev => ({ ...prev, [lineKey]: false }))}
                     />
-                    <div className="mb-2">Fotos (max 5 por producto):</div>
-                    <div>
-                      <label className="inline-flex items-center px-3 py-2 bg-white border rounded cursor-pointer text-sm text-gray-700 hover:bg-gray-50">
-                        <input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => handleFileChange(lineKey, e)} className="hidden" />
-                        Subir imágenes ({(files[lineKey] || []).length})
-                      </label>
+                    <div className="flex items-center justify-between text-sm text-slate-400 mb-2">
+                      <div className="text-xs text-red-400">{errors[lineKey]?.text || ''}</div>
+                      <div className="text-xs">{(texts[lineKey] || '').length}/{MAX_REVIEW_CHARS}</div>
                     </div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <div>Fotos (max 5 por producto):</div>
+                      {(files[lineKey] || []).length > 0 ? (
+                        <button type="button" onClick={() => clearFiles(lineKey)} className="text-slate-400 hover:text-red-400" title="Borrar todas">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      ) : null}
+                    </div>
+
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleDrop(lineKey, e)}
+                      onClick={(e) => { /* click handled by invisible input */ }}
+                      className="relative border-dashed border-2 border-slate-700 rounded p-3 mb-2 flex items-center gap-4 cursor-pointer"
+                    >
+                      {/* full-size invisible input to make whole area clickable */}
+                      <input id={`file-input-${lineKey}`} type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => handleFileChange(lineKey, e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <div className="flex-1 text-slate-400 flex items-center">
+                        <UploadCloud className="w-6 h-6 mr-3 text-slate-400" />
+                        <span>Arrastra imágenes aquí o pulsa para seleccionar</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 flex-wrap scrollbar-spanish">
+                      {(files[lineKey] || []).map((fObj, i) => (
+                        <div key={i} className="relative w-20 h-20 bg-slate-900 rounded overflow-hidden border">
+                          <img src={fObj.preview} className="w-full h-full object-cover" alt={`preview-${i}`} />
+                          <button type="button" onClick={() => removeFile(lineKey, i)} className="absolute top-0 right-0 m-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white">
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-1 text-xs text-red-400">{errors[lineKey]?.files || ''}</div>
                   </div>
                 )}
               </div>
@@ -292,7 +455,7 @@ export const ReviewPage: React.FC = () => {
       </div>
 
       <div className="text-center mt-6">
-        <button className="bg-spanish-yellow text-slate-900 px-6 py-2 rounded font-bold" onClick={submit} disabled={submitting}>Publicar reseñas</button>
+        <button className={`px-6 py-2 rounded font-bold ${(!hasErrors && !submitting && Object.keys(selectedProducts).some(k => selectedProducts[k])) ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`} onClick={submit} disabled={submitting || hasErrors || !Object.keys(selectedProducts).some(k => selectedProducts[k])}>Publicar reseñas</button>
       </div>
     </div>
   );
