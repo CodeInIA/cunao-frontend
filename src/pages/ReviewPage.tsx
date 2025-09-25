@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { UploadCloud, Trash2, Loader } from 'lucide-react';
+import { UploadCloud, Trash2, Loader, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import { getOptimizedImageUrl, getVariantImages, getMainProductImage } from '../utils/imageUtils';
 
@@ -17,6 +17,7 @@ export const ReviewPage: React.FC = () => {
   const [productImages, setProductImages] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [submittedCount, setSubmittedCount] = useState<number | null>(null);
   const [textareaActive, setTextareaActive] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, { files?: string; text?: string }>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -174,6 +175,18 @@ export const ReviewPage: React.FC = () => {
     }).catch(() => setValid(false));
   }, [token]);
 
+  // when reviews have been submitted and token marked used, scroll to top smoothly
+  useEffect(() => {
+    try {
+      if (tokenUsed) {
+        // small delay to allow DOM updates before scrolling
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+      }
+    } catch (e) {
+      // ignore in non-browser environments
+    }
+  }, [tokenUsed]);
+
   // cleanup on unmount (always declared to keep hooks order stable)
   React.useEffect(() => {
     return () => {
@@ -279,10 +292,17 @@ export const ReviewPage: React.FC = () => {
 
   if (valid === false) {
     if (tokenUsed) {
+      // determine singular/plural: prefer submittedCount (set after submit), fallback to order.lineItems length if available
+      const finalCount = (submittedCount != null) ? submittedCount : (order && order.lineItems ? order.lineItems.length : null);
+      const singular = finalCount === 1;
       return (
         <div className="container mx-auto p-8 text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Gracias — tus reseñas están en revisión</h2>
-          <p>Hemos recibido tus reseñas y están siendo revisadas por nuestro equipo. No es necesario enviar nada más.</p>
+          <h2 className="text-2xl font-bold mb-4">{singular ? 'Gracias por tu reseña cuñao' : 'Gracias por tus reseñas cuñao'}</h2>
+          <p>{singular ? 'Hemos recibido tu reseña y está siendo revisada por nuestro equipo. No es necesario enviar nada más.' : 'Hemos recibido tus reseñas y están siendo revisadas por nuestro equipo. No es necesario enviar nada más.'}</p>
+          <div className="mt-4 flex flex-col items-center justify-center gap-3 text-slate-200">
+            <CheckCircle className="w-12 h-12 text-spanish-yellow" />
+            <div className="text-sm">{singular ? 'Tu reseña se ha enviado correctamente y está en revisión.' : 'Tus reseñas se han enviado correctamente y están en revisión.'}</div>
+          </div>
         </div>
       );
     }
@@ -415,7 +435,8 @@ export const ReviewPage: React.FC = () => {
     });
     if (hasValidationError) {
       setErrors(prev => ({ ...prev, ...newErrors }));
-      alert('Hay errores en las reseñas (texto o número de imágenes). Corrígelos antes de enviar.');
+      const sel = selectedKeys.length === 1 ? 'reseña' : 'reseñas';
+      alert(`Hay errores en la ${sel} (texto o número de imágenes). Corrígelos antes de enviar.`);
       return;
     }
 
@@ -449,7 +470,8 @@ export const ReviewPage: React.FC = () => {
     // final sanity-check on payload bodies
     for (const p of payload) {
       if ((p.body || '').length > MAX_REVIEW_CHARS) {
-        alert('Hay reseñas que exceden el límite de caracteres. Corrige antes de enviar.');
+        const pl = payload.length === 1 ? 'reseña' : 'reseñas';
+        alert(`Hay ${pl} que exceden el límite de caracteres. Corrige antes de enviar.`);
         setSubmitting(false);
         return;
       }
@@ -458,14 +480,15 @@ export const ReviewPage: React.FC = () => {
     try {
       const res = await axios.post(`/api/reviews/submit/${token}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
       if (res.data && res.data.success) {
-        alert('Gracias, tu reseña está en revisión.');
+        const pl = payload.length === 1 ? 'reseña' : 'reseñas';
+        alert(`Gracias, tu ${pl} está en revisión.`);
         navigate('/');
       } else {
         alert('Error al enviar reseñas');
       }
     } catch (e) {
       console.error(e);
-      alert('Error al enviar reseñas');
+  alert('Error al enviar reseñas');
     } finally {
       setSubmitting(false);
     }
@@ -514,7 +537,7 @@ export const ReviewPage: React.FC = () => {
   const confirmSubmit = async () => {
     setShowConfirm(false);
     setSubmitting(true);
-    // don't pre-set progress to 0 — keep null until we receive a real progress event
+    // compute and store how many reviews we are submitting so UI can show singular/plural
     try {
       const tokenLocal = token;
       if (!tokenLocal) return;
@@ -530,6 +553,7 @@ export const ReviewPage: React.FC = () => {
           authorName: order.customerName || ''
         };
       });
+      setSubmittedCount(payload.length);
 
       const form = new FormData();
       form.append('payload', JSON.stringify(payload));
