@@ -194,14 +194,18 @@ export const ContactPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Hero section */}
-      <section className="bg-gradient-to-br from-spanish-red via-slate-800 to-slate-900 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-patriot font-bold mb-6">
-            📞 Contacto
-          </h1>
-          <p className="text-xl md:text-2xl max-w-3xl mx-auto text-slate-200">
-            "¿Tienes algo que decir? Aquí escuchamos todas las opiniones"
-          </p>
+      <section className="relative text-white py-20 bg-[url('/contact-wallpaper.webp')] bg-cover bg-center">
+        <div className="absolute inset-0 bg-black/50 pointer-events-none"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="inline-block bg-black/40 backdrop-blur-[1px] px-6 py-4 rounded-xl">
+            <h1 className="text-4xl md:text-6xl font-patriot font-bold mb-4 flex items-center justify-center gap-4">
+              <Phone className="w-12 h-12 text-spanish-red" />
+              Contacto
+            </h1>
+            <p className="text-xl md:text-2xl font-bold max-w-3xl mx-auto">
+              "¿Tienes algo que decir? Aquí escuchamos todas las opiniones"
+            </p>
+          </div>
         </div>
       </section>
 
