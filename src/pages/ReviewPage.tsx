@@ -17,9 +17,11 @@ export const ReviewPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [textareaActive, setTextareaActive] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, { files?: string; text?: string }>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const MAX_IMAGES_PER_LINE = 5;
   const MAX_REVIEW_CHARS = 1000;
+  const MIN_REVIEW_CHARS = 20;
   useEffect(() => {
     if (!token) return;
     axios.get(`/api/reviews/validate/${token}`).then(res => {
@@ -367,11 +369,17 @@ export const ReviewPage: React.FC = () => {
         hasValidationError = true;
         newErrors[lineKey] = { ...(newErrors[lineKey] || {}), text: `Máximo ${MAX_REVIEW_CHARS} caracteres.` };
       }
+      // mínimo de caracteres
+      if ((txt || '').trim().length < MIN_REVIEW_CHARS) {
+        hasValidationError = true;
+        newErrors[lineKey] = { ...(newErrors[lineKey] || {}), text: `Por favor escribe al menos ${MIN_REVIEW_CHARS} caracteres.` };
+      }
       const filesCount = (files[lineKey] || []).length;
       if (filesCount > MAX_IMAGES_PER_LINE) {
         hasValidationError = true;
         newErrors[lineKey] = { ...(newErrors[lineKey] || {}), files: `Sólo se permiten ${MAX_IMAGES_PER_LINE} imágenes por producto.` };
       }
+      // no se exige número mínimo de imágenes (opcional)
     });
     if (hasValidationError) {
       setErrors(prev => ({ ...prev, ...newErrors }));
@@ -430,6 +438,43 @@ export const ReviewPage: React.FC = () => {
     }
   };
 
+  const handlePublishClick = () => {
+    setSubmitError(null);
+    const selectedKeys = Object.keys(selectedProducts).filter(k => selectedProducts[k]);
+    if (selectedKeys.length === 0) {
+      setSubmitError('Selecciona al menos un producto para publicar.');
+      return;
+    }
+    const newErrors: Record<string, { files?: string; text?: string }> = {};
+    let firstErrorLine: string | null = null;
+    selectedKeys.forEach(lineKey => {
+      const txt = (texts[lineKey] || '').trim();
+      const filesCount = (files[lineKey] || []).length;
+      if (txt.length < MIN_REVIEW_CHARS) {
+        newErrors[lineKey] = { ...(newErrors[lineKey]||{}), text: `Por favor escribe al menos ${MIN_REVIEW_CHARS} caracteres.` };
+        if (!firstErrorLine) firstErrorLine = lineKey;
+      }
+      if (filesCount > MAX_IMAGES_PER_LINE) {
+        newErrors[lineKey] = { ...(newErrors[lineKey]||{}), files: `Sólo se permiten ${MAX_IMAGES_PER_LINE} imágenes por producto.` };
+        if (!firstErrorLine) firstErrorLine = lineKey;
+      }
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...newErrors }));
+      setSubmitError('Corrige los errores marcados en rojo antes de publicar.');
+      // scroll to first error textarea
+      if (firstErrorLine) {
+        const el = document.getElementById(`textarea-${firstErrorLine}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    // no validation errors -> proceed
+    submit();
+  };
+
   // determine if there are active errors to disable submit
   const hasErrors = Object.keys(selectedProducts).some(key => {
     if (!selectedProducts[key]) return false;
@@ -437,8 +482,10 @@ export const ReviewPage: React.FC = () => {
     const fileErr = errors[key]?.files;
     const txtLen = (texts[key] || '').length;
     const fileCount = (files[key] || []).length;
-    return !!txtErr || !!fileErr || txtLen > MAX_REVIEW_CHARS || fileCount > MAX_IMAGES_PER_LINE;
+    return !!txtErr || !!fileErr || txtLen > MAX_REVIEW_CHARS || fileCount > MAX_IMAGES_PER_LINE || txtLen < MIN_REVIEW_CHARS;
   });
+
+  const selectedCount = Object.keys(selectedProducts).filter(k => selectedProducts[k]).length;
 
   return (
     <div className="container mx-auto p-4 sm:p-8 text-white max-w-3xl">
@@ -491,6 +538,7 @@ export const ReviewPage: React.FC = () => {
                       ))}
                     </div>
                     <textarea
+                      id={`textarea-${lineKey}`}
                       className={`w-full p-2 bg-slate-900 rounded mb-2 border transition-colors duration-150 scrollbar-spanish ${textareaActive[lineKey] ? 'border-yellow-400' : 'border-transparent'} focus:border-yellow-400 focus:ring-0 outline-none min-h-[80px] sm:min-h-[120px]`}
                       placeholder="Escribe tu opinión"
                       value={texts[lineKey]||''}
@@ -509,7 +557,13 @@ export const ReviewPage: React.FC = () => {
                       onBlur={() => setTextareaActive(prev => ({ ...prev, [lineKey]: false }))}
                     />
                     <div className="flex items-center justify-between text-sm text-slate-400 mb-2">
-                      <div className="text-xs text-red-400">{errors[lineKey]?.text || ''}</div>
+                      <div className="text-xs">
+                        {errors[lineKey]?.text ? (
+                          <span className="text-red-400">{errors[lineKey]?.text}</span>
+                        ) : (
+                          <span className="text-slate-400">Mínimo {MIN_REVIEW_CHARS} caracteres</span>
+                        )}
+                      </div>
                       <div className="text-xs">{(texts[lineKey] || '').length}/{MAX_REVIEW_CHARS}</div>
                     </div>
                     <div className="mb-2 flex items-center justify-between">
@@ -586,7 +640,18 @@ export const ReviewPage: React.FC = () => {
       </div>
 
       <div className="text-center mt-6">
-        <button className={`px-6 py-2 rounded font-bold ${(!hasErrors && !submitting && Object.keys(selectedProducts).some(k => selectedProducts[k])) ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`} onClick={submit} disabled={submitting || hasErrors || !Object.keys(selectedProducts).some(k => selectedProducts[k])}>Publicar reseñas</button>
+        {submitError ? <div className="text-red-400 mb-2">{submitError}</div> : null}
+        <button
+          type="button"
+          onClick={() => {
+            // handle click even if visually disabled
+            handlePublishClick();
+          }}
+          aria-disabled={submitting || hasErrors || selectedCount === 0}
+          className={`px-6 py-2 rounded font-bold ${(!hasErrors && !submitting && selectedCount > 0) ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+        >
+          {selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas'}
+        </button>
       </div>
     </div>
   );
