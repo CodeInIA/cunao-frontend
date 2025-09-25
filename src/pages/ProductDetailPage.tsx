@@ -8,6 +8,7 @@ import type { ProductVariant, ProductImage } from '../types';
 import { OptimizedImage } from '../components/OptimizedImage';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { useProductPagePreloader } from '../hooks/useProductPagePreloader';
+import ReviewsCarousel from '../components/ReviewsCarousel';
 
 export const ProductDetailPage: React.FC = () => {
   const { id: slug } = useParams<{ id: string }>();
@@ -875,6 +876,10 @@ export const ProductDetailPage: React.FC = () => {
                   {tag}
                 </span>
               ))}
+            </div>
+            {/* Reviews carousel for this product */}
+            <div className="mb-6 w-full">
+              <ReviewsCarousel productId={currentProduct.id} />
             </div>
           </div>
         </div>

@@ -58,8 +58,8 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_API_URL || 'http://localhost:3001',
         changeOrigin: true,
-        secure: process.env.NODE_ENV === 'production', // true en producción, false en desarrollo
-        rewrite: (path) => path.replace(/^\/api/, '')
+        secure: process.env.NODE_ENV === 'production' // true en producción, false en desarrollo
+        // Nota: no reescribimos el path para mantener el prefijo /api y que las rutas en el backend coincidan.
       }
     }
   },

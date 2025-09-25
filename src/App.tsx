@@ -24,6 +24,7 @@ const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m
 const ShippingPage = lazy(() => import('./pages/ShippingPage').then(m => ({ default: m.ShippingPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
+const ReviewPage = lazy(() => import('./pages/ReviewPage').then(m => ({ default: m.ReviewPage })));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
 const SuccessPage = lazy(() => import('./pages/SuccessPage').then(m => ({ default: m.SuccessPage })));
 const CancelPage = lazy(() => import('./pages/CancelPage').then(m => ({ default: m.CancelPage })));
@@ -82,6 +83,7 @@ useEffect(() => {
                 <Route path="/productos" element={<ProductsPage />} />
                 <Route path="/producto/:id" element={<ProductDetailPage />} />
                 <Route path="/destacados" element={<FeaturedPage />} />
+                <Route path="/review/:token" element={<ReviewPage />} />
                 <Route path="/sobre-nosotros" element={<AboutPage />} />
                 <Route path="/contacto" element={<ContactPage />} />
                 <Route path="/privacidad" element={<PrivacyPage />} />

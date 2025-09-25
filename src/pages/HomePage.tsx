@@ -6,6 +6,7 @@ import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
 import { FeaturedProductCard } from '../components/FeaturedProductCard';
 import ProductsCarousel from '../components/ProductsCarousel';
+import ReviewsCarousel from '../components/ReviewsCarousel';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
 
@@ -193,6 +194,10 @@ export const HomePage: React.FC = () => {
                     <p className="text-slate-300">Frases legendarias</p>
                   </div>
                 </div>
+              </div>
+              {/* Reviews Carousel inserted */}
+              <div className="mb-8">
+                <ReviewsCarousel />
               </div>
             </>
           ) : (
