@@ -15,7 +15,7 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
       onClick={onOpen}
       role={onOpen ? 'button' : undefined}
       tabIndex={onOpen ? 0 : undefined}
-      className="bg-slate-800 rounded-lg text-white cursor-pointer hover:shadow-lg transition-shadow overflow-hidden w-full sm:w-64 max-w-full box-border flex flex-col min-w-0"
+      className="bg-slate-800 rounded-lg text-white cursor-pointer hover:shadow-lg transition-shadow overflow-hidden w-full max-w-full box-border flex flex-col min-w-0"
     >
       {/* Cover image */}
   <div className="flex-none w-full h-72 sm:h-56 bg-slate-900">

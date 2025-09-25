@@ -6,13 +6,15 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 type Props = { productId?: string; maxVisible?: number };
 
 function getVisibleCount(width: number) {
-  if (width >= 1200) return 3;
-  if (width >= 992) return 3;
-  if (width >= 768) return 2;
+  // breakpoints: mobile <640:1, 640-767:2, 768-991:3, 992-1199:4, >=1200:6
+  if (width >= 1200) return 6;
+  if (width >= 992) return 4;
+  if (width >= 768) return 3;
+  if (width >= 640) return 2;
   return 1; // mobile: show 1
 }
 
-const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
+const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [visible, setVisible] = useState<number>(maxVisible);
   const [index, setIndex] = useState(0);
@@ -20,6 +22,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const trackRef = React.useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
+  // arrow offsets (relative to container) and overlap amount (pixels) to shrink cards if needed
+  const [arrowOffsetLeft, setArrowOffsetLeft] = useState<number>(-36);
+  const [arrowOffsetRight, setArrowOffsetRight] = useState<number>(-36);
+  const [arrowOverlap, setArrowOverlap] = useState<number>(0);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -40,6 +46,31 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
       const winW = window.innerWidth;
       setVisible(Math.min(getVisibleCount(winW), maxVisible));
       setWindowWidth(winW);
+
+      // compute responsive distance from viewport edges for arrow buttons
+      const btnSize = 40; // button width/height in px
+      const distanceFromEdge = winW >= 1200 ? 72 : winW >= 992 ? 56 : winW >= 768 ? 44 : winW >= 640 ? 32 : 12;
+
+      if (containerRef.current) {
+        const crect = containerRef.current.getBoundingClientRect();
+        // left offset relative to container coordinates
+        const leftOffsetRel = distanceFromEdge - crect.left;
+        setArrowOffsetLeft(leftOffsetRel);
+        // right offset relative to container coordinates (distance from viewport right edge)
+        const containerRight = crect.left + w;
+        const rightGapFromViewport = winW - containerRight; // space between container right and viewport right
+        const rightOffsetRel = distanceFromEdge - rightGapFromViewport;
+        setArrowOffsetRight(rightOffsetRel);
+
+        // calculate overlap of arrow buttons with container area
+        const leftArrowRight = distanceFromEdge + btnSize; // px from viewport left
+        const leftOverlap = Math.max(0, leftArrowRight - crect.left + 8); // keep 8px minimum gap
+
+        const rightArrowLeft = winW - distanceFromEdge - btnSize; // px from viewport left
+        const rightOverlap = Math.max(0, containerRight - rightArrowLeft + 8);
+
+        setArrowOverlap(Math.max(0, leftOverlap) + Math.max(0, rightOverlap));
+      }
     };
     update();
     window.addEventListener('resize', update);
@@ -48,7 +79,8 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
 
   useEffect(() => setIndex(0), [reviews.length, visible]);
 
-  const effectiveVisible = windowWidth < 768 ? 1 : visible;
+  // treat widths < 640 as mobile (1 card); from 640px show at least 2 cards
+  const effectiveVisible = windowWidth < 640 ? 1 : visible;
   const maxIndex = Math.max(0, reviews.length - effectiveVisible);
   const prev = () => setIndex(i => Math.max(0, i - 1));
   const next = () => setIndex(i => Math.min(maxIndex, i + 1));
@@ -62,7 +94,8 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
   let itemWidth: number | undefined;
   let itemGap: number | undefined;
   if (effectiveVisible > 0 && containerWidth > 0) {
-    if (windowWidth < 768) {
+    // treat widths < 640 as mobile; >=640 use multi-card layout
+    if (windowWidth < 640) {
       try {
         // Measure left offset from the container (preferred) because the track may be translated.
         let leftOffset = 0;
@@ -88,7 +121,13 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
         itemWidth = Math.floor(containerWidth / effectiveVisible);
       }
     } else {
-      itemWidth = Math.floor(containerWidth / effectiveVisible);
+      // For non-mobile sizes (>=640) include a smaller gap between cards
+      // Use progressively larger gaps on very large screens, but reduce gap starting at 640px
+      itemGap = itemGap ?? (windowWidth >= 1200 ? 12 : windowWidth >= 992 ? 10 : 6);
+      const totalGaps = itemGap * Math.max(0, effectiveVisible - 1);
+      // subtract arrow overlap so cards shrink if arrows would overlap
+      const available = Math.max(0, containerWidth - arrowOverlap);
+      itemWidth = Math.floor((available - totalGaps) / effectiveVisible);
     }
   }
 
@@ -132,11 +171,32 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
     };
   }, [modalOpen]);
 
+  // Compute widths and center offset. For non-mobile (>=640) we always center the visible group
+  const totalTrackWidth = itemWidth ? itemWidth * reviews.length + (itemGap ? itemGap * (reviews.length - 1) : 0) : undefined;
+  const visibleGroupWidth = itemWidth ? itemWidth * Math.min(effectiveVisible, reviews.length) + (itemGap ? itemGap * Math.max(0, Math.min(effectiveVisible, reviews.length) - 1) : 0) : undefined;
+
+  let transformValue: string;
+  if (itemWidth) {
+      if (windowWidth >= 640 && typeof visibleGroupWidth === 'number') {
+      // center the visible group inside the container, then shift by index
+      const centerOffset = Math.max(0, (containerWidth - visibleGroupWidth) / 2);
+      const shift = index * (itemWidth + (itemGap || 0));
+      // move track so that the current page is centered: positive centerOffset pulls track right
+      const x = centerOffset - shift;
+      transformValue = `translateX(${x}px)`;
+    } else {
+      // mobile: normal left translation per index
+      transformValue = `translateX(-${index * (itemWidth + (itemGap || 0))}px)`;
+    }
+  } else {
+    transformValue = `translateX(-${index * (100 / effectiveVisible)}%)`;
+  }
+
   const trackStyle: React.CSSProperties = {
     display: 'flex',
     transition: 'transform 350ms ease',
-    transform: itemWidth ? `translateX(-${index * (itemWidth + (itemGap || 0))}px)` : `translateX(-${index * (100 / effectiveVisible)}%)`,
-    width: itemWidth ? `${itemWidth * reviews.length + (itemGap ? itemGap * (reviews.length - 1) : 0)}px` : `${(reviews.length * 100) / effectiveVisible}%`,
+    transform: transformValue,
+    width: itemWidth ? `${totalTrackWidth}px` : `${(reviews.length * 100) / effectiveVisible}%`,
     gap: itemGap ? `${itemGap}px` : undefined,
   };
 
@@ -147,20 +207,24 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
       <div ref={containerRef} className="relative px-4 sm:px-0">
       {/* arrow offset: outside on desktop, inside on small screens */}
       {windowWidth >= 640 && (() => {
-        const arrowOffset = -36;
+        // left position relative to container; cap to avoid huge negative offsets
+        const leftPos = Math.min(0, arrowOffsetLeft);
         return (
-          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ left: arrowOffset }}>
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ left: leftPos }}>
             <button
               onClick={() => { if (canPrev) prev(); }}
               disabled={!canPrev}
               aria-disabled={!canPrev}
-              className={`bg-white/10 text-white p-2 rounded-full border border-slate-700 transition-colors duration-150 ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
-            >◀</button>
+              aria-label="Anterior"
+              className={`bg-white/10 text-white w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition-colors duration-150 ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
           </div>
         );
       })()}
       <div className="overflow-hidden">
-        <div ref={trackRef} style={trackStyle} className="flex gap-4">
+  <div ref={trackRef} style={trackStyle} className="flex">
           {reviews.map((r, idx) => (
             <div key={r._id} style={{ width: itemWidth ? `${itemWidth}px` : `${100 / effectiveVisible}%`, flex: '0 0 auto' }} className="px-0 sm:px-2 min-w-0">
               <ReviewCard review={r} onOpen={() => { setModalOpen(true); setActiveCard(idx); setActiveImage(0); }} />
@@ -169,15 +233,18 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
         </div>
       </div>
       {windowWidth >= 640 && (() => {
-        const arrowOffset = -36;
+        const rightPos = Math.min(0, arrowOffsetRight);
         return (
-          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ right: arrowOffset }}>
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ right: rightPos }}>
             <button
               onClick={() => { if (canNext) next(); }}
               disabled={!canNext}
               aria-disabled={!canNext}
-              className={`bg-white/10 text-white p-2 rounded-full border border-slate-700 transition-colors duration-150 ${canNext ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
-            >▶</button>
+              aria-label="Siguiente"
+              className={`bg-white/10 text-white w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition-colors duration-150 ${canNext ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
         );
       })()}
