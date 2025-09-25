@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { UploadCloud, Trash2 } from 'lucide-react';
+import { UploadCloud, Trash2, Loader } from 'lucide-react';
 import axios from 'axios';
 import { getOptimizedImageUrl, getVariantImages, getMainProductImage } from '../utils/imageUtils';
 
@@ -16,6 +16,7 @@ export const ReviewPage: React.FC = () => {
   const [files, setFiles] = useState<Record<string, { file: File; preview: string }[]>>({});
   const [productImages, setProductImages] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [textareaActive, setTextareaActive] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, { files?: string; text?: string }>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -512,6 +513,7 @@ export const ReviewPage: React.FC = () => {
   const confirmSubmit = async () => {
     setShowConfirm(false);
     setSubmitting(true);
+    setUploadProgress(0);
     try {
       const tokenLocal = token;
       if (!tokenLocal) return;
@@ -533,7 +535,24 @@ export const ReviewPage: React.FC = () => {
         fileArr.forEach((obj) => form.append(`product-${lineKey}`, obj.file));
       });
 
-      const res = await axios.post(`/api/reviews/submit/${tokenLocal}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post(`/api/reviews/submit/${tokenLocal}`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent: any) => {
+          try {
+            const loaded = progressEvent.loaded;
+            const total = progressEvent.total;
+            if (typeof loaded === 'number' && typeof total === 'number' && total > 0) {
+              const pct = Math.round((loaded / total) * 100);
+              setUploadProgress(pct);
+            } else {
+              setUploadProgress(null);
+            }
+          } catch (e) {
+            setUploadProgress(null);
+          }
+        }
+      });
+
       if (res.data && res.data.success) {
         // mark token used locally and show only the "en revisión" message
         setTokenUsed(true);
@@ -559,6 +578,7 @@ export const ReviewPage: React.FC = () => {
       }
     } finally {
       setSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
@@ -751,7 +771,12 @@ export const ReviewPage: React.FC = () => {
           aria-disabled={submitting || hasBlockingErrors || selectedCount === 0}
           className={`px-6 py-2 rounded font-bold ${(!hasBlockingErrors && !submitting && selectedCount > 0) ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
         >
-          {selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas'}
+          {submitting ? (
+            <span className="flex items-center gap-2 justify-center">
+              <Loader className="w-5 h-5 text-yellow-400 animate-spin" />
+              Procesando reseñas...
+            </span>
+          ) : (selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas')}
         </button>
       </div>
       {/* tokenUsed/validate path shows the pending message instead */}
@@ -766,6 +791,30 @@ export const ReviewPage: React.FC = () => {
               <button onClick={() => setShowConfirm(false)} className="px-4 py-2 rounded bg-slate-700 text-slate-200">Cancelar</button>
               <button onClick={() => confirmSubmit()} className="px-4 py-2 rounded bg-spanish-yellow text-slate-900 font-bold">{selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas'}</button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Submitting overlay: visible while uploads/submit are in progress */}
+      {submitting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-slate-800 rounded-lg w-11/12 max-w-sm p-6 text-slate-100">
+            <div className="flex items-center gap-4 mb-3">
+              <Loader className="w-10 h-10 text-yellow-400 animate-spin" />
+              <div>
+                <div className="font-semibold">Procesando reseñas</div>
+                <div className="text-sm text-slate-300">Subiendo fotos y procesando. Esto puede tardar unos minutos.</div>
+              </div>
+            </div>
+            {typeof uploadProgress === 'number' ? (
+              <div>
+                <div className="text-xs text-slate-300 mb-2">Subida: {uploadProgress}%</div>
+                <div className="w-full bg-slate-700 rounded h-3 overflow-hidden">
+                  <div className="h-full bg-yellow-400 transition-all" style={{ width: `${uploadProgress}%` }} />
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-slate-300">Subida en progreso…</div>
+            )}
           </div>
         </div>
       )}
