@@ -384,8 +384,8 @@ export const ReviewPage: React.FC = () => {
   });
 
   return (
-    <div className="container mx-auto p-8 text-white">
-      <h1 className="text-3xl font-bold mb-4">Deja tu reseña</h1>
+    <div className="container mx-auto p-4 sm:p-8 text-white max-w-3xl">
+      <h1 className="text-3xl font-bold mb-4">Deja tu reseña cuñao</h1>
       <p className="mb-6">Hola <strong>{order.customerName}</strong>, selecciona los productos que quieres valorar y completa la información.</p>
 
       <div className="grid grid-cols-1 gap-6">
@@ -393,32 +393,33 @@ export const ReviewPage: React.FC = () => {
           const uniqueKey = `${li.productId}-${li.variantId || 'v'}-${idx}`;
           const lineKey = `${li.productId}-${idx}`;
           return (
-            <div key={uniqueKey} className="bg-slate-800 p-4 rounded-lg flex gap-4 items-center">
-              <div className="w-32 flex-shrink-0">
-                {productImages[lineKey] ? (
-                  <img src={productImages[lineKey]} alt={li.title} className="w-32 h-32 object-cover rounded-md" />
-                ) : (
-                  <div className="w-32 h-32 bg-slate-900 rounded-md flex items-center justify-center text-slate-500">Sin imagen</div>
-                )}
-              </div>
+            <div key={uniqueKey} className="bg-slate-800 p-4 rounded-lg flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="w-full sm:w-32 flex-shrink-0">
+                  {productImages[lineKey] ? (
+                    <img src={productImages[lineKey]} alt={li.title} className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-md mx-auto sm:mx-0" />
+                  ) : (
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-slate-900 rounded-md flex items-center justify-center text-slate-500 mx-auto sm:mx-0">Sin imagen</div>
+                  )}
+                </div>
 
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
                   <div>
                     <div className="font-semibold">{li.title}</div>
                     <div className="text-sm text-slate-400">Cantidad: {li.quantity}</div>
                     <div className="text-sm text-slate-400">Talla: {li.size} — Color: {li.color}</div>
                   </div>
-                  <div>
+                    <div>
                     <button
                       type="button"
                       onClick={() => toggleProduct(lineKey)}
                       aria-pressed={!!selectedProducts[lineKey]}
-                      className={`w-6 h-6 rounded-sm flex items-center justify-center mr-3 transition-colors ${selectedProducts[lineKey] ? 'bg-yellow-400' : 'bg-white border'}`}
+                      className={`w-6 h-6 rounded-sm flex items-center justify-center mr-3 transition-colors ${selectedProducts[lineKey] ? 'bg-yellow-400 ring-1 ring-slate-800 shadow-sm' : 'bg-white border'}`}
                       title={selectedProducts[lineKey] ? 'Seleccionado' : 'Seleccionar para review'}
+                      aria-label={selectedProducts[lineKey] ? 'Seleccionado' : 'Seleccionar para review'}
                     >
                       {selectedProducts[lineKey] ? (
-                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <svg className="w-4 h-4 text-slate-900" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       ) : null}
                     </button>
                   </div>
@@ -427,13 +428,13 @@ export const ReviewPage: React.FC = () => {
                 {selectedProducts[lineKey] && (
                   <div className="mt-2">
                     <div className="mb-2">Puntuación:</div>
-                    <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
                       {[1,2,3,4,5].map(n => (
                         <button key={n} className={`px-2 py-1 rounded ${ratings[lineKey]===n ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-700'}`} onClick={() => setRatings(prev => ({ ...prev, [lineKey]: n }))}>{n}★</button>
                       ))}
                     </div>
                     <textarea
-                      className={`w-full p-2 bg-slate-900 rounded mb-2 border transition-colors duration-150 scrollbar-spanish ${textareaActive[lineKey] ? 'border-yellow-400' : 'border-transparent'} focus:border-yellow-400 focus:ring-0 outline-none`}
+                      className={`w-full p-2 bg-slate-900 rounded mb-2 border transition-colors duration-150 scrollbar-spanish ${textareaActive[lineKey] ? 'border-yellow-400' : 'border-transparent'} focus:border-yellow-400 focus:ring-0 outline-none min-h-[80px] sm:min-h-[120px]`}
                       placeholder="Escribe tu opinión"
                       value={texts[lineKey]||''}
                       onChange={(e) => {
@@ -467,17 +468,17 @@ export const ReviewPage: React.FC = () => {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={(e) => handleDrop(lineKey, e)}
                       onClick={(e) => { /* click handled by invisible input */ }}
-                      className="relative border-dashed border-2 border-slate-700 rounded p-3 mb-2 flex items-center gap-4 cursor-pointer"
+                      className="relative border-dashed border-2 border-slate-700 rounded p-3 mb-2 flex items-center gap-4 cursor-pointer min-h-[64px]"
                     >
                       {/* full-size invisible input to make whole area clickable */}
                       <input id={`file-input-${lineKey}`} type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => handleFileChange(lineKey, e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                      <div className="flex-1 text-slate-400 flex items-center">
+                      <div className="flex-1 text-slate-400 flex items-center justify-center sm:justify-start">
                         <UploadCloud className="w-6 h-6 mr-3 text-slate-400" />
                         <span>Arrastra imágenes aquí o pulsa para seleccionar</span>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 flex-wrap scrollbar-spanish">
+                    <div className="flex gap-2 flex-wrap scrollbar-spanish items-center">
                       {(files[lineKey] || []).map((fObj, i) => (
                         <div
                           key={i}
@@ -485,7 +486,7 @@ export const ReviewPage: React.FC = () => {
                           onDragStart={(e) => handleDragStart(lineKey, i, e)}
                           onDragOver={(e) => handleDragOverThumb(lineKey, i, e)}
                           onDrop={(e) => handleDropThumb(lineKey, i, e)}
-                          className={`relative w-20 h-20 bg-slate-900 rounded overflow-hidden border ${dragOverIndex[lineKey] === i ? 'ring-2 ring-yellow-400' : ''}`}
+                          className={`relative w-16 h-16 sm:w-20 sm:h-20 bg-slate-900 rounded overflow-hidden border ${dragOverIndex[lineKey] === i ? 'ring-2 ring-yellow-400' : ''}`}
                         >
                           {/* numbered badge top-left */}
                           <div className="absolute top-1 left-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">{i+1}</div>
