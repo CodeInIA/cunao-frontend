@@ -430,6 +430,7 @@ export const ReviewPage: React.FC = () => {
       const [productId] = lineKey.split('-');
       return {
         productId,
+        fieldKey: lineKey,
         rating: ratings[lineKey] || 5,
         title: '',
         body: texts[lineKey] || '',
@@ -513,7 +514,7 @@ export const ReviewPage: React.FC = () => {
   const confirmSubmit = async () => {
     setShowConfirm(false);
     setSubmitting(true);
-    setUploadProgress(0);
+    // don't pre-set progress to 0 — keep null until we receive a real progress event
     try {
       const tokenLocal = token;
       if (!tokenLocal) return;
@@ -522,6 +523,7 @@ export const ReviewPage: React.FC = () => {
         const [productId] = lineKey.split('-');
         return {
           productId,
+          fieldKey: lineKey,
           rating: ratings[lineKey] || 5,
           title: '',
           body: texts[lineKey] || '',
@@ -772,10 +774,8 @@ export const ReviewPage: React.FC = () => {
           className={`px-6 py-2 rounded font-bold ${(!hasBlockingErrors && !submitting && selectedCount > 0) ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
         >
           {submitting ? (
-            <span className="flex items-center gap-2 justify-center">
-              <Loader className="w-5 h-5 text-yellow-400 animate-spin" />
-              Procesando reseñas...
-            </span>
+            // show plain disabled text in the button when overlay is visible
+            selectedCount === 1 ? 'Procesando reseña...' : 'Procesando reseñas...'
           ) : (selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas')}
         </button>
       </div>
