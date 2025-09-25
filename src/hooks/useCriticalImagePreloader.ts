@@ -11,6 +11,16 @@ export function useCriticalImagePreloader() {
     const preloadCriticalImages = async () => {
       try {
         console.log('🚀 Iniciando precarga crítica de imágenes...');
+        // Evitar precarga global en rutas donde la imagen crítica debe venir de la página
+        // (p.ej. /review para reseñas, /producto para detalle) — así no pisamos las imágenes
+        // específicas que muestran la variante seleccionada por el usuario.
+        if (typeof window !== 'undefined') {
+          const path = window.location.pathname || '';
+          if (path.startsWith('/review') || path.startsWith('/producto')) {
+            console.log(`⏭️ Omitiendo precarga global en ruta específica: ${path}`);
+            return;
+          }
+        }
         
         // Precargar logo inmediatamente
         const logoImg = new Image();
@@ -23,13 +33,60 @@ export function useCriticalImagePreloader() {
           return;
         }
         
-        const featuredProducts: Product[] = await response.json();
-        
-        // Precargar las primeras 8 imágenes con máxima prioridad
-        const criticalImages = featuredProducts
-          .slice(0, 8)
-          .map(product => product.images?.[0])
-          .filter(Boolean);
+        const featuredRaw = await response.json();
+        // El API devuelve { success: true, data: [...] } — extraer data si existe
+        const featuredProducts: Product[] = Array.isArray(featuredRaw)
+          ? featuredRaw
+          : Array.isArray((featuredRaw && (featuredRaw as any).data) ? (featuredRaw as any).data : null)
+            ? (featuredRaw as any).data
+            : [];
+
+        // Precargar imágenes críticas: limitar a los 2 primeros productos
+        // y elegir la imagen que corresponda con la variante por defecto (si existe).
+        // Si no hay imagen para la variante, caer a la imagen marcada como `is_default`
+        // o a la primera disponible.
+        const criticalProducts = featuredProducts.slice(0, 2);
+
+  const criticalImagesRaw = criticalProducts.map((product) => {
+          // Intentar obtener la variante por defecto del producto
+          const defaultVariant = Array.isArray(product?.variants)
+            ? product.variants.find((v: any) => v.is_default) || product.variants[0]
+            : undefined;
+
+          const defaultVariantId = defaultVariant?.id;
+
+          // Buscar una imagen que contenga el variant id en su variant_ids
+          const imageForVariant = Array.isArray(product?.images)
+            ? product.images.find((img: any) => Array.isArray(img.variant_ids) && defaultVariantId && img.variant_ids.includes(defaultVariantId))
+            : undefined;
+
+          const defaultImage = Array.isArray(product?.images)
+            ? product.images.find((img: any) => img.is_default) || product.images[0]
+            : undefined;
+
+          const chosen = imageForVariant || defaultImage;
+          // Log para debugging: qué imagen hemos elegido y por qué
+          try {
+            const productId = (product as any)?._id || (product as any)?.id || 'unknown';
+            const productTitle = (product as any)?.title || 'untitled';
+            const chosenKey = chosen?.cdnUrl || chosen?.src || 'no-url';
+            const chosenVariantIds = Array.isArray(chosen?.variant_ids) ? chosen.variant_ids.join(',') : '[]';
+            console.log(`🔎 Producto ${productId} (${productTitle}) - defaultVariantId=${defaultVariantId} -> imagen elegida=${chosenKey} (variant_ids=[${chosenVariantIds}])`);
+          } catch (e) {
+            // no bloquear por logs
+          }
+
+          return chosen;
+        }).filter(Boolean);
+
+        // Desduplicar por URL (cdnUrl o src) para evitar múltiples peticiones iguales
+        const uniqueByUrl = new Map<string, any>();
+        criticalImagesRaw.forEach((img) => {
+          const key = img?.cdnUrl || img?.src || '';
+          if (key && !uniqueByUrl.has(key)) uniqueByUrl.set(key, img);
+        });
+
+        const criticalImages = Array.from(uniqueByUrl.values());
 
         console.log(`📸 Precargando ${criticalImages.length} imágenes críticas...`);
 

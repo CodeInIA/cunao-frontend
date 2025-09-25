@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getOptimizedImageUrl, getVariantImages, getMainProductImage } from '../utils/imageUtils';
 
 export const ReviewPage: React.FC = () => {
   const { token } = useParams();
@@ -11,6 +12,7 @@ export const ReviewPage: React.FC = () => {
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [texts, setTexts] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<Record<string, File[]>>({});
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -19,10 +21,30 @@ export const ReviewPage: React.FC = () => {
       if (res.data && res.data.valid) {
         setValid(true);
         setOrder(res.data);
-        // inicializar productos
-        (res.data.lineItems || []).forEach((li: any) => {
+        // inicializar productos y agrupar por productId para evitar fetch duplicados
+        const lineItems = res.data.lineItems || [];
+        lineItems.forEach((li: any) => {
           setSelectedProducts(prev => ({ ...prev, [li.productId]: true }));
           setRatings(prev => ({ ...prev, [li.productId]: 5 }));
+        });
+
+        const uniqueProductIds: string[] = Array.from(new Set(lineItems.map((li: any) => String(li.productId))));
+        uniqueProductIds.forEach((pid) => {
+          // Buscar una línea del pedido que pertenezca a este productId para obtener variantId y otros datos
+          const sampleLine = lineItems.find((l: any) => String(l.productId) === pid);
+          if (!sampleLine) return;
+          axios.get(`/api/products/${pid}`).then(prodRes => {
+            const product = prodRes.data && prodRes.data.data ? prodRes.data.data : prodRes.data;
+            if (product && product.images) {
+              const variantImgs = getVariantImages(product.images, sampleLine.variantId);
+              let img: any = null;
+              if (variantImgs && variantImgs.length > 0) img = variantImgs[0];
+              else img = getMainProductImage(product.images) || null;
+              if (img) {
+                setProductImages(prev => ({ ...prev, [pid as string]: getOptimizedImageUrl(img) } as any));
+              }
+            }
+          }).catch(() => {});
         });
       } else {
         setValid(false);
@@ -97,33 +119,47 @@ export const ReviewPage: React.FC = () => {
       <p className="mb-6">Hola <strong>{order.customerName}</strong>, selecciona los productos que quieres valorar y completa la información.</p>
 
       <div className="grid grid-cols-1 gap-6">
-        {(order.lineItems || []).map((li: any) => (
-          <div key={li.productId} className="bg-slate-800 p-4 rounded-lg">
-            <label className="flex items-center justify-between mb-2">
-              <div>
-                <div className="font-semibold">{li.title}</div>
-                <div className="text-sm text-slate-400">Cantidad: {li.quantity}</div>
+        {(order.lineItems || []).map((li: any, idx: number) => {
+          const uniqueKey = `${li.productId}-${li.variantId || 'v'}-${idx}`;
+          return (
+            <div key={uniqueKey} className="bg-slate-800 p-4 rounded-lg flex gap-4 items-center">
+              <div className="w-24 flex-shrink-0">
+                {productImages[li.productId] ? (
+                  <img src={productImages[li.productId]} alt={li.title} className="w-24 h-24 object-cover rounded" />
+                ) : (
+                  <div className="w-24 h-24 bg-slate-900 rounded flex items-center justify-center text-slate-500">Sin imagen</div>
+                )}
               </div>
-              <div>
-                <input type="checkbox" checked={!!selectedProducts[li.productId]} onChange={() => toggleProduct(li.productId)} />
-              </div>
-            </label>
 
-            {selectedProducts[li.productId] && (
-              <div className="mt-2">
-                <div className="mb-2">Puntuación:</div>
-                <div className="flex items-center gap-2 mb-4">
-                  {[1,2,3,4,5].map(n => (
-                    <button key={n} className={`px-2 py-1 rounded ${ratings[li.productId]===n ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-700'}`} onClick={() => setRatings(prev => ({ ...prev, [li.productId]: n }))}>{n}★</button>
-                  ))}
-                </div>
-                <textarea className="w-full p-2 bg-slate-900 rounded mb-2" placeholder="Escribe tu opinión" value={texts[li.productId]||''} onChange={(e) => setTexts(prev => ({ ...prev, [li.productId]: e.target.value }))} />
-                <div className="mb-2">Fotos (max 5 por producto):</div>
-                <input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => handleFileChange(li.productId, e)} />
+              <div className="flex-1">
+                <label className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="font-semibold">{li.title}</div>
+                    <div className="text-sm text-slate-400">Cantidad: {li.quantity}</div>
+                    <div className="text-sm text-slate-400">Talla: {li.size} — Color: {li.color}</div>
+                  </div>
+                  <div>
+                    <input type="checkbox" checked={!!selectedProducts[li.productId]} onChange={() => toggleProduct(li.productId)} />
+                  </div>
+                </label>
+
+                {selectedProducts[li.productId] && (
+                  <div className="mt-2">
+                    <div className="mb-2">Puntuación:</div>
+                    <div className="flex items-center gap-2 mb-4">
+                      {[1,2,3,4,5].map(n => (
+                        <button key={n} className={`px-2 py-1 rounded ${ratings[li.productId]===n ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-700'}`} onClick={() => setRatings(prev => ({ ...prev, [li.productId]: n }))}>{n}★</button>
+                      ))}
+                    </div>
+                    <textarea className="w-full p-2 bg-slate-900 rounded mb-2" placeholder="Escribe tu opinión" value={texts[li.productId]||''} onChange={(e) => setTexts(prev => ({ ...prev, [li.productId]: e.target.value }))} />
+                    <div className="mb-2">Fotos (max 5 por producto):</div>
+                    <input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => handleFileChange(li.productId, e)} />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
 
       <div className="text-center mt-6">
