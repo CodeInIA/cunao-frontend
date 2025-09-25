@@ -9,13 +9,14 @@ function getVisibleCount(width: number) {
   if (width >= 1200) return 3;
   if (width >= 992) return 3;
   if (width >= 768) return 2;
-  return 1;
+  return 1; // mobile: show 1
 }
 
 const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [visible, setVisible] = useState<number>(maxVisible);
   const [index, setIndex] = useState(0);
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const trackRef = React.useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -36,7 +37,9 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
     const update = () => {
       const w = containerRef.current ? containerRef.current.clientWidth : window.innerWidth;
       setContainerWidth(w);
-      setVisible(Math.min(getVisibleCount(w), maxVisible));
+      const winW = window.innerWidth;
+      setVisible(Math.min(getVisibleCount(winW), maxVisible));
+      setWindowWidth(winW);
     };
     update();
     window.addEventListener('resize', update);
@@ -45,11 +48,49 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
 
   useEffect(() => setIndex(0), [reviews.length, visible]);
 
-  const maxIndex = Math.max(0, reviews.length - visible);
+  const effectiveVisible = windowWidth < 768 ? 1 : visible;
+  const maxIndex = Math.max(0, reviews.length - effectiveVisible);
   const prev = () => setIndex(i => Math.max(0, i - 1));
   const next = () => setIndex(i => Math.min(maxIndex, i + 1));
 
-  const itemWidth = visible > 0 && containerWidth > 0 ? Math.floor(containerWidth / visible) : undefined;
+  const canPrev = index > 0;
+  const canNext = index < maxIndex;
+
+  // Calculate item width and gap. On desktop/tablet we split the container width by visible items.
+  // On mobile (showing 1) compute the width as viewport width minus 2x the left offset
+  // between the first card and the viewport edge (so the card has equal left/right gutters).
+  let itemWidth: number | undefined;
+  let itemGap: number | undefined;
+  if (effectiveVisible > 0 && containerWidth > 0) {
+    if (windowWidth < 768) {
+      try {
+        // Measure left offset from the container (preferred) because the track may be translated.
+        let leftOffset = 0;
+        if (containerRef.current) {
+          const crect = containerRef.current.getBoundingClientRect();
+          const style = window.getComputedStyle(containerRef.current);
+          const padLeft = parseFloat(style.paddingLeft || '0');
+          leftOffset = crect.left + padLeft;
+        } else {
+          // fallback: use the first child of the track to measure its left offset relative to viewport
+          const firstChild = trackRef.current?.firstElementChild as HTMLElement | null;
+          if (firstChild) {
+            const rect = firstChild.getBoundingClientRect();
+            leftOffset = rect.left;
+          }
+        }
+        const calc = Math.floor(window.innerWidth - 2 * leftOffset);
+        // gap between items on mobile should be twice the left offset
+        itemGap = Math.floor(2 * leftOffset);
+        // sanity fallback to container division
+        itemWidth = calc > 0 ? calc : Math.floor(containerWidth / effectiveVisible);
+      } catch (e) {
+        itemWidth = Math.floor(containerWidth / effectiveVisible);
+      }
+    } else {
+      itemWidth = Math.floor(containerWidth / effectiveVisible);
+    }
+  }
 
   // modal state for full-screen carousel view
   const [modalOpen, setModalOpen] = useState(false);
@@ -94,31 +135,69 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 3 }) => {
   const trackStyle: React.CSSProperties = {
     display: 'flex',
     transition: 'transform 350ms ease',
-    transform: itemWidth ? `translateX(-${index * itemWidth}px)` : `translateX(-${index * (100 / visible)}%)`,
-    width: itemWidth ? `${itemWidth * reviews.length}px` : `${(reviews.length * 100) / visible}%`,
+    transform: itemWidth ? `translateX(-${index * (itemWidth + (itemGap || 0))}px)` : `translateX(-${index * (100 / effectiveVisible)}%)`,
+    width: itemWidth ? `${itemWidth * reviews.length + (itemGap ? itemGap * (reviews.length - 1) : 0)}px` : `${(reviews.length * 100) / effectiveVisible}%`,
+    gap: itemGap ? `${itemGap}px` : undefined,
   };
 
   if (reviews.length === 0) return null;
 
   return (
     <>
-      <div ref={containerRef} className="relative">
-      <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10">
-        <button onClick={prev} className="bg-white/10 text-white p-2 rounded-full border border-slate-700">◀</button>
-      </div>
+      <div ref={containerRef} className="relative px-4 sm:px-0">
+      {/* arrow offset: outside on desktop, inside on small screens */}
+      {windowWidth >= 640 && (() => {
+        const arrowOffset = -36;
+        return (
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ left: arrowOffset }}>
+            <button
+              onClick={() => { if (canPrev) prev(); }}
+              disabled={!canPrev}
+              aria-disabled={!canPrev}
+              className={`bg-white/10 text-white p-2 rounded-full border border-slate-700 transition-colors duration-150 ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
+            >◀</button>
+          </div>
+        );
+      })()}
       <div className="overflow-hidden">
         <div ref={trackRef} style={trackStyle} className="flex gap-4">
           {reviews.map((r, idx) => (
-            <div key={r._id} style={{ width: itemWidth ? `${itemWidth}px` : `${100 / visible}%`, flex: '0 0 auto' }} className="px-2">
+            <div key={r._id} style={{ width: itemWidth ? `${itemWidth}px` : `${100 / effectiveVisible}%`, flex: '0 0 auto' }} className="px-0 sm:px-2 min-w-0">
               <ReviewCard review={r} onOpen={() => { setModalOpen(true); setActiveCard(idx); setActiveImage(0); }} />
             </div>
           ))}
         </div>
       </div>
-      <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10">
-        <button onClick={next} className="bg-white/10 text-white p-2 rounded-full border border-slate-700">▶</button>
+      {windowWidth >= 640 && (() => {
+        const arrowOffset = -36;
+        return (
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ right: arrowOffset }}>
+            <button
+              onClick={() => { if (canNext) next(); }}
+              disabled={!canNext}
+              aria-disabled={!canNext}
+              className={`bg-white/10 text-white p-2 rounded-full border border-slate-700 transition-colors duration-150 ${canNext ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
+            >▶</button>
+          </div>
+        );
+      })()}
       </div>
-      </div>
+      {/* mobile bottom controls: prev, dots, next */}
+      {windowWidth < 640 && (
+        <div className="mt-3 flex items-center justify-center gap-4">
+          <button onClick={() => { if (canPrev) prev(); }} disabled={!canPrev} aria-disabled={!canPrev} className={`p-2 rounded-full bg-white/10 text-white ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}>◀</button>
+          <div className="flex items-center gap-2">
+            {Array.from({ length: Math.max(1, Math.ceil(reviews.length / effectiveVisible)) }).map((_, p) => {
+              const pageIndex = p * effectiveVisible;
+              const activePage = Math.floor(index / effectiveVisible);
+              return (
+                <button key={p} onClick={() => setIndex(pageIndex)} className={`w-2 h-2 rounded-full ${activePage === p ? 'bg-white' : 'bg-white/30'}`} aria-label={`Ir a página ${p+1}`} />
+              );
+            })}
+          </div>
+          <button onClick={() => { if (canNext) next(); }} disabled={!canNext} aria-disabled={!canNext} className={`p-2 rounded-full bg-white/10 text-white ${canNext ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}>▶</button>
+        </div>
+      )}
       {/* modal overlay */}
       {modalOpen && (
       <div onClick={() => setModalOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">

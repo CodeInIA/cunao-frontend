@@ -1,46 +1,58 @@
 import React from 'react';
 
 export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ review, onOpen }) => {
-  const shortenName = (name: string) => {
+  const shortenName = (name?: string) => {
     if (!name) return 'Anónimo';
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0];
     return `${parts[0]} ${parts.slice(1).map(p => p[0]).join('. ')}.`;
   };
 
-  return (
-    <div onClick={onOpen} role={onOpen ? 'button' : undefined} tabIndex={onOpen ? 0 : undefined} className="bg-slate-800 p-4 rounded-lg text-white cursor-pointer hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between mb-2">
-        <div className="min-w-0">
-          <div className="font-semibold">{shortenName(review.authorName)}</div>
-          {review.productTitle ? (
-            <a onClick={(e) => e.stopPropagation()} href={review.productSlug ? `/producto/${review.productSlug}` : `/product/${review.productId}`} className="text-xs text-slate-400 hover:text-yellow-400 block truncate" title={`Ver ${review.productTitle}`}>
-              {review.productTitle}
-            </a>
-          ) : null}
-        </div>
-        <div className="text-spanish-yellow font-bold">{review.rating}★</div>
-      </div>
-      <p className="text-slate-300 mb-3 line-clamp-3">{review.body}</p>
+  const productHref = review?.productSlug ? `/producto/${review.productSlug}` : (review?.productId ? `/product/${review.productId}` : '#');
 
-      {/* Main square (reduced size) */}
-      <div className="mb-2 flex justify-center">
+  return (
+    <div
+      onClick={onOpen}
+      role={onOpen ? 'button' : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      className="bg-slate-800 rounded-lg text-white cursor-pointer hover:shadow-lg transition-shadow overflow-hidden w-full sm:w-64 max-w-full box-border flex flex-col min-w-0"
+    >
+      {/* Cover image */}
+  <div className="flex-none w-full h-72 sm:h-56 bg-slate-900">
         {review.photos && review.photos.length > 0 ? (
-          <div className="relative w-36 h-36 rounded overflow-hidden bg-slate-900">
-            <img src={review.photos[0]} alt="main" className="absolute inset-0 w-full h-full object-contain p-2" />
-          </div>
+          <img src={review.photos[0]} alt={review.productTitle || 'imagen'} className="w-full max-w-full h-full object-cover block" />
         ) : (
-          <div className="w-36 h-36 rounded bg-slate-900 flex items-center justify-center text-slate-500">Sin imagen</div>
+          <div className="w-full h-full flex items-center justify-center text-slate-500">Sin imagen</div>
         )}
       </div>
 
-      {/* Thumbnails */}
-      <div className="flex gap-2">
-        {(review.photos || []).slice(1,6).map((p: string, idx: number) => (
-          <div key={idx} className="w-12 h-12 bg-slate-900 rounded overflow-hidden flex items-center justify-center">
-            <img src={p} alt={`thumb-${idx}`} className="w-full h-full object-contain p-1" />
-          </div>
-        ))}
+  <div className="p-4 flex-1 flex flex-col min-w-0">
+        {/* Stars centered */}
+        <div className="flex justify-center mb-2">
+          {[1,2,3,4,5].map(n => (
+            <span key={n} className={`text-spanish-yellow ${n <= (review.rating || 0) ? '' : 'opacity-40'}`}>★</span>
+          ))}
+        </div>
+
+        {/* Product title + link */}
+        {review.productTitle ? (
+          <a
+            onClick={(e) => e.stopPropagation()}
+            href={productHref}
+            className="text-sm text-slate-300 hover:text-yellow-400 block text-center font-medium whitespace-normal break-words max-w-full"
+            title={review.productTitle}
+          >
+            {review.productTitle}
+          </a>
+        ) : null}
+
+        {/* Review body */}
+  <p className="text-slate-300 text-sm mt-3 mb-4 overflow-hidden break-words whitespace-normal max-w-full">{review.body}</p>
+
+        <div className="mt-auto">
+          <div className="border-t border-slate-700 mb-3" />
+          <div className="text-slate-200 text-sm font-semibold text-center">{shortenName(review.authorName)}</div>
+        </div>
       </div>
     </div>
   );
