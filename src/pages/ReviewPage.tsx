@@ -563,6 +563,8 @@ export const ReviewPage: React.FC = () => {
   };
 
   // determine if there are active errors to disable submit
+  // NOTE: distinguish between informational/non-blocking errors (e.g. "intentaste añadir N archivos...")
+  // and actual blocking errors (too many images actually attached or invalid text length).
   const hasErrors = Object.keys(selectedProducts).some(key => {
     if (!selectedProducts[key]) return false;
     const txtErr = errors[key]?.text;
@@ -570,6 +572,14 @@ export const ReviewPage: React.FC = () => {
     const txtLen = (texts[key] || '').length;
     const fileCount = (files[key] || []).length;
     return !!txtErr || !!fileErr || txtLen > MAX_REVIEW_CHARS || fileCount > MAX_IMAGES_PER_LINE || txtLen < MIN_REVIEW_CHARS;
+  });
+
+  // blocking errors are the ones that should actually disable the publish button visually and functionally
+  const hasBlockingErrors = Object.keys(selectedProducts).some(key => {
+    if (!selectedProducts[key]) return false;
+    const txtLen = (texts[key] || '').length;
+    const fileCount = (files[key] || []).length;
+    return txtLen > MAX_REVIEW_CHARS || fileCount > MAX_IMAGES_PER_LINE || txtLen < MIN_REVIEW_CHARS;
   });
 
   const selectedCount = Object.keys(selectedProducts).filter(k => selectedProducts[k]).length;
@@ -734,11 +744,12 @@ export const ReviewPage: React.FC = () => {
         <button
           type="button"
           onClick={() => {
-            // handle click even if visually disabled
+            // prevent action when actually disabled (submitting, blocking errors, or nothing selected)
+            if (submitting || hasBlockingErrors || selectedCount === 0) return;
             handlePublishClick();
           }}
-          aria-disabled={submitting || hasErrors || selectedCount === 0}
-          className={`px-6 py-2 rounded font-bold ${(!hasErrors && !submitting && selectedCount > 0) ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
+          aria-disabled={submitting || hasBlockingErrors || selectedCount === 0}
+          className={`px-6 py-2 rounded font-bold ${(!hasBlockingErrors && !submitting && selectedCount > 0) ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-600 text-slate-400 cursor-not-allowed'}`}
         >
           {selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas'}
         </button>
