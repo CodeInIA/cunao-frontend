@@ -164,6 +164,48 @@ export const ReviewPage: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // drag state per line for reordering
+  const [dragIndex, setDragIndex] = useState<Record<string, number | null>>({});
+  const [dragOverIndex, setDragOverIndex] = useState<Record<string, number | null>>({});
+
+  const handleDragStart = (lineKey: string, idx: number, e: React.DragEvent) => {
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', String(idx)); } catch (err) {}
+    setDragIndex(prev => ({ ...prev, [lineKey]: idx }));
+  };
+
+  const handleDragOverThumb = (lineKey: string, idx: number, e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverIndex(prev => ({ ...prev, [lineKey]: idx }));
+  };
+
+  const handleDropThumb = (lineKey: string, idx: number, e: React.DragEvent) => {
+    e.preventDefault();
+    const srcIdxStr = e.dataTransfer.getData('text/plain');
+    const srcIdx = srcIdxStr ? Number(srcIdxStr) : dragIndex[lineKey];
+    if (srcIdx == null || Number.isNaN(srcIdx)) {
+      setDragIndex(prev => ({ ...prev, [lineKey]: null }));
+      setDragOverIndex(prev => ({ ...prev, [lineKey]: null }));
+      return;
+    }
+    if (srcIdx === idx) {
+      setDragIndex(prev => ({ ...prev, [lineKey]: null }));
+      setDragOverIndex(prev => ({ ...prev, [lineKey]: null }));
+      return;
+    }
+    setFiles(prev => {
+      const arr = (prev[lineKey] || []).slice();
+      if (!arr[srcIdx]) return prev;
+      const [moved] = arr.splice(srcIdx, 1);
+      // insert before idx (if dropping on later index and removing earlier, adjust target)
+      const target = srcIdx < idx ? idx : idx;
+      arr.splice(target, 0, moved);
+      return { ...prev, [lineKey]: arr };
+    });
+    setDragIndex(prev => ({ ...prev, [lineKey]: null }));
+    setDragOverIndex(prev => ({ ...prev, [lineKey]: null }));
+  };
+
   if (valid === false) {
     return (
       <div className="container mx-auto p-8 text-center text-white">
@@ -437,7 +479,16 @@ export const ReviewPage: React.FC = () => {
 
                     <div className="flex gap-2 flex-wrap scrollbar-spanish">
                       {(files[lineKey] || []).map((fObj, i) => (
-                        <div key={i} className="relative w-20 h-20 bg-slate-900 rounded overflow-hidden border">
+                        <div
+                          key={i}
+                          draggable
+                          onDragStart={(e) => handleDragStart(lineKey, i, e)}
+                          onDragOver={(e) => handleDragOverThumb(lineKey, i, e)}
+                          onDrop={(e) => handleDropThumb(lineKey, i, e)}
+                          className={`relative w-20 h-20 bg-slate-900 rounded overflow-hidden border ${dragOverIndex[lineKey] === i ? 'ring-2 ring-yellow-400' : ''}`}
+                        >
+                          {/* numbered badge top-left */}
+                          <div className="absolute top-1 left-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">{i+1}</div>
                           <img src={fObj.preview} className="w-full h-full object-cover" alt={`preview-${i}`} />
                           <button type="button" onClick={() => removeFile(lineKey, i)} className="absolute top-0 right-0 m-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white">
                             ×
