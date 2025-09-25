@@ -29,23 +29,121 @@ export const ReviewPage: React.FC = () => {
         });
 
         const uniqueProductIds: string[] = Array.from(new Set(lineItems.map((li: any) => String(li.productId))));
-        uniqueProductIds.forEach((pid) => {
-          // Buscar una línea del pedido que pertenezca a este productId para obtener variantId y otros datos
-          const sampleLine = lineItems.find((l: any) => String(l.productId) === pid);
-          if (!sampleLine) return;
+
+        // Fetch all products concurrently and keep a map
+        const productFetches = uniqueProductIds.map(pid =>
           axios.get(`/api/products/${pid}`).then(prodRes => {
             const product = prodRes.data && prodRes.data.data ? prodRes.data.data : prodRes.data;
-            if (product && product.images) {
-              const variantImgs = getVariantImages(product.images, sampleLine.variantId);
-              let img: any = null;
-              if (variantImgs && variantImgs.length > 0) img = variantImgs[0];
-              else img = getMainProductImage(product.images) || null;
-              if (img) {
-                setProductImages(prev => ({ ...prev, [pid as string]: getOptimizedImageUrl(img) } as any));
+            return { pid, product };
+          }).catch(() => ({ pid, product: null }))
+        );
+
+        Promise.all(productFetches).then(results => {
+          const productMap: Record<string, any> = {};
+          results.forEach(r => { if (r && r.pid) productMap[String(r.pid)] = r.product; });
+
+          // Por cada línea del pedido (incluso si el mismo producto aparece varias veces) resolver la imagen correspondiente
+          lineItems.forEach((li: any, idx: number) => {
+            const pid = String(li.productId);
+            const product = productMap[pid];
+            if (!product || !product.images) {
+              // eslint-disable-next-line no-console
+              console.warn('ReviewPage: product or images missing for pid', pid, product);
+              return;
+            }
+
+            const tryFindByVariantId = (variantId: number | string | undefined) => {
+              if (!variantId) return null;
+              const vid = Number(variantId);
+              if (Number.isNaN(vid)) return null;
+              const imgs = getVariantImages(product.images, vid);
+              if (imgs && imgs.length > 0) return imgs[0];
+              return null;
+            };
+
+            let chosenImage: any = tryFindByVariantId(li.variantId);
+
+            if (!chosenImage) {
+              const colorTitle = li.color || li.colorName || li.variantColor || '';
+              const sizeTitle = li.size || li.sizeName || li.variantSize || '';
+              const normalize = (s: any) => (s || '').toString().trim().toLowerCase();
+
+              // Intento A: buscar variante por title "Color / Size"
+              if (Array.isArray(product.variants) && colorTitle && sizeTitle) {
+                const candidateTitle = `${colorTitle} / ${sizeTitle}`;
+                const foundByTitle = product.variants.find((v: any) => normalize(v.title) === normalize(candidateTitle));
+                if (foundByTitle) {
+                  const imgs = getVariantImages(product.images, foundByTitle.id);
+                  if (imgs && imgs.length > 0) chosenImage = imgs[0];
+                  else {
+                    const variantObjectId = foundByTitle._id ? (foundByTitle._id.$oid || foundByTitle._id) : null;
+                    if (variantObjectId) {
+                      const byImageOid = product.images.find((im: any) => {
+                        const imOid = im._id && (im._id.$oid || im._id);
+                        return imOid && imOid === variantObjectId;
+                      });
+                      if (byImageOid) chosenImage = byImageOid;
+                    }
+                  }
+                }
+              }
+
+              // Intento B: fallback por option ids
+              if (!chosenImage) {
+                let colorId: number | null = null;
+                let sizeId: number | null = null;
+                if (Array.isArray(product.options)) {
+                  for (const opt of product.options) {
+                    const optType = (opt.type || opt.name || '').toString().toLowerCase();
+                    if (optType.includes('color')) {
+                      const found = (opt.values || []).find((v: any) => normalize(v.title) === normalize(colorTitle));
+                      if (found) colorId = found.id;
+                    }
+                    if (optType.includes('size')) {
+                      const found = (opt.values || []).find((v: any) => normalize(v.title) === normalize(sizeTitle));
+                      if (found) sizeId = found.id;
+                    }
+                  }
+                }
+
+                if (colorId != null && sizeId != null && Array.isArray(product.variants)) {
+                  const foundVariant = product.variants.find((v: any) => Array.isArray(v.options) && v.options.includes(colorId) && v.options.includes(sizeId));
+                  if (foundVariant) {
+                    const imgs = getVariantImages(product.images, foundVariant.id);
+                    if (imgs && imgs.length > 0) chosenImage = imgs[0];
+                    else {
+                      const variantObjectId = foundVariant._id ? (foundVariant._id.$oid || foundVariant._id) : null;
+                      if (variantObjectId) {
+                        const byImageOid = product.images.find((im: any) => {
+                          const imOid = im._id && (im._id.$oid || im._id);
+                          return imOid && imOid === variantObjectId;
+                        });
+                        if (byImageOid) chosenImage = byImageOid;
+                      }
+                    }
+                  }
+                }
               }
             }
-          }).catch(() => {});
-        });
+
+            if (!chosenImage) chosenImage = getMainProductImage(product.images) || null;
+
+            // Debug: log chosenImage y contexto
+            // eslint-disable-next-line no-console
+            console.debug('ReviewPage: resolved image', { pid, idx, chosenImage });
+
+            // Guardar imagen por línea del pedido (clave única)
+            const lineKey = `${pid}-${idx}`;
+            if (chosenImage) {
+              try {
+                setProductImages(prev => ({ ...prev, [lineKey]: getOptimizedImageUrl(chosenImage) } as any));
+              } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error('ReviewPage: error optimizing image for', lineKey, e, chosenImage);
+              }
+            }
+          });
+        }).catch(() => {});
       } else {
         setValid(false);
       }
@@ -121,11 +219,12 @@ export const ReviewPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         {(order.lineItems || []).map((li: any, idx: number) => {
           const uniqueKey = `${li.productId}-${li.variantId || 'v'}-${idx}`;
+          const lineKey = `${li.productId}-${idx}`;
           return (
             <div key={uniqueKey} className="bg-slate-800 p-4 rounded-lg flex gap-4 items-center">
               <div className="w-24 flex-shrink-0">
-                {productImages[li.productId] ? (
-                  <img src={productImages[li.productId]} alt={li.title} className="w-24 h-24 object-cover rounded" />
+                {productImages[lineKey] ? (
+                  <img src={productImages[lineKey]} alt={li.title} className="w-24 h-24 object-cover rounded" />
                 ) : (
                   <div className="w-24 h-24 bg-slate-900 rounded flex items-center justify-center text-slate-500">Sin imagen</div>
                 )}
