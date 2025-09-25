@@ -168,7 +168,15 @@ export const HomePage: React.FC = () => {
                 <div className="mb-8">
                   <ProductsCarousel maxVisible={4} products={products.slice().sort((a,b)=> new Date(b.created_at).getTime() - new Date(a.created_at).getTime())} />
                 </div>
-
+              <div className="text-center p-4 mb-4">
+                <button
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white px-8 py-4 rounded-xl font-bold text-lg shadow transition-shadow transition-filter duration-200 ease-in-out hover:shadow-xl hover:brightness-105 focus:outline-none"
+                  onClick={() => navigateTo('/productos')}
+                >
+                  Ver Toda la Colección
+                  <ArrowRight size={20} />
+                </button>
+              </div>
               {/* Estadísticas */}
               <div className="bg-slate-800 rounded-2xl p-8 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -198,16 +206,6 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
           )}
-
-          <div className="text-center">
-            <button
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-spanish-red to-spanish-yellow text-white px-8 py-4 rounded-xl font-bold text-lg shadow transition-shadow transition-filter duration-200 ease-in-out hover:shadow-xl hover:brightness-105 focus:outline-none"
-              onClick={() => navigateTo('/productos')}
-            >
-              Ver Toda la Colección
-              <ArrowRight size={20} />
-            </button>
-          </div>
         </div>
       </section>
 
