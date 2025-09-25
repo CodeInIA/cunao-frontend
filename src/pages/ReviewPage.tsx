@@ -8,6 +8,7 @@ export const ReviewPage: React.FC = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const [valid, setValid] = useState<boolean | null>(null);
+  const [tokenUsed, setTokenUsed] = useState(false);
   const [order, setOrder] = useState<any>(null);
   const [selectedProducts, setSelectedProducts] = useState<Record<string, boolean>>({});
   const [ratings, setRatings] = useState<Record<string, number>>({});
@@ -18,6 +19,12 @@ export const ReviewPage: React.FC = () => {
   const [textareaActive, setTextareaActive] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, { files?: string; text?: string }>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // drag state per line for reordering (hooks must be declared unconditionally)
+  const [dragIndex, setDragIndex] = useState<Record<string, number | null>>({});
+  const [dragOverIndex, setDragOverIndex] = useState<Record<string, number | null>>({});
+  // touch timers for long-press detection per line
+  const touchTimers = React.useRef<Record<string, number | null>>({});
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const MAX_IMAGES_PER_LINE = 5;
   const MAX_REVIEW_CHARS = 1000;
@@ -25,6 +32,12 @@ export const ReviewPage: React.FC = () => {
   useEffect(() => {
     if (!token) return;
     axios.get(`/api/reviews/validate/${token}`).then(res => {
+      if (res.data && res.data.tokenUsed) {
+        setValid(false);
+        setTokenUsed(true);
+        setOrder(res.data);
+        return;
+      }
       if (res.data && res.data.valid) {
         setValid(true);
         setOrder(res.data);
@@ -168,11 +181,7 @@ export const ReviewPage: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // drag state per line for reordering
-  const [dragIndex, setDragIndex] = useState<Record<string, number | null>>({});
-  const [dragOverIndex, setDragOverIndex] = useState<Record<string, number | null>>({});
-  // touch timers for long-press detection per line
-  const touchTimers = React.useRef<Record<string, number | null>>({});
+  // drag state per line for reordering (moved hooks to top)
 
   const handleDragStart = (lineKey: string, idx: number, e: React.DragEvent) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -266,6 +275,14 @@ export const ReviewPage: React.FC = () => {
   };
 
   if (valid === false) {
+    if (tokenUsed) {
+      return (
+        <div className="container mx-auto p-8 text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Gracias — tus reseñas están en revisión</h2>
+          <p>Hemos recibido tus reseñas y están siendo revisadas por nuestro equipo. No es necesario enviar nada más.</p>
+        </div>
+      );
+    }
     return (
       <div className="container mx-auto p-8 text-center text-white">
         <h2 className="text-2xl font-bold mb-4">Token inválido o expirado</h2>
@@ -387,9 +404,9 @@ export const ReviewPage: React.FC = () => {
       return;
     }
 
-  // doble confirmación
-    if (!window.confirm('¿Estás seguro de que quieres publicar estas reseñas?')) return;
-    setSubmitting(true);
+  // show confirmation modal instead of native confirm
+    setShowConfirm(true);
+    return;
 
     // construir payload
     // payload por línea (lineKey tiene productId-idx)
@@ -472,7 +489,63 @@ export const ReviewPage: React.FC = () => {
     }
 
     // no validation errors -> proceed
-    submit();
+    // show modal confirmation before calling submit
+    setShowConfirm(true);
+  };
+
+  // confirmation and submission state (moved hooks to top)
+
+  const confirmSubmit = async () => {
+    setShowConfirm(false);
+    setSubmitting(true);
+    try {
+      const tokenLocal = token;
+      if (!tokenLocal) return;
+      // build payload (same as submit)
+      const payload = Object.keys(selectedProducts).filter(key => selectedProducts[key]).map(lineKey => {
+        const [productId] = lineKey.split('-');
+        return {
+          productId,
+          rating: ratings[lineKey] || 5,
+          title: '',
+          body: texts[lineKey] || '',
+          authorName: order.customerName || ''
+        };
+      });
+
+      const form = new FormData();
+      form.append('payload', JSON.stringify(payload));
+      Object.entries(files).forEach(([lineKey, fileArr]) => {
+        fileArr.forEach((obj) => form.append(`product-${lineKey}`, obj.file));
+      });
+
+      const res = await axios.post(`/api/reviews/submit/${tokenLocal}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (res.data && res.data.success) {
+        // mark token used locally and show only the "en revisión" message
+        setTokenUsed(true);
+        setValid(false);
+        // clear local inputs to avoid showing form data
+        setFiles({});
+        setSelectedProducts({});
+        setTexts({});
+        setRatings({});
+      } else {
+        // if server returns validationErrors, show them
+        if (res.data && res.data.validationErrors) {
+          setErrors(prev => ({ ...prev, ...res.data.validationErrors }));
+        }
+        alert('Error al enviar reseñas');
+      }
+    } catch (e: any) {
+      if (e.response && e.response.data && e.response.data.validationErrors) {
+        setErrors(prev => ({ ...prev, ...e.response.data.validationErrors }));
+      } else {
+        console.error(e);
+        alert('Error al enviar reseñas');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // determine if there are active errors to disable submit
@@ -653,6 +726,21 @@ export const ReviewPage: React.FC = () => {
           {selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas'}
         </button>
       </div>
+      {/* tokenUsed/validate path shows the pending message instead */}
+
+      {/* Confirmation modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-slate-800 rounded-lg w-11/12 max-w-md p-5 text-slate-100">
+            <h2 className="text-xl font-bold mb-2">{selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas'}</h2>
+            <p className="text-slate-300 mb-4">{selectedCount === 1 ? '¿Estás seguro de que quieres publicar esta reseña?' : `¿Estás seguro de que quieres publicar estas ${selectedCount} reseñas?`}</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowConfirm(false)} className="px-4 py-2 rounded bg-slate-700 text-slate-200">Cancelar</button>
+              <button onClick={() => confirmSubmit()} className="px-4 py-2 rounded bg-spanish-yellow text-slate-900 font-bold">{selectedCount === 1 ? 'Publicar reseña' : 'Publicar reseñas'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
