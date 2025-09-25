@@ -14,6 +14,7 @@ export const ReviewPage: React.FC = () => {
   const [files, setFiles] = useState<Record<string, File[]>>({});
   const [productImages, setProductImages] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [textareaActive, setTextareaActive] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!token) return;
@@ -21,11 +22,12 @@ export const ReviewPage: React.FC = () => {
       if (res.data && res.data.valid) {
         setValid(true);
         setOrder(res.data);
-        // inicializar productos y agrupar por productId para evitar fetch duplicados
+        // inicializar productos y agrupar por línea (cada item seleccionable individualmente)
         const lineItems = res.data.lineItems || [];
-        lineItems.forEach((li: any) => {
-          setSelectedProducts(prev => ({ ...prev, [li.productId]: true }));
-          setRatings(prev => ({ ...prev, [li.productId]: 5 }));
+        lineItems.forEach((li: any, idx: number) => {
+          const lineKey = `${li.productId}-${idx}`;
+          setSelectedProducts(prev => ({ ...prev, [lineKey]: true }));
+          setRatings(prev => ({ ...prev, [lineKey]: 5 }));
         });
 
         const uniqueProductIds: string[] = Array.from(new Set(lineItems.map((li: any) => String(li.productId))));
@@ -163,13 +165,13 @@ export const ReviewPage: React.FC = () => {
     return <div className="p-8 text-white">Comprobando token...</div>;
   }
 
-  const handleFileChange = (productId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (lineKey: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files ? Array.from(e.target.files) : [];
-    setFiles(prev => ({ ...prev, [productId]: selected.slice(0,5) }));
+    setFiles(prev => ({ ...prev, [lineKey]: selected.slice(0,5) }));
   };
 
-  const toggleProduct = (productId: string) => {
-    setSelectedProducts(prev => ({ ...prev, [productId]: !prev[productId] }));
+  const toggleProduct = (lineKey: string) => {
+    setSelectedProducts(prev => ({ ...prev, [lineKey]: !prev[lineKey] }));
   };
 
   const submit = async () => {
@@ -179,20 +181,25 @@ export const ReviewPage: React.FC = () => {
     setSubmitting(true);
 
     // construir payload
-    const payload = Object.keys(selectedProducts).filter(pid => selectedProducts[pid]).map(pid => ({
-      productId: pid,
-      rating: ratings[pid] || 5,
-      title: '',
-      body: texts[pid] || '',
-      authorName: order.customerName || ''
-    }));
+    // payload por línea (lineKey tiene productId-idx)
+    const payload = Object.keys(selectedProducts).filter(key => selectedProducts[key]).map(lineKey => {
+      // extraer productId desde lineKey
+      const [productId] = lineKey.split('-');
+      return {
+        productId,
+        rating: ratings[lineKey] || 5,
+        title: '',
+        body: texts[lineKey] || '',
+        authorName: order.customerName || ''
+      };
+    });
 
     const form = new FormData();
     form.append('payload', JSON.stringify(payload));
 
-    // Adjuntar archivos con fieldname product-<productId>
-    Object.entries(files).forEach(([pid, fileArr]) => {
-      fileArr.forEach((f, idx) => form.append(`product-${pid}`, f));
+    // Adjuntar archivos con fieldname product-<lineKey>
+    Object.entries(files).forEach(([lineKey, fileArr]) => {
+      fileArr.forEach((f, idx) => form.append(`product-${lineKey}`, f));
     });
 
     try {
@@ -222,37 +229,60 @@ export const ReviewPage: React.FC = () => {
           const lineKey = `${li.productId}-${idx}`;
           return (
             <div key={uniqueKey} className="bg-slate-800 p-4 rounded-lg flex gap-4 items-center">
-              <div className="w-24 flex-shrink-0">
+              <div className="w-32 flex-shrink-0">
                 {productImages[lineKey] ? (
-                  <img src={productImages[lineKey]} alt={li.title} className="w-24 h-24 object-cover rounded" />
+                  <img src={productImages[lineKey]} alt={li.title} className="w-32 h-32 object-cover rounded-md" />
                 ) : (
-                  <div className="w-24 h-24 bg-slate-900 rounded flex items-center justify-center text-slate-500">Sin imagen</div>
+                  <div className="w-32 h-32 bg-slate-900 rounded-md flex items-center justify-center text-slate-500">Sin imagen</div>
                 )}
               </div>
 
               <div className="flex-1">
-                <label className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2">
                   <div>
                     <div className="font-semibold">{li.title}</div>
                     <div className="text-sm text-slate-400">Cantidad: {li.quantity}</div>
                     <div className="text-sm text-slate-400">Talla: {li.size} — Color: {li.color}</div>
                   </div>
                   <div>
-                    <input type="checkbox" checked={!!selectedProducts[li.productId]} onChange={() => toggleProduct(li.productId)} />
+                    <button
+                      type="button"
+                      onClick={() => toggleProduct(lineKey)}
+                      aria-pressed={!!selectedProducts[lineKey]}
+                      className={`w-6 h-6 rounded-sm flex items-center justify-center mr-3 transition-colors ${selectedProducts[lineKey] ? 'bg-yellow-400' : 'bg-white border'}`}
+                      title={selectedProducts[lineKey] ? 'Seleccionado' : 'Seleccionar para review'}
+                    >
+                      {selectedProducts[lineKey] ? (
+                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      ) : null}
+                    </button>
                   </div>
-                </label>
+                </div>
 
-                {selectedProducts[li.productId] && (
+                {selectedProducts[lineKey] && (
                   <div className="mt-2">
                     <div className="mb-2">Puntuación:</div>
                     <div className="flex items-center gap-2 mb-4">
                       {[1,2,3,4,5].map(n => (
-                        <button key={n} className={`px-2 py-1 rounded ${ratings[li.productId]===n ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-700'}`} onClick={() => setRatings(prev => ({ ...prev, [li.productId]: n }))}>{n}★</button>
+                        <button key={n} className={`px-2 py-1 rounded ${ratings[lineKey]===n ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-700'}`} onClick={() => setRatings(prev => ({ ...prev, [lineKey]: n }))}>{n}★</button>
                       ))}
                     </div>
-                    <textarea className="w-full p-2 bg-slate-900 rounded mb-2" placeholder="Escribe tu opinión" value={texts[li.productId]||''} onChange={(e) => setTexts(prev => ({ ...prev, [li.productId]: e.target.value }))} />
+                    <textarea
+                      className={`w-full p-2 bg-slate-900 rounded mb-2 border transition-colors duration-150 ${textareaActive[lineKey] ? 'border-yellow-400' : 'border-transparent'} focus:border-yellow-400 focus:ring-0 outline-none`}
+                      placeholder="Escribe tu opinión"
+                      value={texts[lineKey]||''}
+                      onChange={(e) => setTexts(prev => ({ ...prev, [lineKey]: e.target.value }))}
+                      onClick={() => setTextareaActive(prev => ({ ...prev, [lineKey]: true }))}
+                      onFocus={() => setTextareaActive(prev => ({ ...prev, [lineKey]: true }))}
+                      onBlur={() => setTextareaActive(prev => ({ ...prev, [lineKey]: false }))}
+                    />
                     <div className="mb-2">Fotos (max 5 por producto):</div>
-                    <input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => handleFileChange(li.productId, e)} />
+                    <div>
+                      <label className="inline-flex items-center px-3 py-2 bg-white border rounded cursor-pointer text-sm text-gray-700 hover:bg-gray-50">
+                        <input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => handleFileChange(lineKey, e)} className="hidden" />
+                        Subir imágenes ({(files[lineKey] || []).length})
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>
