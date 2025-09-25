@@ -29,6 +29,8 @@ export const ReviewPage: React.FC = () => {
   const MAX_IMAGES_PER_LINE = 5;
   const MAX_REVIEW_CHARS = 1000;
   const MIN_REVIEW_CHARS = 20;
+  const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+  const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp'];
   useEffect(() => {
     if (!token) return;
     axios.get(`/api/reviews/validate/${token}`).then(res => {
@@ -298,20 +300,32 @@ export const ReviewPage: React.FC = () => {
   const addFiles = (lineKey: string, newFiles: File[]) => {
     setFiles(prev => {
       const existing = prev[lineKey] || [];
-      const allowed = Math.max(0, MAX_IMAGES_PER_LINE - existing.length);
-      if (allowed <= 0) {
+      const allowedSlots = Math.max(0, MAX_IMAGES_PER_LINE - existing.length);
+      if (allowedSlots <= 0) {
         // set error: no more allowed
         setErrors(errPrev => ({ ...errPrev, [lineKey]: { ...(errPrev[lineKey]||{}), files: `Sólo se permiten ${MAX_IMAGES_PER_LINE} imágenes por producto.` } }));
         return prev;
       }
-      const toAdd = newFiles.slice(0, allowed);
+
+      // Filtrar por mime permitido y recopilar nombres rechazados
+      const accepted = newFiles.filter(f => ALLOWED_MIME.includes((f.type || '').toLowerCase()));
+      const rejectedFiles = newFiles.filter(f => !ALLOWED_MIME.includes((f.type || '').toLowerCase()));
+      const rejected = rejectedFiles.length;
+
+      if (rejected > 0) {
+        const names = rejectedFiles.map(f => f.name).join(', ');
+        setErrors(errPrev => ({ ...errPrev, [lineKey]: { ...(errPrev[lineKey]||{}), files: `Formato no admitido para: ${names}. Sólo JPG, PNG o WebP.` } }));
+      }
+
+      const toAdd = accepted.slice(0, allowedSlots);
       const mapped = toAdd.map(f => ({ file: f, preview: URL.createObjectURL(f) }));
       const combined = existing.concat(mapped);
+
       // if attempted to add more than allowed, set an error message
-      if (newFiles.length > allowed) {
-        setErrors(errPrev => ({ ...errPrev, [lineKey]: { ...(errPrev[lineKey]||{}), files: `Has intentado añadir ${newFiles.length} archivos, pero sólo se permiten ${MAX_IMAGES_PER_LINE}.` } }));
-      } else {
-        // clear files error
+      if (accepted.length > allowedSlots) {
+        setErrors(errPrev => ({ ...errPrev, [lineKey]: { ...(errPrev[lineKey]||{}), files: `Has intentado añadir ${accepted.length} archivos, pero sólo se permiten ${MAX_IMAGES_PER_LINE}.` } }));
+      } else if (rejected === 0) {
+        // clear files error only if there were no rejected files
         setErrors(errPrev => {
           const copy = { ...(errPrev || {}) };
           if (copy[lineKey]) { copy[lineKey] = { ...copy[lineKey], files: undefined }; }
@@ -330,7 +344,7 @@ export const ReviewPage: React.FC = () => {
 
   const handleDrop = (lineKey: string, e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const dtFiles = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+    const dtFiles = Array.from(e.dataTransfer.files || []).filter(f => f.type && f.type.toString().toLowerCase().startsWith('image/'));
     if (dtFiles.length === 0) return;
     addFiles(lineKey, dtFiles);
   };
@@ -561,30 +575,30 @@ export const ReviewPage: React.FC = () => {
   const selectedCount = Object.keys(selectedProducts).filter(k => selectedProducts[k]).length;
 
   return (
-    <div className="container mx-auto p-4 sm:p-8 text-white max-w-3xl">
+  <div className="container mx-auto p-4 sm:p-6 text-white max-w-6xl">
       <h1 className="text-3xl font-bold mb-4">Deja tu reseña cuñao</h1>
       <p className="mb-6">Hola <strong>{order.customerName}</strong>, selecciona los productos que quieres valorar y completa la información.</p>
+      {/* removed global formats display; format info is shown per-card next to Photos section */}
 
       <div className="grid grid-cols-1 gap-6">
         {(order.lineItems || []).map((li: any, idx: number) => {
           const uniqueKey = `${li.productId}-${li.variantId || 'v'}-${idx}`;
           const lineKey = `${li.productId}-${idx}`;
           return (
-            <div key={uniqueKey} className="bg-slate-800 p-4 rounded-lg flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <div className="w-full sm:w-32 flex-shrink-0">
+            <div key={uniqueKey} className="bg-slate-800 p-4 lg:p-6 rounded-lg flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+                <div className="w-full lg:w-40 flex-shrink-0">
                   {productImages[lineKey] ? (
-                    <img src={productImages[lineKey]} alt={li.title} className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-md mx-auto sm:mx-0" />
+                    <img src={productImages[lineKey]} alt={li.title} className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 object-cover rounded-md mx-auto lg:mx-0" />
                   ) : (
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-slate-900 rounded-md flex items-center justify-center text-slate-500 mx-auto sm:mx-0">Sin imagen</div>
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 bg-slate-900 rounded-md flex items-center justify-center text-slate-500 mx-auto lg:mx-0">Sin imagen</div>
                   )}
                 </div>
 
-                <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
-                  <div>
-                    <div className="font-semibold">{li.title}</div>
-                    <div className="text-sm text-slate-400">Cantidad: {li.quantity}</div>
-                    <div className="text-sm text-slate-400">Talla: {li.size} — Color: {li.color}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-2 gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold lg:truncate" title={li.title}>{li.title}</div>
+                    <div className="text-sm text-slate-400 lg:whitespace-nowrap lg:truncate">Cantidad: {li.quantity} · Talla: {li.size} · Color: {li.color}</div>
                   </div>
                     <div>
                     <button
@@ -605,7 +619,7 @@ export const ReviewPage: React.FC = () => {
                 {selectedProducts[lineKey] && (
                   <div className="mt-2">
                     <div className="mb-2">Puntuación:</div>
-                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                    <div className="flex items-center gap-2 mb-4 md:flex-nowrap">
                       {[1,2,3,4,5].map(n => (
                         <button key={n} className={`px-2 py-1 rounded ${ratings[lineKey]===n ? 'bg-spanish-yellow text-slate-900' : 'bg-slate-700'}`} onClick={() => setRatings(prev => ({ ...prev, [lineKey]: n }))}>{n}★</button>
                       ))}
@@ -647,6 +661,9 @@ export const ReviewPage: React.FC = () => {
                         </button>
                       ) : null}
                     </div>
+                    {order && (order.acceptedExtensions || order.acceptedMimeTypes) ? (
+                      <div className="text-xs text-slate-400 mb-2">Formatos aceptados: {order.acceptedExtensions ? order.acceptedExtensions.join(', ') : (order.acceptedMimeTypes || []).join(', ')}</div>
+                    ) : null}
 
                     <div
                       onDragOver={(e) => e.preventDefault()}
