@@ -160,6 +160,8 @@ export const ReviewPage: React.FC = () => {
   React.useEffect(() => {
     return () => {
       Object.values(files).flat().forEach(a => { try { URL.revokeObjectURL(a.preview); } catch (e) {} });
+      // clear any pending touch timers
+      Object.values(touchTimers.current || {}).forEach(t => { try { if (t) clearTimeout(t); } catch (e) {} });
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -167,6 +169,8 @@ export const ReviewPage: React.FC = () => {
   // drag state per line for reordering
   const [dragIndex, setDragIndex] = useState<Record<string, number | null>>({});
   const [dragOverIndex, setDragOverIndex] = useState<Record<string, number | null>>({});
+  // touch timers for long-press detection per line
+  const touchTimers = React.useRef<Record<string, number | null>>({});
 
   const handleDragStart = (lineKey: string, idx: number, e: React.DragEvent) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -202,6 +206,59 @@ export const ReviewPage: React.FC = () => {
       arr.splice(target, 0, moved);
       return { ...prev, [lineKey]: arr };
     });
+    setDragIndex(prev => ({ ...prev, [lineKey]: null }));
+    setDragOverIndex(prev => ({ ...prev, [lineKey]: null }));
+  };
+
+  // Touch handlers: long-press to begin drag on mobile
+  const handleTouchStart = (lineKey: string, idx: number, e: React.TouchEvent) => {
+    // start a long-press timer (350ms) to enter drag mode
+    if (touchTimers.current[lineKey]) clearTimeout(touchTimers.current[lineKey] as number);
+    touchTimers.current[lineKey] = window.setTimeout(() => {
+      setDragIndex(prev => ({ ...prev, [lineKey]: idx }));
+      setDragOverIndex(prev => ({ ...prev, [lineKey]: idx }));
+    }, 350) as unknown as number;
+  };
+
+  const handleTouchMove = (lineKey: string, e: React.TouchEvent) => {
+    // if not dragging by touch, ignore
+    if (!dragIndex[lineKey] && dragIndex[lineKey] !== 0) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const el = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null;
+    if (!el) return;
+    const thumb = el.closest('[data-thumb]') as HTMLElement | null;
+    if (!thumb) return;
+    const targetLine = thumb.getAttribute('data-line');
+    const targetIdxStr = thumb.getAttribute('data-index');
+    if (!targetLine || targetLine !== lineKey || !targetIdxStr) return;
+    const targetIdx = Number(targetIdxStr);
+    if (!Number.isNaN(targetIdx)) setDragOverIndex(prev => ({ ...prev, [lineKey]: targetIdx }));
+  };
+
+  const handleTouchEnd = (lineKey: string, e: React.TouchEvent) => {
+    // cancel pending timer if user didn't long-press
+    if (touchTimers.current[lineKey]) {
+      clearTimeout(touchTimers.current[lineKey] as number);
+      touchTimers.current[lineKey] = null;
+    }
+    const srcIdx = dragIndex[lineKey];
+    const tgtIdx = dragOverIndex[lineKey];
+    if (srcIdx == null || tgtIdx == null) {
+      setDragIndex(prev => ({ ...prev, [lineKey]: null }));
+      setDragOverIndex(prev => ({ ...prev, [lineKey]: null }));
+      return;
+    }
+    if (srcIdx !== tgtIdx) {
+      setFiles(prev => {
+        const arr = (prev[lineKey] || []).slice();
+        if (!arr[srcIdx]) return prev;
+        const [moved] = arr.splice(srcIdx, 1);
+        const target = srcIdx < tgtIdx ? tgtIdx : tgtIdx;
+        arr.splice(target, 0, moved);
+        return { ...prev, [lineKey]: arr };
+      });
+    }
     setDragIndex(prev => ({ ...prev, [lineKey]: null }));
     setDragOverIndex(prev => ({ ...prev, [lineKey]: null }));
   };
@@ -479,23 +536,45 @@ export const ReviewPage: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2 flex-wrap scrollbar-spanish items-center">
-                      {(files[lineKey] || []).map((fObj, i) => (
-                        <div
-                          key={i}
-                          draggable
-                          onDragStart={(e) => handleDragStart(lineKey, i, e)}
-                          onDragOver={(e) => handleDragOverThumb(lineKey, i, e)}
-                          onDrop={(e) => handleDropThumb(lineKey, i, e)}
-                          className={`relative w-16 h-16 sm:w-20 sm:h-20 bg-slate-900 rounded overflow-hidden border ${dragOverIndex[lineKey] === i ? 'ring-2 ring-yellow-400' : ''}`}
-                        >
-                          {/* numbered badge top-left */}
-                          <div className="absolute top-1 left-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">{i+1}</div>
-                          <img src={fObj.preview} className="w-full h-full object-cover" alt={`preview-${i}`} />
-                          <button type="button" onClick={() => removeFile(lineKey, i)} className="absolute top-0 right-0 m-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white">
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                      {(() => {
+                        const base = (files[lineKey] || []).slice();
+                        const src = dragIndex[lineKey];
+                        const over = dragOverIndex[lineKey];
+                        let display = base;
+                        if (typeof src === 'number' && src >= 0 && typeof over === 'number' && over >= 0 && src !== over) {
+                          display = base.slice();
+                          const [m] = display.splice(src, 1);
+                          display.splice(over, 0, m);
+                        }
+                        return display.map((fObj, displayIdx) => {
+                          const origIdx = (files[lineKey] || []).findIndex(x => x.preview === fObj.preview);
+                          const isOver = (dragOverIndex[lineKey] === origIdx) || (typeof dragIndex[lineKey] === 'number' && typeof dragOverIndex[lineKey] === 'number' && dragIndex[lineKey] < dragOverIndex[lineKey] && displayIdx === dragOverIndex[lineKey]);
+                          return (
+                            <div
+                              key={fObj.preview}
+                              data-thumb
+                              data-line={lineKey}
+                              data-index={String(displayIdx)}
+                              draggable
+                              onDragStart={(e) => handleDragStart(lineKey, origIdx, e)}
+                              onDragOver={(e) => handleDragOverThumb(lineKey, displayIdx, e)}
+                              onDrop={(e) => handleDropThumb(lineKey, displayIdx, e)}
+                              onTouchStart={(e) => handleTouchStart(lineKey, origIdx, e)}
+                              onTouchMove={(e) => handleTouchMove(lineKey, e)}
+                              onTouchEnd={(e) => handleTouchEnd(lineKey, e)}
+                              onTouchCancel={(e) => handleTouchEnd(lineKey, e)}
+                              className={`relative w-16 h-16 sm:w-20 sm:h-20 bg-slate-900 rounded overflow-hidden border ${isOver ? 'ring-2 ring-yellow-400' : ''} transition-all`}
+                            >
+                              {/* numbered badge top-left */}
+                              <div className="absolute top-1 left-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">{displayIdx+1}</div>
+                              <img src={fObj.preview} className="w-full h-full object-cover" alt={`preview-${displayIdx}`} />
+                              <button type="button" onClick={() => removeFile(lineKey, origIdx)} className="absolute top-0 right-0 m-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white">
+                                ×
+                              </button>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                     <div className="mt-1 text-xs text-red-400">{errors[lineKey]?.files || ''}</div>
                   </div>
