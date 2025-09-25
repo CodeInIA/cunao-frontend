@@ -117,3 +117,52 @@
     radial-gradient(circle at 80% 50%, rgba(166, 117, 78, 0.1) 0%, transparent 50%),
     linear-gradient(0deg, transparent 24%, rgba(125, 96, 68, 0.05) 25%, rgba(125, 96, 68, 0.05) 26%, transparent 27%, transparent 74%, rgba(125, 96, 68, 0.05) 75%, rgba(125, 96, 68, 0.05) 76%, transparent 77%);
 }
+
+/* Estilos para listas dentro de secciones colapsables (puntos amarillos y texto en negrita) */
+.collapsible-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.collapsible-content ul li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 10px;
+  color: #e6eef7; /* texto claro por defecto */
+  font-weight: 600; /* negrita para resaltar */
+}
+
+.collapsible-content ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  background-color: #f1c40f; /* amarillo vibrante */
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.12);
+}
+
+.collapsible-content p, .collapsible-content li p {
+  margin: 0;
+  color: #dfe9f6;
+}
+
+/* Estilos específicos para los summaries de Características e Instrucciones */
+.collapsible-summary.product-summary, .collapsible-summary.care-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #0f1724 0%, #0b2540 100%); /* azul oscuro degradado */
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #eaf6ff;
+}
+
+
+
+/* Mantener el GPSR con el estilo original (no afectado por las clases específicas) */

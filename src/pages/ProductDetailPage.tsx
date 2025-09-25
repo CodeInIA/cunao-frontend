@@ -388,11 +388,84 @@ export const ProductDetailPage: React.FC = () => {
     }
   }, []);
 
+  // Extrae secciones específicas (por ejemplo: Características, Instrucciones de Cuidado)
+  const extractCollapsibleSections = React.useCallback((html: string, titles: string[]) => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      const normalize = (s: string) =>
+        s
+          .replace(/:\s*$/g, '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLowerCase();
+
+      const titleMap = new Map<string, string>();
+      titles.forEach(t => titleMap.set(normalize(t), t));
+
+      const bodyNodes = Array.from(doc.body.childNodes);
+      const removed = new Array(bodyNodes.length).fill(false);
+      const sections: { [key: string]: string } = {};
+
+      let i = 0;
+      while (i < bodyNodes.length) {
+        const node = bodyNodes[i];
+        const text = node.textContent || '';
+        const norm = normalize(text);
+
+        if (titleMap.has(norm)) {
+          const titleKey = titleMap.get(norm) || norm;
+          const collected: string[] = [];
+
+          // recolectar nodos a partir del siguiente hasta antes del siguiente título
+          let j = i + 1;
+          while (j < bodyNodes.length) {
+            const nextText = bodyNodes[j].textContent || '';
+            const nextNorm = normalize(nextText);
+            if (titleMap.has(nextNorm)) break;
+            const nextNode = bodyNodes[j] as HTMLElement;
+            collected.push(nextNode.outerHTML || nextNode.textContent || '');
+            removed[j] = true; // marcar para no reconstruir en cleanedHtml
+            j++;
+          }
+
+          // marcar también el nodo del título para que no aparezca en cleanedHtml
+          removed[i] = true;
+
+          sections[titleKey] = collected.join('');
+
+          i = j; // continuar desde el siguiente título
+          continue;
+        }
+
+        i++;
+      }
+
+      // Reconstruir cleanedHtml con nodos no removidos
+      const cleaned = bodyNodes
+        .map((n, idx) => (removed[idx] ? '' : ((n as HTMLElement).outerHTML || n.textContent || '')))
+        .join('');
+
+      return { cleanedHtml: cleaned, sections };
+    } catch (e) {
+      return { cleanedHtml: html, sections: {} };
+    }
+  }, []);
+
   const { contentHtml, sizeTableHtml, tolerance } = React.useMemo(() => {
     const raw = currentProduct?.description || '';
     const html = formatDescription(raw);
     return extractSizeGuide(html);
   }, [currentProduct?.description, extractSizeGuide]);
+
+  // Separar las secciones desplegables (Características e Instrucciones) de la descripción
+  const { cleanedHtml: descriptionMainHtml, sections: collapsibleSections } = React.useMemo(() => {
+    const titles = ['Características del Producto', 'Instrucciones de Cuidado'];
+    return extractCollapsibleSections(contentHtml, titles);
+  }, [contentHtml, extractCollapsibleSections]);
 
   // Actualizar índice cuando cambia la imagen actual
   React.useEffect(() => {
@@ -721,8 +794,47 @@ export const ProductDetailPage: React.FC = () => {
             {selectedVariant ? 'Añadir al carrito' : 'Selecciona Talla y Color'}
           </button>
           <div className="mt-8">
-            <div className="rich-text mb-6" dangerouslySetInnerHTML={{ __html: contentHtml }} />
-            
+            <div className="rich-text mb-6" dangerouslySetInnerHTML={{ __html: descriptionMainHtml }} />
+
+            {/* Secciones colapsables extraídas: Características e Instrucciones de Cuidado */}
+            {collapsibleSections && Object.keys(collapsibleSections).length > 0 && (
+              <div className="mb-6">
+                {Object.entries(collapsibleSections).map(([title, html], idx) => {
+                  const isProduct = title === 'Características del Producto';
+                  const isCare = title === 'Instrucciones de Cuidado';
+                  return (
+                    <details key={idx} className="collapsible-section mb-4">
+                      <summary className={`collapsible-summary ${isProduct ? 'product-summary' : isCare ? 'care-summary' : ''}`}>
+                        <div className="collapsible-title flex items-center gap-3">
+                          {isProduct ? (
+                            // Icono representativo para Características: estrella/quality
+                            <svg className="w-5 h-5 text-spanish-yellow" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 .587l3.668 7.431L23.4 9.75l-5.6 5.46L19.335 24 12 20.011 4.665 24l1.535-8.79L.6 9.75l7.732-1.732L12 .587z" />
+                            </svg>
+                          ) : isCare ? (
+                            // Icono representativo para Instrucciones: gota de agua
+                            <svg className="w-5 h-5 text-spanish-yellow" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2.69l-.61.72C9.8 5.23 6 9.78 6 13.5A6 6 0 0012 19a6 6 0 006-5.5c0-3.72-3.8-8.27-5.39-10.09L12 2.69z" />
+                            </svg>
+                          ) : (
+                            <svg className="collapsible-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                          )}
+                          <span>{title}</span>
+                        </div>
+                        <svg className="chevron" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                        </svg>
+                      </summary>
+                      <div className="collapsible-content">
+                        <div dangerouslySetInnerHTML={{ __html: html }} />
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            )}
             {/* GPSR */}
             {Array.isArray(currentGPSR) && currentGPSR.length > 0 && (
               <div className="mb-6">
