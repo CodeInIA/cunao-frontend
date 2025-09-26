@@ -3,7 +3,7 @@ import axios from 'axios';
 import ReviewCard from './ReviewCard';
 import { ChevronLeft, ChevronRight, X, Star } from 'lucide-react';
 
-type Props = { productId?: string; maxVisible?: number };
+type Props = { productId?: string; maxVisible?: number; arrowEdgeExtra?: number };
 
 function getVisibleCount(width: number) {
   // breakpoints: mobile <640:1, 640-767:2, 768-991:3, 992-1199:4, >=1200:6
@@ -13,7 +13,7 @@ function getVisibleCount(width: number) {
   return 1; // mobile: show 1
 }
 
-const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
+const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdgeExtra = 0 }) => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [visible, setVisible] = useState<number>(maxVisible);
   const [index, setIndex] = useState(0);
@@ -55,9 +55,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
       setVisible(Math.min(getVisibleCount(winW), maxVisible));
       setWindowWidth(winW);
 
-      // compute responsive distance from viewport edges for arrow buttons
-      const btnSize = 40; // button width/height in px
-      const distanceFromEdge = winW >= 1200 ? 72 : winW >= 992 ? 56 : winW >= 768 ? 44 : winW >= 640 ? 32 : 12;
+  // compute responsive distance from viewport edges for arrow buttons
+  const btnSize = 40; // button width/height in px
+  const baseDistance = winW >= 1200 ? 72 : winW >= 992 ? 56 : winW >= 768 ? 44 : winW >= 640 ? 32 : 12;
+  const distanceFromEdge = baseDistance + (arrowEdgeExtra || 0);
 
       if (containerRef.current) {
         const crect = containerRef.current.getBoundingClientRect();
@@ -359,10 +360,11 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
       <div ref={containerRef} className="relative px-4 sm:px-0">
       {/* arrow offset: outside on desktop, inside on small screens */}
       {windowWidth >= 640 && (() => {
-        // left position relative to container; cap to avoid huge negative offsets
-        const leftPos = Math.min(0, arrowOffsetLeft);
+        // position arrows at a fixed distance from the viewport edges (includes arrowEdgeExtra)
+        const baseDistance = windowWidth >= 1200 ? 72 : windowWidth >= 992 ? 56 : windowWidth >= 768 ? 44 : windowWidth >= 640 ? 32 : 12;
+        const distanceFromEdge = baseDistance + (arrowEdgeExtra || 0);
         return (
-          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ left: leftPos }}>
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ left: `${distanceFromEdge}px` }}>
             <button
               onClick={() => { if (canPrev) prev(); }}
               disabled={!canPrev}
@@ -385,9 +387,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
         </div>
       </div>
       {windowWidth >= 640 && (() => {
-        const rightPos = Math.min(0, arrowOffsetRight);
+        const baseDistanceR = windowWidth >= 1200 ? 72 : windowWidth >= 992 ? 56 : windowWidth >= 768 ? 44 : windowWidth >= 640 ? 32 : 12;
+        const distanceFromEdgeR = baseDistanceR + (arrowEdgeExtra || 0);
         return (
-          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ right: rightPos }}>
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ right: `${distanceFromEdgeR}px` }}>
             <button
               onClick={() => { if (canNext) next(); }}
               disabled={!canNext}

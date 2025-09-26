@@ -921,7 +921,7 @@ export const ProductDetailPage: React.FC = () => {
       )}
       {/* Reviews carousel for this product */}
       <div className="w-full py-20">
-        <ReviewsCarousel productId={currentProduct.id} />
+        <ReviewsCarousel productId={currentProduct.id} arrowEdgeExtra={20} />
       </div>
   </div>  
   );
