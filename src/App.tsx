@@ -2,6 +2,7 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import { trackPageview } from './utils/analytics';
 import { getConsent } from './utils/consent';
 import PageViewTracker from './components/PageViewTracker';
+import ScrollToTopOnNavigate from './components/ScrollToTopOnNavigate';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Header } from './components/Header';
@@ -70,6 +71,7 @@ useEffect(() => {
     <ErrorBoundary>
       <Router>
         <PageViewTracker />
+        <ScrollToTopOnNavigate />
         <div className="min-h-screen bg-slate-900 flex flex-col">
           <Header />
           <main className="flex-1">

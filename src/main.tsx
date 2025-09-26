@@ -20,6 +20,22 @@ function Root() {
   const analyticsEnabled = !!consent?.analytics;
   useGtag(analyticsEnabled);
 
+  // Al montar la app en el navegador, forzar scroll al top y desactivar
+  // el comportamiento por defecto de restauración de scroll del navegador.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if ('scrollRestoration' in history) {
+        // Evitar que el navegador intente restaurar la posición previa (por ejemplo footer)
+        (history as any).scrollRestoration = 'manual';
+      }
+    } catch (e) {
+      // ignore
+    }
+    // Forzar el scroll al top en la carga inicial (incluye recargas)
+    try { window.scrollTo({ top: 0, left: 0 }); } catch (e) {}
+  }, []);
+
   // Si el consentimiento se activa después de cargar la página, forzar un pageview
   useEffect(() => {
     if (analyticsEnabled) {

@@ -79,6 +79,29 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
 
   useEffect(() => setIndex(0), [reviews.length, visible]);
 
+  // Ensure layout recalculation (centering) after reviews are loaded or when
+  // the container size changes (images/fonts may change layout after first paint).
+  // Some browsers/layouts require an extra paint before measurements stabilize,
+  // so we trigger a synthetic "resize" after a rAF and a short timeout.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const trigger = () => window.requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+    const t = window.setTimeout(trigger, 50);
+    return () => clearTimeout(t);
+  }, [reviews.length]);
+
+  // Observe container size changes and trigger the same recalculation. This
+  // covers cases where images load after mount and change the layout.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof (window as any).ResizeObserver === 'undefined') return;
+    const ro = new (window as any).ResizeObserver(() => {
+      window.requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // treat widths < 640 as mobile (1 card); from 640px show at least 2 cards
   const effectiveVisible = windowWidth < 640 ? 1 : visible;
   const maxIndex = Math.max(0, reviews.length - effectiveVisible);
@@ -135,6 +158,100 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
   const [activeImage, setActiveImage] = useState(0);
+  // modal navigation availability (defined after activeCard)
+  const canPrevModal = activeCard > 0;
+  const canNextModal = activeCard < Math.max(0, reviews.length - 1);
+  // touch/swipe refs for carousel and modal
+  const carouselTouchStartX = React.useRef<number | null>(null);
+  const carouselTouchDeltaX = React.useRef<number>(0);
+  const modalTouchStartX = React.useRef<number | null>(null);
+  const modalTouchDeltaX = React.useRef<number>(0);
+  // dragging state for smooth drag effect on carousel
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0); // px
+  const dragPointerDown = React.useRef<boolean>(false);
+
+  // animated card/image transitions in modal
+  const [contentVisible, setContentVisible] = useState(true);
+  const [imageVisible, setImageVisible] = useState(true);
+
+  // --- Carousel touch handlers (to swipe pages of cards) ---
+  const onTrackTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    carouselTouchStartX.current = t.clientX;
+    carouselTouchDeltaX.current = 0;
+    dragPointerDown.current = true;
+    setIsDragging(true);
+  };
+
+  const onTrackTouchMove = (e: React.TouchEvent) => {
+    const t = e.touches && e.touches[0];
+    if (!t || carouselTouchStartX.current == null) return;
+    const delta = t.clientX - carouselTouchStartX.current;
+    carouselTouchDeltaX.current = delta;
+    // update live drag offset
+    setDragOffset(delta);
+  };
+
+  const onTrackTouchEnd = () => {
+    const delta = carouselTouchDeltaX.current || 0;
+    const threshold = 40; // px
+    if (delta > threshold) prev();
+    else if (delta < -threshold) next();
+    // reset drag
+    carouselTouchStartX.current = null;
+    carouselTouchDeltaX.current = 0;
+    dragPointerDown.current = false;
+    // animate dragOffset back to 0 by clearing dragging state after a tick
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
+  // --- Modal touch handlers (to change activeCard by swiping) ---
+  const onModalTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    modalTouchStartX.current = t.clientX;
+    modalTouchDeltaX.current = 0;
+  };
+
+  const onModalTouchMove = (e: React.TouchEvent) => {
+    const t = e.touches && e.touches[0];
+    if (!t || modalTouchStartX.current == null) return;
+    modalTouchDeltaX.current = t.clientX - modalTouchStartX.current;
+  };
+
+  const onModalTouchEnd = () => {
+    const delta = modalTouchDeltaX.current || 0;
+    const threshold = 40; // px
+    if (delta > threshold) changeActiveCardAnimated(Math.max(0, activeCard - 1));
+    else if (delta < -threshold) changeActiveCardAnimated(Math.min(reviews.length - 1, activeCard + 1));
+    modalTouchStartX.current = null;
+    modalTouchDeltaX.current = 0;
+  };
+
+  // Animated card change: fade out content, change card, fade in
+  const changeActiveCardAnimated = (nextIndex: number) => {
+    if (nextIndex === activeCard) return;
+    setContentVisible(false);
+    // small delay to allow fade-out
+    window.setTimeout(() => {
+      setActiveCard(nextIndex);
+      setActiveImage(0);
+      setContentVisible(true);
+    }, 180);
+  };
+
+  // Animated image change inside modal
+  const changeActiveImageAnimated = (nextImage: number) => {
+    if (nextImage === activeImage) return;
+    setImageVisible(false);
+    window.setTimeout(() => {
+      setActiveImage(nextImage);
+      setImageVisible(true);
+    }, 140);
+  };
 
   const shortenName = (name?: string) => {
     if (!name) return 'Anónimo';
@@ -150,12 +267,12 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
       if (e.key === 'ArrowRight') {
         // advance image or card
         const imgs = reviews[activeCard]?.photos || [];
-        if (activeImage < imgs.length - 1) setActiveImage(i => i + 1);
-        else setActiveCard(c => Math.min(reviews.length - 1, c + 1));
+        if (activeImage < imgs.length - 1) changeActiveImageAnimated(activeImage + 1);
+        else changeActiveCardAnimated(Math.min(reviews.length - 1, activeCard + 1));
       }
       if (e.key === 'ArrowLeft') {
-        if (activeImage > 0) setActiveImage(i => i - 1);
-        else setActiveCard(c => Math.max(0, c - 1));
+        if (activeImage > 0) changeActiveImageAnimated(activeImage - 1);
+        else changeActiveCardAnimated(Math.max(0, activeCard - 1));
       }
     };
     window.addEventListener('keydown', onKey);
@@ -171,6 +288,14 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
     };
   }, [modalOpen]);
 
+  // Always show the first image when switching cards while the modal is open.
+  // This guarantees that after changing to another review, the modal displays
+  // image index 0 (the first photo) instead of keeping a stale index.
+  useEffect(() => {
+    if (!modalOpen) return;
+    setActiveImage(0);
+  }, [activeCard, modalOpen]);
+
   // Compute widths and center offset. For non-mobile (>=640) we always center the visible group
   const totalTrackWidth = itemWidth ? itemWidth * reviews.length + (itemGap ? itemGap * (reviews.length - 1) : 0) : undefined;
   const visibleGroupWidth = itemWidth ? itemWidth * Math.min(effectiveVisible, reviews.length) + (itemGap ? itemGap * Math.max(0, Math.min(effectiveVisible, reviews.length) - 1) : 0) : undefined;
@@ -185,8 +310,8 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
       const x = centerOffset - shift;
       transformValue = `translateX(${x}px)`;
     } else {
-      // mobile: normal left translation per index
-      transformValue = `translateX(-${index * (itemWidth + (itemGap || 0))}px)`;
+      // mobile: normal left translation per index; include dragOffset for live dragging
+      transformValue = `translateX(calc(-${index * (itemWidth + (itemGap || 0))}px + ${dragOffset}px))`;
     }
   } else {
     transformValue = `translateX(-${index * (100 / effectiveVisible)}%)`;
@@ -194,7 +319,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
 
   const trackStyle: React.CSSProperties = {
     display: 'flex',
-    transition: 'transform 350ms ease',
+    transition: isDragging ? 'none' : 'transform 300ms cubic-bezier(.2,.9,.2,1)',
     transform: transformValue,
     width: itemWidth ? `${totalTrackWidth}px` : `${(reviews.length * 100) / effectiveVisible}%`,
     gap: itemGap ? `${itemGap}px` : undefined,
@@ -224,7 +349,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
         );
       })()}
       <div className="overflow-hidden">
-  <div ref={trackRef} style={trackStyle} className="flex">
+      <div ref={trackRef} style={trackStyle} className="flex" onTouchStart={onTrackTouchStart} onTouchMove={onTrackTouchMove} onTouchEnd={onTrackTouchEnd}>
           {reviews.map((r, idx) => (
             <div key={r._id} style={{ width: itemWidth ? `${itemWidth}px` : `${100 / effectiveVisible}%`, flex: '0 0 auto' }} className="px-0 sm:px-2 min-w-0">
               <ReviewCard review={r} onOpen={() => { setModalOpen(true); setActiveCard(idx); setActiveImage(0); }} />
@@ -268,41 +393,86 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
       {/* modal overlay */}
       {modalOpen && (
       <div onClick={() => setModalOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-        <div onClick={(e) => e.stopPropagation()} className="relative bg-slate-900 rounded-lg p-6 max-w-4xl w-[90%] max-h-[90vh] overflow-hidden">
+  <div onClick={(e) => e.stopPropagation()} className="relative bg-slate-900 rounded-lg p-4 sm:p-6 w-full mx-4 sm:w-[90%] sm:mx-0 max-w-[420px] sm:max-w-4xl max-h-[90vh] overflow-hidden box-border">
           <button onClick={() => setModalOpen(false)} className="absolute top-3 right-3 text-slate-200"><X className="w-6 h-6" /></button>
-          <div className="flex items-center gap-4">
-            <button onClick={() => setActiveCard(c => Math.max(0, c - 1))} className="p-2 text-slate-200"><ChevronLeft /></button>
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* external arrows hidden on small screens to avoid stealing width */}
+            <button onClick={() => setActiveCard(c => Math.max(0, c - 1))} className="p-2 text-slate-200 hidden sm:inline-flex"><ChevronLeft /></button>
+            <div className="flex-1 min-w-0 w-full box-border px-4">
               {/* image display */}
-              <div className="w-full h-[60vh] bg-black rounded overflow-hidden flex items-center justify-center">
+              <div className="w-full bg-black rounded-t-lg overflow-hidden flex items-center justify-center relative box-border" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
+                {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
                 {reviews[activeCard] && reviews[activeCard].photos && reviews[activeCard].photos.length > 0 ? (
-                  <img src={reviews[activeCard].photos[activeImage]} alt="big" className="max-w-full max-h-full object-contain" />
+                  <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%' }}>
+                    <img src={reviews[activeCard].photos[activeImage]} alt="big" className="w-full h-auto max-h-[60vh] object-contain max-w-full block" />
+                  </div>
                 ) : (
                   <div className="text-slate-400">Sin imagen</div>
                 )}
+              
+                {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
               </div>
+              {/* mobile controls moved below thumbnails */}
               <div className="mt-3 flex items-center justify-between">
                 <div className="text-slate-200">
                   <div className="font-semibold">{shortenName(reviews[activeCard]?.authorName)}</div>
                   {reviews[activeCard]?.productTitle ? (
-                    <a onClick={(e) => e.stopPropagation()} href={reviews[activeCard]?.productSlug ? `/producto/${reviews[activeCard].productSlug}` : `/product/${reviews[activeCard].productId}`} className="text-xs text-slate-400 hover:text-yellow-400 block truncate" title={`Ver ${reviews[activeCard].productTitle}`}>
+                    <a
+                      onClick={(e) => e.stopPropagation()}
+                      href={reviews[activeCard]?.productSlug ? `/producto/${reviews[activeCard].productSlug}` : `/product/${reviews[activeCard].productId}`}
+                      className="text-xs text-slate-400 hover:text-yellow-400 block"
+                      title={`Ver ${reviews[activeCard].productTitle}`}
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
                       {reviews[activeCard].productTitle}
                     </a>
                   ) : null}
                 </div>
-                <div className="text-slate-200">{reviews[activeCard]?.rating}★</div>
+                <div className="text-spanish-yellow">{reviews[activeCard]?.rating}★</div>
               </div>
-              <div className="mt-2 text-slate-300 max-h-28 overflow-auto">{reviews[activeCard]?.body}</div>
+              <div className="mt-2 text-slate-300 max-h-28 overflow-auto break-words whitespace-normal">{reviews[activeCard]?.body}</div>
               {/* thumbnails for images of this review */}
-              <div className="mt-3 flex gap-2 overflow-x-auto">
-                {(reviews[activeCard]?.photos || []).map((p: string, i: number) => (
-                  <button key={i} onClick={() => setActiveImage(i)} className={`w-12 h-12 bg-slate-800 rounded flex items-center justify-center overflow-hidden ${i===activeImage ? 'border-2 border-yellow-400' : ''}`}>
-                    <img src={p} alt={`thumb-${i}`} className="w-full h-full object-contain" />
-                  </button>
-                ))}
+              <div style={{ transition: 'opacity 180ms ease', opacity: contentVisible ? 1 : 0 }}>
+                <div className="mt-3 flex gap-2 overflow-x-auto">
+                  {(reviews[activeCard]?.photos || []).map((p: string, i: number) => (
+                    <button key={i} onClick={() => changeActiveImageAnimated(i)} className={`w-12 h-12 bg-slate-800 rounded flex items-center justify-center overflow-hidden shrink-0 ${i===activeImage ? 'border-2 border-yellow-400' : ''}`}>
+                      <img src={p} alt={`thumb-${i}`} className="w-full h-full object-contain max-w-full block" />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            <button onClick={() => setActiveCard(c => Math.min(reviews.length - 1, c + 1))} className="p-2 text-slate-200"><ChevronRight /></button>
+            <button onClick={() => setActiveCard(c => Math.min(reviews.length - 1, c + 1))} className="p-2 text-slate-200 hidden sm:inline-flex"><ChevronRight /></button>
+          </div>
+          {/* mobile bottom controls: placed under all review info so they don't overlap content */}
+          <div className="sm:hidden mt-4 flex items-center justify-center gap-6">
+            <button
+              aria-label="Anterior review"
+              onClick={() => setActiveCard(c => Math.max(0, c - 1))}
+              disabled={!canPrevModal}
+              aria-disabled={!canPrevModal}
+              className={`p-2 rounded-full ${canPrevModal ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-white/10 text-white opacity-40 cursor-not-allowed'}`}
+            >
+              ◀
+            </button>
+            <div className="text-slate-300 text-sm">
+              {activeCard + 1} / {Math.max(1, reviews.length)}
+            </div>
+            <button
+              aria-label="Siguiente review"
+              onClick={() => setActiveCard(c => Math.min(reviews.length - 1, c + 1))}
+              disabled={!canNextModal}
+              aria-disabled={!canNextModal}
+              className={`p-2 rounded-full ${canNextModal ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-white/10 text-white opacity-40 cursor-not-allowed'}`}
+            >
+              ▶
+            </button>
           </div>
         </div>
       </div>
