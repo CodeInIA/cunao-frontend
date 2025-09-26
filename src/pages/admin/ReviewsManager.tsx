@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-function getToken() { return localStorage.getItem('adminToken'); }
+axios.defaults.withCredentials = true;
+
+function getCookie(name: string) {
+  const v = `; ${document.cookie}`;
+  const parts = v.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()!.split(';').shift();
+}
 
 export default function ReviewsManager() {
   const [filter, setFilter] = useState<'pending'|'published'>('pending');
@@ -13,7 +19,7 @@ export default function ReviewsManager() {
   async function fetchReviews() {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/reviews', { params: { status: filter }, headers: { Authorization: `Bearer ${getToken()}` } });
+  const res = await axios.get('/api/admin/reviews', { params: { status: filter } });
       setReviews(res.data.reviews || res.data);
     } catch (e) {
       console.error(e);
@@ -22,7 +28,8 @@ export default function ReviewsManager() {
 
   async function publish(id: string) {
     try {
-      await axios.post(`/api/admin/reviews/publish/${id}`, {}, { headers: { Authorization: `Bearer ${getToken()}` } });
+  const csrf = getCookie('csrfToken');
+  await axios.post(`/api/admin/reviews/publish/${id}`, {}, { headers: { 'x-csrf-token': csrf || '' } });
       fetchReviews();
     } catch (e) { console.error(e); }
   }
@@ -30,7 +37,8 @@ export default function ReviewsManager() {
   async function remove(id: string) {
     if (!confirm('Eliminar review y sus fotos?')) return;
     try {
-      await axios.delete(`/api/admin/reviews/${id}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      const csrf = getCookie('csrfToken');
+      await axios.delete(`/api/admin/reviews/${id}`, { headers: { 'x-csrf-token': csrf || '' } });
       fetchReviews();
     } catch (e) { console.error(e); }
   }

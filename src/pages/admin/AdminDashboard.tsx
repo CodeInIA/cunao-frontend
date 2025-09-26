@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+axios.defaults.withCredentials = true;
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -9,8 +11,15 @@ export default function AdminDashboard() {
   }
 
   function logout() {
-    localStorage.removeItem('adminToken');
-    navigate('/admin');
+    (async () => {
+      try {
+        await axios.post('/api/admin/logout');
+      } catch (e) {
+        // ignore
+      } finally {
+        navigate('/admin');
+      }
+    })();
   }
 
   function handleKeyNavigate(e: React.KeyboardEvent, fn: () => void) {

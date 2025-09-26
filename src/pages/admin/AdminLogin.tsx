@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// Enviar cookies en peticiones cross-site
+axios.defaults.withCredentials = true;
+
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -9,12 +12,15 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   // If already logged in, redirect to dashboard
   React.useEffect(() => {
-    try {
-      const token = localStorage.getItem('adminToken');
-      if (token) {
-        window.location.href = '/admin/dashboard';
+    // Comprobar sesión en el servidor mediante cookie
+    (async () => {
+      try {
+        const r = await axios.get('/api/admin/me');
+        if (r.data?.user) window.location.href = '/admin/dashboard';
+      } catch (e) {
+        // no logged
       }
-    } catch (e) {}
+    })();
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -72,10 +78,10 @@ export default function AdminLogin() {
     }
     try {
       setLoading(true);
-      const res = await axios.post('/api/admin/login', { email, password });
-      const token = res.data.token;
-      localStorage.setItem('adminToken', token);
-      window.location.href = '/admin/reviews-manager';
+  // El servidor setea cookies (adminToken HttpOnly y csrfToken no-HttpOnly)
+  await axios.post('/api/admin/login', { email, password });
+  // Redirigir al dashboard
+  window.location.href = '/admin/dashboard';
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error en login');
     } finally {
