@@ -397,19 +397,25 @@ export default function ReviewsManager() {
       {loading ? <div>Cargando...</div> : (
         <div className="grid gap-4">
           {reviews.map(r => (
-            <div key={r._id} className="p-4 border rounded bg-slate-800 text-slate-100">
+            <div key={r._id} className="p-4 border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box', overflow: 'hidden' }}>
               <div className="flex justify-between items-start">
-                <div>
+                <div className="min-w-0">
                   <div className="font-semibold">{r.authorName} — {r.rating}★</div>
-                  <div className="text-sm text-slate-300">{r.productTitle || r.productId}</div>
-                  <div className="mt-2 text-slate-200">{r.body}</div>
+                  <div className="text-sm text-slate-300 truncate">{r.productTitle || r.productId}</div>
+                  <div className="mt-2 text-slate-200 break-words whitespace-normal">{r.body}</div>
                 </div>
                 <div className="flex flex-col gap-2 ml-4">
                   {r.status === 'pending' && <button onClick={()=>confirmPublish(r._id)} className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-white rounded shadow">Publish</button>}
                   <button onClick={()=>confirmRemove(r._id)} className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded shadow">Delete</button>
                 </div>
               </div>
-              {r.photos && r.photos.length>0 && <div className="mt-3 flex gap-2">{r.photos.map((p:string,i:number)=>(<img key={i} src={p} className="w-24 h-24 object-cover rounded" />))}</div>}
+                {r.photos && r.photos.length>0 && (
+                <div className="mt-3 flex gap-2 flex-wrap box-border">
+                  {r.photos.map((p:string,i:number) => (
+                    <img key={i} src={p} className="w-1/3 sm:w-[72px] h-[72px] object-cover rounded max-w-full" />
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -427,9 +433,9 @@ export default function ReviewsManager() {
             /* For scrollable inner elements */
             .admin-modal .overflow-auto, .admin-modal .overflow-x-auto { scrollbar-color: #f59e0b #0f172a; }
           `}</style>
-          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-6 rounded-lg w-full max-w-xl border border-slate-700">
+          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-6 rounded-lg w-full max-w-xl border border-slate-700" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 80px)', boxSizing: 'border-box' }}>
             <h3 className="text-lg font-semibold mb-4 text-white">Crear reseña manual</h3>
-            <div className="grid gap-3">
+            <div className="grid gap-3 overflow-auto" style={{ flex: 1 }}>
               <label className="text-sm text-slate-300">Producto</label>
               <input value={productQuery} onChange={e=>setProductQuery(e.target.value)} placeholder="Buscar producto por título..." className="px-3 py-2 bg-slate-800 text-white rounded" />
               <div className="max-h-40 overflow-auto bg-slate-800 rounded p-2 admin-modal">
@@ -502,10 +508,10 @@ export default function ReviewsManager() {
                 <input ref={fileInputRef} type="file" multiple accept=".png,.jpg,.jpeg,.webp" onChange={e=>handleFilesSelected(e.target.files)} className="hidden" />
                 {previews.length>0 && (
                   <div className="mt-3 admin-modal">
-                    <div className="flex flex-wrap gap-3 px-1 py-2" style={{ alignItems: 'center' }}>
-                      {previews.map((u,i)=> (
-                        <div key={i} className={`relative rounded overflow-hidden bg-slate-700`} style={{ width: 72, height: 72 }} draggable data-thumb data-index={String(i)} onDragStart={(e)=>handlePreviewDragStart(i,e)} onDragOver={(e)=>handlePreviewDragOver(i,e)} onDrop={(e)=>handlePreviewDrop(i,e)} onTouchStart={(e)=>handleTouchStart(i,e)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-                          <img src={u} className={`w-full h-full object-cover ${dragOverIndex===i? 'ring-4 ring-yellow-400 ring-inset':''}`} style={{ objectPosition: 'center' }} />
+                      <div className="flex gap-3 px-1 py-2 overflow-x-auto" style={{ alignItems: 'center' }}>
+                        {previews.map((u,i)=> (
+                          <div key={i} className={`relative rounded overflow-hidden bg-slate-700 flex-shrink-0`} style={{ width: 72, height: 72 }} draggable data-thumb data-index={String(i)} onDragStart={(e)=>handlePreviewDragStart(i,e)} onDragOver={(e)=>handlePreviewDragOver(i,e)} onDrop={(e)=>handlePreviewDrop(i,e)} onTouchStart={(e)=>handleTouchStart(i,e)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+                            <img src={u} className={`w-full h-full object-cover ${dragOverIndex===i? 'ring-4 ring-yellow-400 ring-inset':''}`} style={{ objectPosition: 'center' }} />
                           <div className="absolute top-1 left-1 bg-yellow-400 text-slate-900 rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold">{i+1}</div>
                           <button type="button" onClick={()=>removeFileAt(i)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs">×</button>
                           {dragOverIndex===i && (
