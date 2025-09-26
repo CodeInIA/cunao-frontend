@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReviewCard from './ReviewCard';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Star } from 'lucide-react';
 
 type Props = { productId?: string; maxVisible?: number };
 
@@ -327,8 +327,27 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
 
   if (reviews.length === 0) return null;
 
+  // average rating for header
+  const averageRating = reviews.reduce((s, r) => s + (Number(r?.rating) || 0), 0) / reviews.length;
+  const avgRounded = Math.round(averageRating * 10) / 10; // one decimal
+  const avgRoundedInt = Math.round(averageRating); // for star meter (nearest int)
+
   return (
     <>
+      <div className="w-full flex justify-center my-6">
+        <div className="text-center">
+          <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Esto opinan otros cuñaos</div>
+          <div className="mt-2 flex items-center justify-center gap-3">
+            {/* stars */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className={`w-4 h-4 ${i < avgRoundedInt ? 'text-spanish-yellow' : 'text-slate-300'}`} />
+              ))}
+            </div>
+            <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">de {reviews.length} reseñas</div>
+          </div>
+        </div>
+      </div>
       <div ref={containerRef} className="relative px-4 sm:px-0">
       {/* arrow offset: outside on desktop, inside on small screens */}
       {windowWidth >= 640 && (() => {

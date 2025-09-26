@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check } from 'lucide-react';
 
 export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ review, onOpen }) => {
   const shortenName = (name?: string) => {
@@ -46,12 +47,29 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
           </a>
         ) : null}
 
-        {/* Review body */}
-  <p className="text-slate-300 text-sm mt-3 mb-4 overflow-hidden break-words whitespace-normal max-w-full">{review.body}</p>
+        {/* Review body: limitar a 3 líneas con ellipsis */}
+  <p
+    className="text-slate-300 text-sm mt-3 mb-4 break-words whitespace-normal max-w-full"
+    style={{
+      display: '-webkit-box',
+      WebkitLineClamp: 3,
+      WebkitBoxOrient: 'vertical',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    }}
+  >
+    {review.body}
+  </p>
 
         <div className="mt-auto">
           <div className="border-t border-slate-700 mb-3" />
-          <div className="text-slate-200 text-sm font-semibold text-center">{shortenName(review.authorName)}</div>
+          <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center gap-1 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-spanish-yellow" />
+                <span className="font-medium">Compra verificada</span>
+              </div>
+          </div>
+          <div className="text-slate-200 text-sm font-semibold text-center mt-2">{shortenName(review.authorName)}</div>
         </div>
       </div>
     </div>

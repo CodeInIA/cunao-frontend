@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, Shield, Heart } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
@@ -22,6 +23,31 @@ export const HomePage: React.FC = () => {
     fetchProducts(12);
     fetchFeaturedProducts();
   }, [fetchProducts, fetchFeaturedProducts]);
+
+  // store-wide reviews average
+  const [storeAvg, setStoreAvg] = useState<number | null>(null);
+  const [storeTotal, setStoreTotal] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const res = await axios.get('/api/reviews/list');
+        const list = res.data || [];
+        const total = list.length;
+        const sum = list.reduce((s: number, r: any) => s + (Number(r?.rating) || 0), 0);
+        const avg = total > 0 ? sum / total : 0;
+        if (mounted) {
+          setStoreAvg(Math.round(avg * 10) / 10);
+          setStoreTotal(total);
+        }
+      } catch (e) {
+        console.error('Failed to load reviews for homepage average', e);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   const handleAddToCart = (product: Product) => {
     // Obtener el precio real del producto
@@ -180,20 +206,20 @@ export const HomePage: React.FC = () => {
               </div>
               {/* Estadísticas */}
               <div className="bg-slate-800 rounded-2xl p-8 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                  <div>
-                    <div className="text-3xl font-bold text-spanish-yellow mb-2">2.547</div>
-                    <p className="text-slate-300">Cuñados satisfechos</p>
+                  <div className="grid grid-cols-3 gap-8 text-center items-stretch">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">2.547</div>
+                      <p className="text-slate-300 text-sm">Cuñados satisfechos</p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">{storeAvg !== null ? `${storeAvg}★` : '—'}</div>
+                      <p className="text-slate-300 text-sm">Valoración media</p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">15</div>
+                      <p className="text-slate-300 text-sm">Frases legendarias</p>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-3xl font-bold text-spanish-yellow mb-2">4.9★</div>
-                    <p className="text-slate-300">Valoración media</p>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-spanish-yellow mb-2">15</div>
-                    <p className="text-slate-300">Frases legendarias</p>
-                  </div>
-                </div>
               </div>
               {/* Reviews Carousel inserted */}
               <div className="mb-8">
