@@ -30,6 +30,9 @@ const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(m => ({ defa
 const SuccessPage = lazy(() => import('./pages/SuccessPage').then(m => ({ default: m.SuccessPage })));
 const CancelPage = lazy(() => import('./pages/CancelPage').then(m => ({ default: m.CancelPage })));
 const NewsletterPreferencesPage = lazy(() => import('./pages/NewsletterPreferencesPage').then(m => ({ default: m.NewsletterPreferencesPage })));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then(m => ({ default: m.default })));
+const ReviewsManager = lazy(() => import('./pages/admin/ReviewsManager').then(m => ({ default: m.default })));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.default })));
 import './App.css';
 
 function App() {
@@ -95,6 +98,10 @@ useEffect(() => {
                 <Route path="/success" element={<SuccessPage />} />
                 <Route path="/cancel" element={<CancelPage />} />
                 <Route path="/newsletter/preferences" element={<NewsletterPreferencesPage />} />
+                <Route path="/admin" element={<AdminLogin />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/review-manager" element={<ReviewsManager />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
