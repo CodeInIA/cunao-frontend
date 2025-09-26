@@ -275,11 +275,15 @@ export default function ReviewsManager() {
 
   function handlePreviewDragOver(idx: number, e: React.DragEvent) {
     e.preventDefault();
+    // prevent the parent drop handler from also receiving this event
+    e.stopPropagation();
     setDragOverIndex(idx);
   }
 
   function handlePreviewDrop(idx: number, e: React.DragEvent) {
     e.preventDefault();
+    // prevent the parent drop handler from also receiving this event (which would treat it as a file drop)
+    e.stopPropagation();
     const srcIdxStr = e.dataTransfer.getData('text/plain');
     const srcIdx = srcIdxStr ? Number(srcIdxStr) : dragIndex;
     const tgtIdx = idx;
@@ -355,8 +359,16 @@ export default function ReviewsManager() {
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
+    // If this drop carries an internal drag index (text/plain) it is a reorder of previews
+    // and should not be treated as adding new files.
+    try {
+      const txt = e.dataTransfer.getData('text/plain');
+      if (txt) return;
+    } catch (err) {
+      // ignore
+    }
     const dtFiles = e.dataTransfer.files;
-    handleFilesSelected(dtFiles);
+    if (dtFiles && dtFiles.length > 0) handleFilesSelected(dtFiles);
   }
 
   function removeFileAt(index: number) {
