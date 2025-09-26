@@ -7,9 +7,8 @@ type Props = { productId?: string; maxVisible?: number };
 
 function getVisibleCount(width: number) {
   // breakpoints: mobile <640:1, 640-767:2, 768-991:3, 992-1199:4, >=1200:6
-  if (width >= 1200) return 6;
-  if (width >= 992) return 4;
-  if (width >= 768) return 3;
+  if (width >= 1400) return 4;
+  if (width >= 1100) return 3;
   if (width >= 640) return 2;
   return 1; // mobile: show 1
 }
@@ -31,7 +30,16 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
     const fetchReviews = async () => {
       try {
         const res = await axios.get('/api/reviews/list' + (productId ? `?productId=${productId}` : ''));
-        setReviews(res.data || []);
+        const data = res.data || [];
+        // ordenar por rating (desc) y, en caso de empate, por fecha de creación (desc)
+        const sorted = (Array.isArray(data) ? data.slice() : []).sort((a: any, b: any) => {
+          const ra = (Number(b?.rating) || 0) - (Number(a?.rating) || 0);
+          if (ra !== 0) return ra;
+          const dateB = new Date(b?.createdAt || b?.created_at || 0).getTime();
+          const dateA = new Date(a?.createdAt || a?.created_at || 0).getTime();
+          return dateB - dateA;
+        });
+        setReviews(sorted);
       } catch (e) {
         console.error(e);
       }
@@ -398,13 +406,30 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6 }) => {
         <div className="mt-3 flex items-center justify-center gap-4">
           <button onClick={() => { if (canPrev) prev(); }} disabled={!canPrev} aria-disabled={!canPrev} className={`p-2 rounded-full bg-white/10 text-white ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}>◀</button>
           <div className="flex items-center gap-2">
-            {Array.from({ length: Math.max(1, Math.ceil(reviews.length / effectiveVisible)) }).map((_, p) => {
-              const pageIndex = p * effectiveVisible;
+            {(() => {
+              const pages = Math.max(1, Math.ceil(reviews.length / effectiveVisible));
               const activePage = Math.floor(index / effectiveVisible);
-              return (
-                <button key={p} onClick={() => setIndex(pageIndex)} className={`w-2 h-2 rounded-full ${activePage === p ? 'bg-white' : 'bg-white/30'}`} aria-label={`Ir a página ${p+1}`} />
-              );
-            })}
+              const maxDots = 7; // máximo de puntitos a mostrar entre las flechas en móvil
+              let pageIndices: number[] = [];
+              if (pages <= maxDots) {
+                pageIndices = Array.from({ length: pages }).map((_, i) => i);
+              } else {
+                const half = Math.floor(maxDots / 2);
+                let start = Math.max(0, activePage - half);
+                let end = start + maxDots;
+                if (end > pages) {
+                  end = pages;
+                  start = pages - maxDots;
+                }
+                pageIndices = Array.from({ length: end - start }).map((_, i) => i + start);
+              }
+              return pageIndices.map((p) => {
+                const pageIndex = p * effectiveVisible;
+                return (
+                  <button key={p} onClick={() => setIndex(pageIndex)} className={`w-2 h-2 rounded-full ${activePage === p ? 'bg-white' : 'bg-white/30'}`} aria-label={`Ir a página ${p+1}`} />
+                );
+              });
+            })()}
           </div>
           <button onClick={() => { if (canNext) next(); }} disabled={!canNext} aria-disabled={!canNext} className={`p-2 rounded-full bg-white/10 text-white ${canNext ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}>▶</button>
         </div>
