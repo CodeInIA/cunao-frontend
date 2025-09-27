@@ -18,7 +18,7 @@ export default function ReviewsManager() {
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [newReview, setNewReview] = useState({ productId: '', rating: 5, description: '', authorName: '', status: 'pending' });
+  const [newReview, setNewReview] = useState({ productId: '', rating: 5, description: '', authorName: '', status: 'pending', color: '', size: '', quantity: 1 });
   const [createErrors, setCreateErrors] = useState<{ files?: string; text?: string; author?: string }>({});
   const [products, setProducts] = useState<any[]>([]);
   const [productQuery, setProductQuery] = useState('');
@@ -87,6 +87,54 @@ export default function ReviewsManager() {
     }
     loadProducts();
   }, []);
+
+  // derive color/size options from the selected product (heuristic)
+  function getProductOptions(prod: any) {
+    if (!prod) return { colors: [] as string[], sizes: [] as string[] };
+    // Use only enabled variants to determine available option ids (matches ProductCard logic)
+    const enabledVariants = Array.isArray(prod.variants) ? prod.variants.filter((v: any) => v.is_enabled !== false) : [];
+
+    // If options exist, prefer to map from option values but filter by those used by enabled variants
+    if (Array.isArray(prod.options) && prod.options.length > 0) {
+      // collect option ids used by enabled variants
+      const usedOptionIds = Array.from(new Set(enabledVariants.flatMap((v: any) => (Array.isArray(v.options) ? v.options : []).filter(Boolean))));
+
+      const findOption = (typeName: string) => prod.options.find((o: any) => (o.type || '').toString().toLowerCase() === typeName || String(o.name || '').toLowerCase().includes(typeName));
+      const colorOpt = findOption('color');
+      const sizeOpt = findOption('size') || prod.options.find((o: any) => String(o.name || '').toLowerCase().includes('talla'));
+
+  const mapValues = (vals: any[]) => vals.map((v: any) => String(typeof v === 'string' ? v : (v && (v.title || v.name || v))));
+
+      let colors: string[] = [];
+      if (colorOpt && Array.isArray(colorOpt.values)) {
+        // if variants reference option ids, filter values by id
+        if (usedOptionIds.length > 0 && Array.isArray(colorOpt.values) && colorOpt.values[0] && typeof colorOpt.values[0] === 'object' && 'id' in colorOpt.values[0]) {
+          colors = colorOpt.values.filter((val: any) => usedOptionIds.includes(val.id)).map((v: any) => String(v && (v.title || v.name || '')));
+        } else {
+          colors = mapValues(colorOpt.values);
+        }
+      }
+
+      let sizes: string[] = [];
+      if (sizeOpt && Array.isArray(sizeOpt.values)) {
+        if (usedOptionIds.length > 0 && Array.isArray(sizeOpt.values) && sizeOpt.values[0] && typeof sizeOpt.values[0] === 'object' && 'id' in sizeOpt.values[0]) {
+          sizes = sizeOpt.values.filter((val: any) => usedOptionIds.includes(val.id)).map((v: any) => String(v && (v.title || v.name || '')));
+        } else {
+          sizes = mapValues(sizeOpt.values);
+        }
+      }
+
+      return { colors, sizes };
+    }
+
+    // Fallback: use enabled variants fields
+    if (enabledVariants.length > 0) {
+      const colors = Array.from(new Set(enabledVariants.map((v: any) => v.color || v.variantColor || '').filter(Boolean)));
+      const sizes = Array.from(new Set(enabledVariants.map((v: any) => v.size || v.variantSize || '').filter(Boolean)));
+      return { colors, sizes };
+    }
+    return { colors: [], sizes: [] };
+  }
 
   // check admin session on mount so this page cannot be accessed without login
   useEffect(() => {
@@ -218,12 +266,15 @@ export default function ReviewsManager() {
   if (newReview.description) fd.append('body', newReview.description);
       if (newReview.authorName) fd.append('authorName', newReview.authorName);
       if (newReview.status) fd.append('status', newReview.status);
+    if (newReview.color) fd.append('color', String(newReview.color));
+    if (newReview.size) fd.append('size', String(newReview.size));
+    if (newReview.quantity) fd.append('quantity', String(newReview.quantity));
       // append files
       fileList.slice(0,5).forEach((f) => fd.append('files', f));
 
   await axios.post('/api/admin/reviews/create', fd, { headers: { 'x-csrf-token': csrf || '' } });
       setShowCreate(false);
-  setNewReview({ productId: '', rating: 5, description: '', authorName: '', status: 'pending' });
+  setNewReview({ productId: '', rating: 5, description: '', authorName: '', status: 'pending', color: '', size: '', quantity: 1 });
       setFileList([]);
       setPreviews([]);
   setCreateErrors({});
@@ -574,6 +625,13 @@ export default function ReviewsManager() {
             .admin-modal { scrollbar-color: #f59e0b #0f172a; }
             /* For scrollable inner elements */
             .admin-modal .overflow-auto, .admin-modal .overflow-x-auto { scrollbar-color: #f59e0b #0f172a; }
+            /* Remove number input spin buttons (Chrome/Safari/Edge/Firefox) */
+            .admin-modal input[type=number]::-webkit-outer-spin-button,
+            .admin-modal input[type=number]::-webkit-inner-spin-button {
+              -webkit-appearance: none;
+              margin: 0;
+            }
+            .admin-modal input[type=number] { -moz-appearance: textfield; appearance: textfield; }
           `}</style>
           <form onSubmit={createReview} className="admin-modal bg-slate-900 p-4 sm:p-6 rounded-none sm:rounded-lg w-full sm:max-w-xl border border-slate-700 h-full sm:h-auto sm:mt-[5px] sm:mx-auto max-h-screen" style={{ display: 'flex', flexDirection: 'column', boxSizing: 'border-box', maxHeight: '100vh' }}>
             <h3 className="text-lg font-semibold mb-4 text-white">Crear reseña manual</h3>
@@ -591,7 +649,14 @@ export default function ReviewsManager() {
                   </div>
                 ) : (
                   products.filter((p:any) => !productQuery || String(p.title || p.name || p.id).toLowerCase().includes(productQuery.toLowerCase())).slice(0,50).map((p:any) => (
-                    <div key={p.id} onClick={()=>{ setSelectedProduct(p); setNewReview({...newReview, productId: String(p.id)}); }} className={`p-2 rounded cursor-pointer ${newReview.productId===String(p.id)? 'bg-slate-700 ring-2 ring-yellow-400':'hover:bg-slate-700'}`}>
+                    <div key={p.id} onClick={()=>{ 
+                        setSelectedProduct(p);
+                        // prefill productId and attempt to pick default color/size from product options/variants
+                        const opts = getProductOptions(p);
+                        const color = (opts.colors && opts.colors.length>0) ? String(opts.colors[0]) : '';
+                        const size = (opts.sizes && opts.sizes.length>0) ? String(opts.sizes[0]) : '';
+                        setNewReview({...newReview, productId: String(p.id), color: color, size: size});
+                      }} className={`p-2 rounded cursor-pointer ${newReview.productId===String(p.id)? 'bg-slate-700 ring-2 ring-yellow-400':'hover:bg-slate-700'}`}>
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-white">{p.title || p.name || p.id}</div>
                         {newReview.productId===String(p.id) && <div className="text-xs bg-yellow-400 text-slate-900 px-2 py-0.5 rounded font-semibold">Selected</div>}
@@ -600,6 +665,42 @@ export default function ReviewsManager() {
                   ))
                 )}
               </div>
+
+              {/* Color / Size / Quantity selectors inserted here */}
+              {selectedProduct && (
+                (() => {
+                  const opts = getProductOptions(selectedProduct) as { colors: string[]; sizes: string[] };
+                  return (
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-sm text-slate-300">Color</label>
+                        <select value={newReview.color} onChange={e=>setNewReview({...newReview, color: e.target.value})} className="w-full px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset">
+                          <option value="">(Seleccionar color)</option>
+                          {opts.colors.map((c:string)=> <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm text-slate-300">Talla</label>
+                        <select value={newReview.size} onChange={e=>setNewReview({...newReview, size: e.target.value})} className="w-full px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset">
+                          <option value="">(Seleccionar talla)</option>
+                          {opts.sizes.map((s:string)=> <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm text-slate-300">Cantidad</label>
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={()=>setNewReview(prev => ({ ...prev, quantity: Math.max(1, (prev.quantity || 1) - 1) }))} className="px-2 py-1 bg-slate-700 rounded text-white">-</button>
+                          <input type="number" min={1} value={newReview.quantity} onChange={e=>{
+                            const v = Number(e.target.value || 1);
+                            setNewReview(prev => ({ ...prev, quantity: Number.isNaN(v) ? 1 : Math.max(1, Math.floor(v)) }));
+                          }} className="w-full text-center px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" />
+                          <button type="button" onClick={()=>setNewReview(prev => ({ ...prev, quantity: (prev.quantity || 1) + 1 }))} className="px-2 py-1 bg-slate-700 rounded text-white">+</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
 
               <input value={newReview.authorName} onChange={e=>{ setNewReview({...newReview, authorName: e.target.value}); setCreateErrors(prev=>({...prev, author: undefined})); }} placeholder="Autor (nombre)" className="px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" />
               {createErrors.author && <div className="text-sm text-red-400 mt-1">{createErrors.author}</div>}
@@ -680,7 +781,7 @@ export default function ReviewsManager() {
             </div>
 
               <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={()=>{setShowCreate(false); setFileList([]); setPreviews([]); setNewReview({ productId: '', rating: 5, description: '', authorName: '', status: 'pending' }); setDescCount(0); setCreateErrors({});}} className="px-3 py-2 bg-slate-700 text-white rounded">Cancelar</button>
+              <button type="button" onClick={()=>{setShowCreate(false); setFileList([]); setPreviews([]); setNewReview({ productId: '', rating: 5, description: '', authorName: '', status: 'pending', color: '', size: '', quantity: 1 }); setDescCount(0); setCreateErrors({});}} className="px-3 py-2 bg-slate-700 text-white rounded">Cancelar</button>
               <button type="submit" disabled={creating} className="px-4 py-2 bg-yellow-400 text-slate-900 rounded font-semibold">{creating? 'Creando...':'Crear reseña'}</button>
             </div>
           </form>
