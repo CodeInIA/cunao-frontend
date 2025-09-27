@@ -31,6 +31,7 @@ export default function ReviewsManager() {
   const [descCount, setDescCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sourceFilter, setSourceFilter] = useState<'all'|'real'|'manual'>('all');
+  const [sortOrder, setSortOrder] = useState<'newest'|'oldest'>('newest');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const touchTimer = useRef<number | null>(null);
@@ -73,6 +74,18 @@ export default function ReviewsManager() {
       return title.includes(q) || body.includes(q) || author.includes(q) || color.includes(q);
     });
   }, [reviews, searchQuery, sourceFilter]);
+
+  // Apply client-side sorting by creation date
+  const sortedFilteredReviews = React.useMemo(() => {
+    const arr = filteredReviews.slice();
+    arr.sort((a: any, b: any) => {
+      const ta = Number(new Date(a && a.createdAt ? a.createdAt : a.createdAt));
+      const tb = Number(new Date(b && b.createdAt ? b.createdAt : b.createdAt));
+      if (Number.isNaN(ta) || Number.isNaN(tb)) return 0;
+      return sortOrder === 'newest' ? tb - ta : ta - tb;
+    });
+    return arr;
+  }, [filteredReviews, sortOrder]);
 
   useEffect(() => {
     // fetch products once for the selector
@@ -518,6 +531,13 @@ export default function ReviewsManager() {
             </button>
           </div>
         </div>
+        {/* Sort control (newest/oldest) */}
+        <div className="order-2 sm:order-3 w-full sm:w-auto flex items-center justify-start sm:justify-end shrink-0 mb-0 sm:mb-0">
+          <div className="ml-0 sm:ml-3 inline-flex items-center rounded-md bg-slate-800 p-1">
+            <button onClick={() => setSortOrder('newest')} className={`px-3 py-1 rounded text-sm ${sortOrder==='newest' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>Más recientes</button>
+            <button onClick={() => setSortOrder('oldest')} className={`px-3 py-1 rounded text-sm ${sortOrder==='oldest' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>Más antiguas</button>
+          </div>
+        </div>
 
         {/* Selector + create (row 3 on mobile, row 3 on sm+) */}
         <div className="order-3 sm:order-3 flex items-center gap-3 w-full sm:w-auto justify-start sm:justify-end shrink-0">
@@ -556,14 +576,14 @@ export default function ReviewsManager() {
 
       {loading ? <div>Cargando...</div> : (
         <div className="grid gap-4">
-          {filteredReviews.map(r => (
+          {sortedFilteredReviews.map(r => (
             <div key={r._id} className="p-0 relative border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' }}>
               <div className="flex">
                 {/* Left: variant image full height */}
                 <div className="flex-shrink-0 w-28 sm:w-32 bg-slate-700 flex items-center justify-center">
                   <img src={r.imageUrl || '/logo/logo-sin-letras.png'} alt={r.productTitle || r.productId} className="w-full h-full object-contain p-2" style={{ maxHeight: '160px' }} />
                 </div>
-                <div className="p-4 flex-1">
+                <div className="p-4 flex-1 min-w-0">
                   <div className="flex justify-between items-start">
                     <div className="min-w-0">
                       {(() => {
@@ -573,15 +593,13 @@ export default function ReviewsManager() {
                         return (
                           <>
                             <div className="font-semibold text-lg flex items-center gap-2">
-                              <a href={`/producto/${r.productSlug || r.productId}${r.color ? `?color=${encodeURIComponent(String(r.color))}` : ''}`} className="text-white hover:underline break-words whitespace-normal">{r.productTitle || r.productId}</a>
+                              <a href={`/producto/${r.productSlug || r.productId}${r.color ? `?color=${encodeURIComponent(String(r.color))}` : ''}`} className="text-white hover:underline break-words whitespace-normal max-w-full">{r.productTitle || r.productId}</a>
                               {/* Desktop/tablet badge (hidden on small screens) */}
                               {isReal && <span title="Reseña verificada - proviene de un pedido real" className="hidden sm:inline-flex text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">Auténtica</span>}
                               {isManual && <span title="Reseña creada manualmente por admin" className="hidden sm:inline-flex text-xs bg-gray-700 text-slate-200 px-2 py-0.5 rounded-full">🤖 Manual</span>}
                             </div>
 
-                            {/* Mobile badge positioned bottom-right to avoid overflow (hidden on sm+) */}
-                            {isReal && <span title="Reseña verificada - proviene de un pedido real" className="absolute right-3 bottom-3 sm:hidden text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">Auténtica</span>}
-                            {isManual && <span title="Reseña creada manualmente por admin" className="absolute right-3 bottom-3 sm:hidden text-xs bg-gray-700 text-slate-200 px-2 py-0.5 rounded-full">🤖 Manual</span>}
+                            {/* Mobile badge moved below photos to avoid overlap (see block after thumbnails) */}
                           </>
                         );
                       })()}
@@ -589,7 +607,9 @@ export default function ReviewsManager() {
                       <div className="text-sm text-slate-400 mt-1">{
                         `Autor: ${r.authorName || r.author || '—'} · Pedido: ${r.orderId || (r.order && (r.order.id || r.order.orderId)) || '—'}`
                       }</div>
-                      <div className="mt-2 text-slate-200 break-words whitespace-normal">{r.body}</div>
+                      <div className="mt-2 text-slate-200 break-words whitespace-normal min-w-0 max-w-full">{r.body}</div>
+                      {/* Created at timestamp bottom-right (desktop/tablet). Mobile timestamp + badge rendered below thumbnails to avoid overlap. */}
+                      <div className="absolute right-3 bottom-3 text-xs text-slate-400 hidden sm:block">{r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}</div>
                     </div>
                     <div className="flex flex-col gap-2 ml-4">
                       {r.status === 'pending' && <button onClick={()=>confirmPublish(r._id)} className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-white rounded shadow">Publish</button>}
@@ -598,7 +618,7 @@ export default function ReviewsManager() {
                   </div>
                   {/* thumbnails (if any) */}
                   {r.photos && r.photos.length>0 && (
-                    <div className="mt-3 flex gap-2 flex-wrap box-border">
+                      <div className="mt-3 flex gap-2 flex-wrap box-border max-w-full overflow-hidden">
                       {r.photos.map((p:string,i:number) => (
                         <div key={i} className="relative">
                           <img src={p} onClick={()=>setLightboxImage(p)} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded cursor-pointer" />
@@ -607,6 +627,26 @@ export default function ReviewsManager() {
                       ))}
                     </div>
                   )}
+                  {/* Mobile-only: badge + timestamp below photos to avoid overlap */}
+                  <div className="sm:hidden mt-2 text-right">
+                    {(() => {
+                      const orderIdRaw = (r.orderId || (r.order && (r.order.id || r.order.orderId)) || '').toString();
+                      const isManual = orderIdRaw && orderIdRaw.toLowerCase() === 'admin';
+                      const isReal = !!orderIdRaw && !isManual;
+                      return (
+                        <>
+                          {isReal && <div className="inline-block text-xs bg-green-600 text-white px-2 py-0.5 rounded-full mb-1">Auténtica</div>}
+                          {isManual && <div className="inline-block text-xs bg-gray-700 text-slate-200 px-2 py-0.5 rounded-full mb-1">🤖 Manual</div>}
+                          {r.createdAt ? (
+                            <div className="text-xs text-slate-400">
+                              <div>{new Date(r.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' })}</div>
+                              <div className="text-[11px]">{new Date(r.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                            </div>
+                          ) : null}
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>
