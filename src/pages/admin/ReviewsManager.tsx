@@ -32,6 +32,7 @@ export default function ReviewsManager() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const touchTimer = useRef<number | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   const MAX_IMAGES_PER_ITEM = 5;
   const MAX_REVIEW_CHARS = 1000;
@@ -459,14 +460,35 @@ export default function ReviewsManager() {
     };
   }, [showCreate, deleteModalId, publishModalId]);
 
+  // Control body scroll when lightbox is open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    if (lightboxImage) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = prev || '';
+    }
+    return () => { document.body.style.overflow = prev || ''; };
+  }, [lightboxImage]);
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">Reviews manager</h2>
         <div className="flex items-center gap-3">
           <div className="inline-flex bg-slate-800 rounded-md p-1">
-            <button onClick={()=>setFilter('pending')} className={`px-3 py-1 rounded text-sm ${filter==='pending'? 'bg-slate-700 text-white':'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>Pending</button>
-            <button onClick={()=>setFilter('published')} className={`px-3 py-1 rounded text-sm ${filter==='published'? 'bg-slate-700 text-white':'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>Published</button>
+            <button
+              onClick={() => { setFilter('pending'); fetchReviews(); }}
+              aria-pressed={filter === 'pending'}
+              className={`px-3 py-1 rounded text-sm ${filter==='pending'? 'bg-slate-700 text-white':'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+              Pending
+            </button>
+            <button
+              onClick={() => { setFilter('published'); fetchReviews(); }}
+              aria-pressed={filter === 'published'}
+              className={`px-3 py-1 rounded text-sm ${filter==='published'? 'bg-slate-700 text-white':'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+              Published
+            </button>
           </div>
 
           <button onClick={()=>setShowCreate(true)} title="Crear reseña manual" className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-2 rounded-md shadow hover:bg-yellow-300">
@@ -482,8 +504,8 @@ export default function ReviewsManager() {
             <div key={r._id} className="p-0 border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' }}>
               <div className="flex">
                 {/* Left: variant image full height */}
-                <div className="flex-shrink-0 w-28 sm:w-32 bg-slate-700">
-                  <img src={r.imageUrl || (r.photos && r.photos[0]) || '/logo/logo-sin-letras.png'} alt={r.productTitle || r.productId} className="w-full h-full object-cover" />
+                <div className="flex-shrink-0 w-28 sm:w-32 bg-slate-700 flex items-center justify-center">
+                  <img src={r.imageUrl || '/logo/logo-sin-letras.png'} alt={r.productTitle || r.productId} className="w-full h-full object-contain p-2" style={{ maxHeight: '160px' }} />
                 </div>
                 <div className="p-4 flex-1">
                   <div className="flex justify-between items-start">
@@ -503,7 +525,7 @@ export default function ReviewsManager() {
                   {r.photos && r.photos.length>0 && (
                     <div className="mt-3 flex gap-2 flex-wrap box-border">
                       {r.photos.map((p:string,i:number) => (
-                        <img key={i} src={p} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded" />
+                        <img key={i} src={p} onClick={()=>setLightboxImage(p)} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded cursor-pointer" />
                       ))}
                     </div>
                   )}
@@ -661,6 +683,16 @@ export default function ReviewsManager() {
               <button onClick={()=>setPublishModalId(null)} className="px-3 py-2 bg-slate-700 text-white rounded">Cancelar</button>
               <button onClick={publishConfirmed} disabled={publishing} className="px-4 py-2 bg-emerald-500 text-white rounded font-semibold">{publishing ? 'Publicando...' : 'Publicar'}</button>
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Lightbox modal for enlarging review images */}
+      {lightboxImage ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={(e)=>{ if (e.target === e.currentTarget) setLightboxImage(null); }}>
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <button onClick={()=>setLightboxImage(null)} className="absolute -top-3 -right-3 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center z-50">×</button>
+            <img src={lightboxImage} alt="preview" className="max-w-full max-h-[90vh] object-contain rounded shadow-lg" />
           </div>
         </div>
       ) : null}
