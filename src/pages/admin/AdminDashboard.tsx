@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await axios.get('/api/admin/reviews', { params: { status: 'pending' } });
+        const list = res.data && (res.data.reviews || res.data) ? (res.data.reviews || res.data) : [];
+        if (!mounted) return;
+        setPendingCount(Array.isArray(list) ? list.length : 0);
+      } catch (e) {
+        // Keep null on error
+        console.warn('Could not fetch pending reviews count', e);
+        if (!mounted) return;
+        setPendingCount(null);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   function goToReviews() {
     navigate('/admin/review-manager');
@@ -66,7 +85,7 @@ export default function AdminDashboard() {
               <p className="text-slate-300 mt-1">Revisa, publica o elimina reseñas. Las fotos en Cloudinary se eliminarán al borrar una reseña.</p>
 
               <div className="mt-4 flex items-center gap-3">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-200">Pendientes: —</span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-200">Pendientes: {pendingCount === null ? '—' : pendingCount}</span>
                 <button className="ml-auto inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Abrir</button>
               </div>
             </div>
