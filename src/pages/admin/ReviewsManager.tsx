@@ -459,15 +459,15 @@ export default function ReviewsManager() {
             /* For scrollable inner elements */
             .admin-modal .overflow-auto, .admin-modal .overflow-x-auto { scrollbar-color: #f59e0b #0f172a; }
           `}</style>
-          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-4 sm:p-6 rounded-none sm:rounded-lg w-full sm:max-w-xl border border-slate-700 h-full sm:h-auto sm:mt-[5px] sm:mx-auto" style={{ display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-4 sm:p-6 rounded-none sm:rounded-lg w-full sm:max-w-xl border border-slate-700 h-full sm:h-auto sm:mt-[5px] sm:mx-auto max-h-screen" style={{ display: 'flex', flexDirection: 'column', boxSizing: 'border-box', maxHeight: '100vh' }}>
             <h3 className="text-lg font-semibold mb-4 text-white">Crear reseña manual</h3>
             <div className="grid gap-3 overflow-auto" style={{ flex: 1 }}>
               <label className="text-sm text-slate-300">Producto</label>
               <input value={productQuery} onChange={e=>setProductQuery(e.target.value)} placeholder="Buscar producto por título..." className="px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" />
-              <div className="max-h-40 overflow-auto bg-slate-800 rounded p-2 admin-modal">
+              <div className="max-h-40 overflow-auto bg-slate-800 rounded p-2 admin-modal" style={{ minHeight: '48px' }}>
                 {/* If a product is selected, show only the compact selected item */}
-                {selectedProduct ? (
-                  <div className="p-2 rounded bg-slate-700 flex items-center justify-between ring-2 ring-yellow-400">
+                  {selectedProduct ? (
+                  <div className="p-2 rounded bg-slate-700 flex items-center justify-between ring-2 ring-yellow-400" style={{ minHeight: '48px' }}>
                     <div className="text-sm text-white">{selectedProduct.title || selectedProduct.name || selectedProduct.id}</div>
                     <div className="flex items-center gap-2">
                       <button type="button" onClick={()=>{ setSelectedProduct(null); setNewReview({...newReview, productId: ''}); }} className="text-xs px-2 py-1 bg-slate-800 rounded">Cambiar</button>
@@ -521,7 +521,7 @@ export default function ReviewsManager() {
 
               {/* Title removed (not part of review card). Description instead of body */}
               <label className="text-sm text-slate-300">Descripción</label>
-              <textarea value={newReview.description} onChange={e=>{ const val = e.target.value.slice(0, MAX_REVIEW_CHARS); setNewReview({...newReview, description: val}); setCreateErrors(prev=>({...prev, text: undefined})); setDescCount(val.length); }} placeholder="Descripción" maxLength={MAX_REVIEW_CHARS} className="px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" />
+              <textarea value={newReview.description} onChange={e=>{ const val = e.target.value.slice(0, MAX_REVIEW_CHARS); setNewReview({...newReview, description: val}); setCreateErrors(prev=>({...prev, text: undefined})); setDescCount(val.length); }} placeholder="Descripción" maxLength={MAX_REVIEW_CHARS} className="px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" style={{ minHeight: '60px' }} />
               <div className="flex items-center justify-between mt-1">
                 <div>
                   {createErrors.text ? (
