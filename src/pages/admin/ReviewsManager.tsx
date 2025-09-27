@@ -46,14 +46,43 @@ export default function ReviewsManager() {
   // fetch reviews only after authorization confirmed
   useEffect(() => { if (authorized) fetchReviews(); }, [filter, authorized]);
 
-  async function fetchReviews() {
+  type FetchOpts = { cacheBust?: boolean; retries?: number; delayMs?: number };
+  async function fetchReviews(opts: FetchOpts = {}) {
+    const { cacheBust = false, retries = 0, delayMs = 300 } = opts;
     setLoading(true);
-    try {
-  const res = await axios.get('/api/admin/reviews', { params: { status: filter } });
-      setReviews(res.data.reviews || res.data);
-    } catch (e) {
-      console.error(e);
-    } finally { setLoading(false); }
+    console.debug('[ReviewsManager] fetchReviews start, filter=', filter, 'opts=', opts);
+
+    let attempt = 0;
+    let lastLen: number | null = reviews ? reviews.length : null;
+    while (true) {
+      try {
+        const params: any = { status: filter };
+        if (cacheBust) params._t = Date.now();
+        const res = await axios.get('/api/admin/reviews', { params, headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' } });
+        const newReviews = res.data.reviews || res.data;
+        console.debug('[ReviewsManager] fetchReviews got', Array.isArray(newReviews) ? newReviews.length : typeof newReviews, 'items', 'attempt=', attempt);
+        setReviews(newReviews);
+
+        // if caller requested retries and the length didn't change, wait and retry
+        if (attempt < retries) {
+          const len = Array.isArray(newReviews) ? newReviews.length : null;
+          if (lastLen !== null && len === lastLen) {
+            attempt++;
+            console.debug('[ReviewsManager] fetchReviews length unchanged, retrying after', delayMs, 'ms (attempt', attempt, 'of', retries, ')');
+            await new Promise(r => setTimeout(r, delayMs));
+            continue;
+          }
+        }
+
+        break;
+      } catch (e) {
+        console.error(e);
+        toast.error('Error cargando reseñas (ver consola)');
+        break;
+      } finally {
+        setLoading(false);
+      }
+    }
   }
 
   const filteredReviews = React.useMemo(() => {
@@ -177,7 +206,10 @@ export default function ReviewsManager() {
 
       const csrf = getCookie('csrfToken');
       await axios.post(`/api/admin/reviews/publish/${id}`, {}, { headers: { 'x-csrf-token': csrf || '' } });
-      // success: nothing else to do (state already updated)
+      // success: refresh list to ensure server/state consistency
+      console.debug('[ReviewsManager] publish succeeded, refreshing list for id=', id);
+  await fetchReviews({ cacheBust: true, retries: 3, delayMs: 400 });
+      toast.success('Publicado correctamente');
     } catch (e) {
       console.error(e);
       // rollback
@@ -208,7 +240,7 @@ export default function ReviewsManager() {
       await axios.post(`/api/admin/reviews/publish/${id}`, {}, { headers: { 'x-csrf-token': csrf || '' } });
       // show success toast and refresh list to ensure accurate data
       toast.success('Publicado correctamente');
-      await fetchReviews();
+  await fetchReviews({ cacheBust: true, retries: 3, delayMs: 400 });
       setPublishModalId(null);
     } catch (e) {
       console.error(e);
@@ -236,8 +268,11 @@ export default function ReviewsManager() {
       setReviews(r => r.filter(rv => rv._id !== id));
       setDeleteModalId(null);
       const csrf = getCookie('csrfToken');
-      await axios.delete(`/api/admin/reviews/${id}`, { headers: { 'x-csrf-token': csrf || '' } });
-      // success: already removed from UI
+  await axios.delete(`/api/admin/reviews/${id}`, { headers: { 'x-csrf-token': csrf || '' } });
+  // success: refresh list to make sure server and client are consistent
+  console.debug('[ReviewsManager] delete succeeded, refreshing list for id=', id);
+  await fetchReviews();
+  toast.success('Reseña eliminada correctamente');
     } catch (e) {
       console.error(e);
       setReviews(prev);
@@ -292,7 +327,7 @@ export default function ReviewsManager() {
       setPreviews([]);
   setCreateErrors({});
   setDescCount(0);
-      fetchReviews();
+  fetchReviews({ cacheBust: true, retries: 3, delayMs: 400 });
       toast.success('Reseña creada correctamente');
     } catch (err) {
       console.error(err);
