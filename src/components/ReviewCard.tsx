@@ -35,12 +35,31 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
           ))}
         </div>
 
-        {/* Product title + link */}
+        {/* Product info row: talla / color / cantidad (sutil) */}
+        {(() => {
+          const size = review.size || review.talla || review.productSize || review.product_size;
+          const color = review.color || review.colour || review.productColor || review.product_color;
+          const qty = review.quantity || review.qty || review.cantidad || review.amount;
+          const parts: string[] = [];
+          if (size) parts.push(`Talla ${size}`);
+          if (color) parts.push(`Color ${typeof color === 'string' ? color : String(color)}`);
+          if (qty != null) parts.push(`${qty}x`);
+          if (parts.length === 0) return null;
+          return (
+            <div className="text-center mt-1">
+              <div className="text-xs text-slate-400/90 truncate" title={parts.join(' · ')}>
+                {parts.join(' · ')}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Product title + link (restaurado) */}
         {review.productTitle ? (
           <a
             onClick={(e) => e.stopPropagation()}
             href={productHref}
-            className="text-sm text-slate-300 hover:text-yellow-400 block text-center font-medium whitespace-normal break-words max-w-full"
+            className="text-sm text-slate-300 hover:text-yellow-400 block text-center font-medium whitespace-normal break-words max-w-full mt-1"
             title={review.productTitle}
           >
             {review.productTitle}
