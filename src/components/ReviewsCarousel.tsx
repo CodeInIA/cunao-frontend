@@ -448,7 +448,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
             <button onClick={() => setActiveCard(c => Math.max(0, c - 1))} className="p-2 text-slate-200 hidden sm:inline-flex"><ChevronLeft /></button>
             <div className="flex-1 min-w-0 w-full box-border px-4">
               {/* image display: use 3:4 aspect frame to match review cards; limit max-height so modal fits viewport */}
-              <div className="w-full bg-black rounded-t-lg overflow-hidden flex items-center justify-center relative box-border aspect-[3/4] max-h-[60vh] sm:max-h-[60vh]" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
+              <div className="w-full bg-transparent rounded-t-lg overflow-hidden flex items-center justify-center relative box-border aspect-[3/4] max-h-[60vh] sm:max-h-[60vh]" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
                 {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
                 {(() => {
                   const rv = reviews[activeCard] || {};
