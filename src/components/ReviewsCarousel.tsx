@@ -87,10 +87,9 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     return () => window.removeEventListener('resize', update);
   }, [maxVisible]);
 
-  // reset index when reviews/visible/pages change; ensure it's within bounds
+  // reset index when reviews/visible change; ensure it's within bounds (index is the start item index)
   useEffect(() => {
-    const pagesCount = Math.max(1, Math.ceil(reviews.length / (windowWidth < 640 ? 1 : visible)));
-    const maxIdx = windowWidth >= 640 ? Math.max(0, pagesCount - 1) : Math.max(0, reviews.length - effectiveVisible);
+    const maxIdx = Math.max(0, reviews.length - effectiveVisible);
     setIndex(i => Math.min(i, maxIdx));
   }, [reviews.length, visible, windowWidth]);
 
@@ -120,16 +119,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   // treat widths < 640 as mobile (1 card); from 640px use page-based navigation
   const effectiveVisible = windowWidth < 640 ? 1 : visible;
 
-  // number of pages (groups) of visible cards on non-mobile; on mobile pages equals reviews length / effectiveVisible
-  const pages = Math.max(1, Math.ceil(reviews.length / effectiveVisible));
-
-  // navigation: on desktop (>=640) index represents the page index (0..pages-1)
-  // on mobile index represents the item index (0..reviews.length-effectiveVisible)
-  const maxIndex = windowWidth >= 640 ? Math.max(0, pages - 1) : Math.max(0, reviews.length - effectiveVisible);
-
+  // navigation: index is the start item index (leftmost visible card). Move one item at a time.
+  const maxIndex = Math.max(0, reviews.length - effectiveVisible);
   const prev = () => setIndex(i => Math.max(0, i - 1));
   const next = () => setIndex(i => Math.min(maxIndex, i + 1));
-
   const canPrev = index > 0;
   const canNext = index < maxIndex;
 
@@ -325,8 +318,8 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   let transformValue: string;
   if (itemWidth) {
     if (windowWidth >= 640 && typeof visibleGroupWidth === 'number') {
-      // viewport width equals visibleGroupWidth (centered). Shift track left by full page steps so side cards are clipped.
-      const singleStep = (itemWidth + (itemGap || 0)) * effectiveVisible;
+      // index is the start item index. Shift track left so items [index .. index+effectiveVisible-1] are visible inside the clipped viewport.
+      const singleStep = (itemWidth + (itemGap || 0));
       const shift = index * singleStep;
       transformValue = `translateX(${-shift}px)`;
     } else {
