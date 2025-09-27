@@ -373,7 +373,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               precision={0.1} 
               readOnly 
               size="medium" 
-              emptyIcon={<StarIcon className="w-5 h-5 text-slate-300 dark:text-slate-600" />}
+              emptyIcon={<StarIcon style={{ opacity: 1 }} fontSize="inherit" />}
               sx={{ color: 'var(--tw-color-spanish-yellow, #f5c518)' }} />
             </div>
 
