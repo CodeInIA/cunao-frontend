@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReviewCard from './ReviewCard';
-import { ChevronLeft, ChevronRight, X, UserStar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, UserStar} from 'lucide-react';
+import Rating from '@mui/material/Rating';
+import StarIcon from '@mui/icons-material/Star';
 import { getWebPImageUrl } from '../utils/imageUtils';
 
 type Props = { productId?: string; maxVisible?: number; arrowEdgeExtra?: number };
@@ -26,6 +28,8 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   const [arrowOffsetLeft, setArrowOffsetLeft] = useState<number>(-36);
   const [arrowOffsetRight, setArrowOffsetRight] = useState<number>(-36);
   const [arrowOverlap, setArrowOverlap] = useState<number>(0);
+
+  // rating display will use MUI Rating with precision 0.1
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -341,18 +345,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   if (reviews.length === 0) return null;
 
   // average rating for header
-  const averageRating = reviews.reduce((s, r) => s + (Number(r?.rating) || 0), 0) / reviews.length;
+  const averageRating = reviews.length ? reviews.reduce((s, r) => s + (Number(r?.rating) || 0), 0) / reviews.length : 0;
   const avgRounded = Math.round(averageRating * 10) / 10; // one decimal
-  const avgRoundedInt = Math.round(averageRating); // for star meter (nearest int)
-  // percentage width to fill the stars (0..100)
-  const fillPercent = Math.max(0, Math.min(100, (averageRating / 5) * 100));
 
-  // Inline filled star SVG so clipping produces partial filled stars (lucide Star is outline-only)
-  const FilledStar: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }} {...props}>
-      <path d="M12 .587l3.668 7.431L23.6 9.75l-5.584 5.444L19.335 24 12 19.897 4.665 24l1.318-8.806L.399 9.75l7.932-1.732L12 .587z" />
-    </svg>
-  );
+
 
   return (
     <>
@@ -371,23 +367,14 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
             {/* local FilledStar component */}
             
             <div className="relative inline-block" aria-hidden>
-              {/* background (gray) stars */}
-              <div className="inline-flex items-center gap-1 text-slate-300" style={{ lineHeight: 0, whiteSpace: 'nowrap' }}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <FilledStar key={`bg-${i}`} className="w-4 h-4" />
-                ))}
-              </div>
-              {/* foreground (yellow) clipped to percentage */}
-              <div
-                className="absolute left-0 top-0 overflow-hidden"
-                style={{ width: `${fillPercent}%`, pointerEvents: 'none', height: '100%', zIndex: 1 }}
-              >
-                <div className="inline-flex items-center gap-1 text-spanish-yellow" style={{ lineHeight: 0, transform: 'translateZ(0)' }}>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <FilledStar key={`fg-${i}`} className="w-4 h-4" />
-                  ))}
-                </div>
-              </div>
+              <Rating 
+              name="avg-rating" 
+              value={avgRounded} 
+              precision={0.1} 
+              readOnly 
+              size="medium" 
+              emptyIcon={<StarIcon className="w-5 h-5 text-slate-300 dark:text-slate-600" />}
+              sx={{ color: 'var(--tw-color-spanish-yellow, #f5c518)' }} />
             </div>
 
             <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">de {reviews.length} reseñas</div>
