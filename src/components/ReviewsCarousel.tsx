@@ -87,7 +87,12 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     return () => window.removeEventListener('resize', update);
   }, [maxVisible]);
 
-  useEffect(() => setIndex(0), [reviews.length, visible]);
+  // reset index when reviews/visible/pages change; ensure it's within bounds
+  useEffect(() => {
+    const pagesCount = Math.max(1, Math.ceil(reviews.length / (windowWidth < 640 ? 1 : visible)));
+    const maxIdx = windowWidth >= 640 ? Math.max(0, pagesCount - 1) : Math.max(0, reviews.length - effectiveVisible);
+    setIndex(i => Math.min(i, maxIdx));
+  }, [reviews.length, visible, windowWidth]);
 
   // Ensure layout recalculation (centering) after reviews are loaded or when
   // the container size changes (images/fonts may change layout after first paint).
@@ -112,9 +117,16 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     return () => ro.disconnect();
   }, []);
 
-  // treat widths < 640 as mobile (1 card); from 640px show at least 2 cards
+  // treat widths < 640 as mobile (1 card); from 640px use page-based navigation
   const effectiveVisible = windowWidth < 640 ? 1 : visible;
-  const maxIndex = Math.max(0, reviews.length - effectiveVisible);
+
+  // number of pages (groups) of visible cards on non-mobile; on mobile pages equals reviews length / effectiveVisible
+  const pages = Math.max(1, Math.ceil(reviews.length / effectiveVisible));
+
+  // navigation: on desktop (>=640) index represents the page index (0..pages-1)
+  // on mobile index represents the item index (0..reviews.length-effectiveVisible)
+  const maxIndex = windowWidth >= 640 ? Math.max(0, pages - 1) : Math.max(0, reviews.length - effectiveVisible);
+
   const prev = () => setIndex(i => Math.max(0, i - 1));
   const next = () => setIndex(i => Math.min(maxIndex, i + 1));
 
@@ -312,15 +324,13 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
 
   let transformValue: string;
   if (itemWidth) {
-      if (windowWidth >= 640 && typeof visibleGroupWidth === 'number') {
-      // center the visible group inside the container, then shift by index
-      const centerOffset = Math.max(0, (containerWidth - visibleGroupWidth) / 2);
-      const shift = index * (itemWidth + (itemGap || 0));
-      // move track so that the current page is centered: positive centerOffset pulls track right
-      const x = centerOffset - shift;
-      transformValue = `translateX(${x}px)`;
+    if (windowWidth >= 640 && typeof visibleGroupWidth === 'number') {
+      // viewport width equals visibleGroupWidth (centered). Shift track left by full page steps so side cards are clipped.
+      const singleStep = (itemWidth + (itemGap || 0)) * effectiveVisible;
+      const shift = index * singleStep;
+      transformValue = `translateX(${-shift}px)`;
     } else {
-      // mobile: normal left translation per index; include dragOffset for live dragging
+      // mobile: normal left translation per item index; include dragOffset for live dragging
       transformValue = `translateX(calc(-${index * (itemWidth + (itemGap || 0))}px + ${dragOffset}px))`;
     }
   } else {
@@ -361,11 +371,12 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
       <div ref={containerRef} className="relative px-4 sm:px-0">
       {/* arrow offset: outside on desktop, inside on small screens */}
       {windowWidth >= 640 && (() => {
-        // position arrows at a fixed distance from the viewport edges (includes arrowEdgeExtra)
-        const baseDistance = windowWidth >= 1200 ? 72 : windowWidth >= 992 ? 56 : windowWidth >= 768 ? 44 : windowWidth >= 640 ? 32 : 12;
-        const distanceFromEdge = baseDistance + (arrowEdgeExtra || 0);
+        // position arrows using offsets computed against the container so they sit outside the cards
+        // apply a small extra margin (-extraPx) to make sure they don't touch the cards
+        const extraPx = 12;
+        const leftPos = `${arrowOffsetLeft - extraPx}px`;
         return (
-          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ left: `${distanceFromEdge}px` }}>
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-30 pointer-events-auto" style={{ left: leftPos }}>
             <div className="relative inline-block">
               {/* group wrapper to allow tooltip and hover effects on desktop */}
               <div className={`relative group`}>
@@ -387,8 +398,9 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
           </div>
         );
       })()}
-      <div className="overflow-hidden">
-      <div ref={trackRef} style={trackStyle} className="flex" onTouchStart={onTrackTouchStart} onTouchMove={onTrackTouchMove} onTouchEnd={onTrackTouchEnd}>
+  {/* viewport: on desktop limit width to the visible group and center it so side cards are clipped */}
+  <div className="overflow-hidden" style={{ width: windowWidth >= 640 && typeof visibleGroupWidth === 'number' ? `${visibleGroupWidth}px` : '100%', margin: '0 auto' }}>
+  <div ref={trackRef} style={trackStyle} className="flex" onTouchStart={onTrackTouchStart} onTouchMove={onTrackTouchMove} onTouchEnd={onTrackTouchEnd}>
           {reviews.map((r, idx) => (
             <div key={r._id} style={{ width: itemWidth ? `${itemWidth}px` : `${100 / effectiveVisible}%`, flex: '0 0 auto' }} className="px-0 sm:px-2 min-w-0">
               <ReviewCard review={r} onOpen={() => { setModalOpen(true); setActiveCard(idx); setActiveImage(0); }} />
@@ -397,10 +409,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
         </div>
       </div>
       {windowWidth >= 640 && (() => {
-        const baseDistanceR = windowWidth >= 1200 ? 72 : windowWidth >= 992 ? 56 : windowWidth >= 768 ? 44 : windowWidth >= 640 ? 32 : 12;
-        const distanceFromEdgeR = baseDistanceR + (arrowEdgeExtra || 0);
+        const extraPxR = 12;
+        const rightPos = `${arrowOffsetRight - extraPxR}px`;
         return (
-          <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ right: `${distanceFromEdgeR}px` }}>
+          <div className="absolute top-1/2 transform -translate-y-1/2 z-30 pointer-events-auto" style={{ right: rightPos }}>
             <div className="relative inline-block">
               <div className={`relative group`}>
                 <button
@@ -426,9 +438,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
         <div className="mt-3 flex items-center justify-center gap-4">
           <button onClick={() => { if (canPrev) prev(); }} disabled={!canPrev} aria-disabled={!canPrev} className={`p-2 rounded-full bg-white/10 text-white ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}>◀</button>
           <div className="flex items-center gap-2">
-            {(() => {
+              {(() => {
               const pages = Math.max(1, Math.ceil(reviews.length / effectiveVisible));
-              const activePage = Math.floor(index / effectiveVisible);
+              // activePage: when desktop (index is page) it's just index; on mobile index might be item index so derive page
+              const activePage = windowWidth >= 640 ? index : Math.floor(index / effectiveVisible);
               const maxDots = 7; // máximo de puntitos a mostrar entre las flechas en móvil
               let pageIndices: number[] = [];
               if (pages <= maxDots) {
@@ -443,10 +456,11 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
                 }
                 pageIndices = Array.from({ length: end - start }).map((_, i) => i + start);
               }
-              return pageIndices.map((p) => {
-                const pageIndex = p * effectiveVisible;
+                return pageIndices.map((p) => {
+                // clicking a dot: on desktop set page index directly; on mobile set item index to page start
+                const targetIndex = windowWidth >= 640 ? p : p * effectiveVisible;
                 return (
-                  <button key={p} onClick={() => setIndex(pageIndex)} className={`w-2 h-2 rounded-full ${activePage === p ? 'bg-white' : 'bg-white/30'}`} aria-label={`Ir a página ${p+1}`} />
+                  <button key={p} onClick={() => setIndex(targetIndex)} className={`w-2 h-2 rounded-full ${activePage === p ? 'bg-white' : 'bg-white/30'}`} aria-label={`Ir a página ${p+1}`} />
                 );
               });
             })()}
