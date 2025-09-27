@@ -447,8 +447,8 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
             {/* external arrows hidden on small screens to avoid stealing width */}
             <button onClick={() => setActiveCard(c => Math.max(0, c - 1))} className="p-2 text-slate-200 hidden sm:inline-flex"><ChevronLeft /></button>
             <div className="flex-1 min-w-0 w-full box-border px-4">
-              {/* image display */}
-              <div className="w-full bg-black rounded-t-lg overflow-hidden flex items-center justify-center relative box-border" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
+              {/* image display: use 3:4 aspect frame to match review cards */}
+              <div className="w-full bg-black rounded-t-lg overflow-hidden flex items-center justify-center relative box-border aspect-[3/4]" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
                 {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
                 {(() => {
                   const rv = reviews[activeCard] || {};
@@ -458,9 +458,18 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
                   const src = photoFromReview || fallback;
                   if (src) {
                     const url = getWebPImageUrl(src as any);
+                    const isReviewPhoto = !!photoFromReview;
+                    if (isReviewPhoto) {
+                      return (
+                        <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%', height: '100%' }}>
+                          <img src={url} alt="big" className="w-full h-full object-cover max-w-full block" />
+                        </div>
+                      );
+                    }
+                    // fallback product image: keep full width so it's not horizontally cropped
                     return (
-                      <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%' }}>
-                        <img src={url} alt="big" className="w-full h-auto max-h-[60vh] object-contain max-w-full block" />
+                      <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%', height: '100%' }}>
+                        <img src={url} alt="big" className="w-full h-auto object-contain max-w-full block" />
                       </div>
                     );
                   }
@@ -515,12 +524,18 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               <div className="mt-2 text-slate-300 overflow-auto break-words whitespace-normal max-h-[36vh]">{reviews[activeCard]?.body}</div>
               {/* thumbnails for images of this review */}
               <div style={{ transition: 'opacity 180ms ease', opacity: contentVisible ? 1 : 0 }}>
-                <div className="mt-3 flex gap-2 overflow-x-auto">
+                  <div className="mt-3 flex gap-2 overflow-x-auto">
                   {(reviews[activeCard]?.photos || []).map((p: string, i: number) => (
-                    <button key={i} onClick={() => changeActiveImageAnimated(i)} className={`w-12 h-12 bg-slate-800 rounded flex items-center justify-center overflow-hidden shrink-0 ${i===activeImage ? 'border-2 border-yellow-400' : ''}`}>
-                      <img src={p} alt={`thumb-${i}`} className="w-full h-full object-contain max-w-full block" />
+                    <button key={i} onClick={() => changeActiveImageAnimated(i)} className={`w-12 aspect-[3/4] bg-slate-800 rounded overflow-hidden shrink-0 flex items-center justify-center ${i===activeImage ? 'border-2 border-yellow-400' : ''}`}>
+                      <img src={p} alt={`thumb-${i}`} className="w-full h-full object-cover block" />
                     </button>
                   ))}
+                  {/* If there are no photos but we have a fallback image, show it as a single thumbnail */}
+                  {(!(reviews[activeCard]?.photos || []).length && (reviews[activeCard]?.imageUrl || reviews[activeCard]?.productImage || reviews[activeCard]?.product_image)) ? (
+                    <div className={`w-12 aspect-[3/4] bg-slate-800 rounded overflow-hidden shrink-0 flex items-center justify-center border-2 border-yellow-400`}>
+                      <img src={getWebPImageUrl(reviews[activeCard].imageUrl || reviews[activeCard].productImage || reviews[activeCard].product_image)} alt={`thumb-fallback`} className="w-full h-full object-cover block" />
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>

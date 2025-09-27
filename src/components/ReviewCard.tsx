@@ -27,10 +27,16 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
           const fallback = review.imageUrl || review.productImage || review.product_image || null;
           const src = photoFromReview || fallback;
           if (src) {
-            // normalize/optimize URL when possible
             const url = getWebPImageUrl(src as any);
-            // use object-contain so tall images don't get cropped vertically
-            return <img src={url} alt={review.productTitle || 'imagen'} className="w-full max-w-full h-full object-contain block" />;
+            const isReviewPhoto = !!photoFromReview;
+            if (isReviewPhoto) {
+              // user-uploaded photos: fill the frame fully
+              return <img src={url} alt={review.productTitle || 'imagen'} className="w-full max-w-full h-full object-cover block" />;
+            }
+            // fallback product image: ensure width fills the frame so it doesn't get horizontally cropped
+            return (
+              <img src={url} alt={review.productTitle || 'imagen'} className="w-full h-auto object-contain block" />
+            );
           }
           return <div className="w-full h-full flex items-center justify-center text-slate-500">Sin imagen</div>;
         })()}
