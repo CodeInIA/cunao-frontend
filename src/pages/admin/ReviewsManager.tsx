@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Plus } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 
 axios.defaults.withCredentials = true;
 
@@ -418,7 +418,12 @@ export default function ReviewsManager() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Reviews manager</h2>
+        <div className="flex items-center gap-3">
+          <Link to="/admin/dashboard" className="p-2 rounded bg-slate-800 hover:bg-slate-700" title="Volver al dashboard">
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </Link>
+          <h2 className="text-2xl font-bold">Reviews manager</h2>
+        </div>
         <div className="flex items-center gap-3">
           <div className="inline-flex bg-slate-800 rounded-md p-1">
             <button
