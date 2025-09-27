@@ -483,7 +483,26 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
                 </div>
                 <div className="text-spanish-yellow">{reviews[activeCard]?.rating}★</div>
               </div>
-              <div className="mt-2 text-slate-300 max-h-28 overflow-auto break-words whitespace-normal">{reviews[activeCard]?.body}</div>
+              {/* modal: mostrar la fila sutil de talla/color/cantidad (si existe) debajo del título */}
+              {(() => {
+                const rv = reviews[activeCard] || {};
+                const size = rv.size || rv.talla || rv.productSize || rv.product_size;
+                const color = rv.color || rv.colour || rv.productColor || rv.product_color;
+                const qty = rv.quantity || rv.qty || rv.cantidad || rv.amount;
+                const parts: string[] = [];
+                if (size) parts.push(`Talla ${size}`);
+                if (color) parts.push(`Color ${typeof color === 'string' ? color : String(color)}`);
+                if (qty != null) parts.push(`${qty}x`);
+                if (parts.length === 0) return null;
+                return (
+                  <div className="text-xs text-slate-400/90 mt-1" title={parts.join(' · ')}>
+                    {parts.join(' · ')}
+                  </div>
+                );
+              })()}
+
+              {/* modal: mostrar descripción completa (puede hacer scroll si es larga) */}
+              <div className="mt-2 text-slate-300 overflow-auto break-words whitespace-normal max-h-[36vh]">{reviews[activeCard]?.body}</div>
               {/* thumbnails for images of this review */}
               <div style={{ transition: 'opacity 180ms ease', opacity: contentVisible ? 1 : 0 }}>
                 <div className="mt-3 flex gap-2 overflow-x-auto">

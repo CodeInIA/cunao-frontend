@@ -66,15 +66,16 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
           </a>
         ) : null}
 
-        {/* Review body: limitar a 3 líneas con ellipsis */}
+        {/* Review body: limitar a 1 línea con ellipsis (tarjeta) */}
   <p
-    className="text-slate-300 text-sm mt-3 mb-4 break-words whitespace-normal max-w-full"
+    className="text-slate-300 text-sm mt-3 mb-4 break-words max-w-full"
     style={{
       display: '-webkit-box',
-      WebkitLineClamp: 3,
+      WebkitLineClamp: 1,
       WebkitBoxOrient: 'vertical',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
+      whiteSpace: 'normal'
     }}
   >
     {review.body}
