@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReviewCard from './ReviewCard';
 import { ChevronLeft, ChevronRight, X, Star } from 'lucide-react';
+import { getWebPImageUrl } from '../utils/imageUtils';
 
 type Props = { productId?: string; maxVisible?: number; arrowEdgeExtra?: number };
 
@@ -449,13 +450,22 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               {/* image display */}
               <div className="w-full bg-black rounded-t-lg overflow-hidden flex items-center justify-center relative box-border" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
                 {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
-                {reviews[activeCard] && reviews[activeCard].photos && reviews[activeCard].photos.length > 0 ? (
-                  <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%' }}>
-                    <img src={reviews[activeCard].photos[activeImage]} alt="big" className="w-full h-auto max-h-[60vh] object-contain max-w-full block" />
-                  </div>
-                ) : (
-                  <div className="text-slate-400">Sin imagen</div>
-                )}
+                {(() => {
+                  const rv = reviews[activeCard] || {};
+                  const photos: string[] = rv.photos || [];
+                  const photoFromReview = photos.length > 0 ? photos[activeImage] : null;
+                  const fallback = rv.imageUrl || rv.productImage || rv.product_image || null;
+                  const src = photoFromReview || fallback;
+                  if (src) {
+                    const url = getWebPImageUrl(src as any);
+                    return (
+                      <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%' }}>
+                        <img src={url} alt="big" className="w-full h-auto max-h-[60vh] object-contain max-w-full block" />
+                      </div>
+                    );
+                  }
+                  return <div className="text-slate-400">Sin imagen</div>;
+                })()}
               
                 {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
               </div>

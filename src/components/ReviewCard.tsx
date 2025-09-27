@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
+import { getWebPImageUrl } from '../utils/imageUtils';
 
 export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ review, onOpen }) => {
   const shortenName = (name?: string) => {
@@ -20,11 +21,18 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
     >
       {/* Cover image */}
   <div className="flex-none w-full h-72 sm:h-56 bg-slate-900">
-        {review.photos && review.photos.length > 0 ? (
-          <img src={review.photos[0]} alt={review.productTitle || 'imagen'} className="w-full max-w-full h-full object-cover block" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-500">Sin imagen</div>
-        )}
+        {(() => {
+          // Prefer review photos (user uploaded). If missing, fallback to product/variant image
+          const photoFromReview = review.photos && review.photos.length > 0 ? review.photos[0] : null;
+          const fallback = review.imageUrl || review.productImage || review.product_image || null;
+          const src = photoFromReview || fallback;
+          if (src) {
+            // normalize/optimize URL when possible
+            const url = getWebPImageUrl(src as any);
+            return <img src={url} alt={review.productTitle || 'imagen'} className="w-full max-w-full h-full object-cover block" />;
+          }
+          return <div className="w-full h-full flex items-center justify-center text-slate-500">Sin imagen</div>;
+        })()}
       </div>
 
   <div className="p-4 flex-1 flex flex-col min-w-0">
