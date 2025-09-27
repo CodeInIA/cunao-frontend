@@ -634,6 +634,16 @@ export default function ReviewsManager() {
                               {isManual && <span title="Reseña creada manualmente por admin" className="hidden sm:inline-flex text-xs bg-gray-700 text-slate-200 px-2 py-0.5 rounded-full">🤖 Manual</span>}
                             </div>
 
+                            {/* Rating: show stars and numeric value */}
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="flex items-center" aria-hidden>
+                                {[1,2,3,4,5].map((n) => (
+                                  <span key={n} className={`text-spanish-yellow ${n <= (Number(r?.rating) || 0) ? '' : 'opacity-40'}`}>★</span>
+                                ))}
+                              </div>
+                              <div className="text-sm text-slate-300">{r?.rating ? `${r.rating}★` : ''}</div>
+                            </div>
+
                             {/* Mobile badge moved below photos to avoid overlap (see block after thumbnails) */}
                           </>
                         );
