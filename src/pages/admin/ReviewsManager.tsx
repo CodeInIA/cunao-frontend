@@ -377,6 +377,32 @@ export default function ReviewsManager() {
     setFileList(f);
   }
 
+  // Prevent background page scrolling when any modal is open (create / delete / publish)
+  useEffect(() => {
+    const modalOpen = showCreate || !!deleteModalId || !!publishModalId;
+    // save previous values to restore later
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+
+    if (modalOpen) {
+      // Compensate for scrollbar to avoid layout shift
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      if (scrollBarWidth > 0) {
+        document.body.style.paddingRight = `${scrollBarWidth}px`;
+      }
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = prevOverflow || '';
+      document.body.style.paddingRight = prevPaddingRight || '';
+    }
+
+    return () => {
+      // restore previous values on cleanup/unmount
+      document.body.style.overflow = prevOverflow || '';
+      document.body.style.paddingRight = prevPaddingRight || '';
+    };
+  }, [showCreate, deleteModalId, publishModalId]);
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -412,7 +438,7 @@ export default function ReviewsManager() {
                 {r.photos && r.photos.length>0 && (
                 <div className="mt-3 flex gap-2 flex-wrap box-border">
                   {r.photos.map((p:string,i:number) => (
-                    <img key={i} src={p} className="w-1/3 sm:w-[72px] h-[72px] object-cover rounded max-w-full" />
+                    <img key={i} src={p} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded" />
                   ))}
                 </div>
               )}
@@ -423,7 +449,7 @@ export default function ReviewsManager() {
 
       {/* Modal crear reseña */}
       {showCreate ? (
-  <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 bg-black/60">
+  <div className="fixed inset-0 z-50 flex items-start justify-center pt-0 sm:pt-10 bg-black/60">
           {/* Scrollbar styling for modal content: yellow thumb like the site */}
           <style>{`
             .admin-modal ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -433,7 +459,7 @@ export default function ReviewsManager() {
             /* For scrollable inner elements */
             .admin-modal .overflow-auto, .admin-modal .overflow-x-auto { scrollbar-color: #f59e0b #0f172a; }
           `}</style>
-          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-6 rounded-lg w-full max-w-xl border border-slate-700" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 80px)', boxSizing: 'border-box' }}>
+          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-4 sm:p-6 rounded-none sm:rounded-lg w-full sm:max-w-xl border border-slate-700 h-full sm:h-auto sm:my-10 sm:mx-auto" style={{ display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
             <h3 className="text-lg font-semibold mb-4 text-white">Crear reseña manual</h3>
             <div className="grid gap-3 overflow-auto" style={{ flex: 1 }}>
               <label className="text-sm text-slate-300">Producto</label>
@@ -462,25 +488,25 @@ export default function ReviewsManager() {
 
               <input value={newReview.authorName} onChange={e=>{ setNewReview({...newReview, authorName: e.target.value}); setCreateErrors(prev=>({...prev, author: undefined})); }} placeholder="Autor (nombre)" className="px-3 py-2 bg-slate-800 text-white rounded" />
               {createErrors.author && <div className="text-sm text-red-400 mt-1">{createErrors.author}</div>}
-                {/* Rating and Status on the same row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <label className="text-sm text-slate-300">Rating</label>
-                  <div className="flex items-center gap-2">
-                    {[1,2,3,4,5].map(n => (
-                      <button type="button" key={n} onClick={()=>setNewReview({...newReview, rating: n})} className={`px-2 py-1 rounded ${newReview.rating>=n? 'bg-yellow-400 text-slate-900':'bg-slate-700 text-slate-300'}`}>{n}★</button>
-                    ))}
+                {/* Rating and Status: stack on mobile, row on sm+ */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm text-slate-300">Rating</label>
+                    <div className="flex items-center gap-2">
+                      {[1,2,3,4,5].map(n => (
+                        <button type="button" key={n} onClick={()=>setNewReview({...newReview, rating: n})} className={`px-2 py-1 rounded ${newReview.rating>=n? 'bg-yellow-400 text-slate-900':'bg-slate-700 text-slate-300'}`}>{n}★</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <label className="text-sm text-slate-300">Estado</label>
+                    <select value={newReview.status} onChange={e=>setNewReview({...newReview, status: e.target.value})} className="px-3 py-2 bg-slate-800 text-white rounded">
+                      <option value="pending">Pending</option>
+                      <option value="published">Published</option>
+                    </select>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-slate-300">Estado</label>
-                  <select value={newReview.status} onChange={e=>setNewReview({...newReview, status: e.target.value})} className="px-3 py-2 bg-slate-800 text-white rounded">
-                    <option value="pending">Pending</option>
-                    <option value="published">Published</option>
-                  </select>
-                </div>
-              </div>
 
               {/* Title removed (not part of review card). Description instead of body */}
               <label className="text-sm text-slate-300">Descripción</label>
@@ -510,10 +536,10 @@ export default function ReviewsManager() {
                   <div className="mt-3 admin-modal">
                       <div className="flex gap-3 px-1 py-2 overflow-x-auto" style={{ alignItems: 'center' }}>
                         {previews.map((u,i)=> (
-                          <div key={i} className={`relative rounded overflow-hidden bg-slate-700 flex-shrink-0`} style={{ width: 72, height: 72 }} draggable data-thumb data-index={String(i)} onDragStart={(e)=>handlePreviewDragStart(i,e)} onDragOver={(e)=>handlePreviewDragOver(i,e)} onDrop={(e)=>handlePreviewDrop(i,e)} onTouchStart={(e)=>handleTouchStart(i,e)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+                          <div key={i} className={`relative rounded overflow-hidden bg-slate-700 flex-shrink-0 w-[60px] h-[60px] sm:w-[72px] sm:h-[72px]`} draggable data-thumb data-index={String(i)} onDragStart={(e)=>handlePreviewDragStart(i,e)} onDragOver={(e)=>handlePreviewDragOver(i,e)} onDrop={(e)=>handlePreviewDrop(i,e)} onTouchStart={(e)=>handleTouchStart(i,e)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
                             <img src={u} className={`w-full h-full object-cover ${dragOverIndex===i? 'ring-4 ring-yellow-400 ring-inset':''}`} style={{ objectPosition: 'center' }} />
-                          <div className="absolute top-1 left-1 bg-yellow-400 text-slate-900 rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold">{i+1}</div>
-                          <button type="button" onClick={()=>removeFileAt(i)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs">×</button>
+                          <div className="absolute top-1 left-1 bg-yellow-400 text-slate-900 rounded-full w-5 h-5 sm:w-5 sm:h-5 flex items-center justify-center text-xs font-semibold">{i+1}</div>
+                          <button type="button" onClick={()=>removeFileAt(i)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 sm:w-5 sm:h-5 text-xs">×</button>
                           {dragOverIndex===i && (
                             <div className="absolute inset-0 border-2 border-dashed border-yellow-400 rounded pointer-events-none" />
                           )}
