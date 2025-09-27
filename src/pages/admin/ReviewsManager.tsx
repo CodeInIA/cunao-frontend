@@ -506,7 +506,7 @@ export default function ReviewsManager() {
       {loading ? <div>Cargando...</div> : (
         <div className="grid gap-4">
           {filteredReviews.map(r => (
-            <div key={r._id} className="p-0 border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' }}>
+            <div key={r._id} className="p-0 relative border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' }}>
               <div className="flex">
                 {/* Left: variant image full height */}
                 <div className="flex-shrink-0 w-28 sm:w-32 bg-slate-700 flex items-center justify-center">
@@ -515,9 +515,25 @@ export default function ReviewsManager() {
                 <div className="p-4 flex-1">
                   <div className="flex justify-between items-start">
                     <div className="min-w-0">
-                      <div className="font-semibold text-lg">
-                        <a href={`/producto/${r.productSlug || r.productId}${r.color ? `?color=${encodeURIComponent(String(r.color))}` : ''}`} className="text-white hover:underline break-words whitespace-normal">{r.productTitle || r.productId}</a>
-                      </div>
+                      {(() => {
+                        const orderIdRaw = (r.orderId || (r.order && (r.order.id || r.order.orderId)) || '').toString();
+                        const isManual = orderIdRaw && orderIdRaw.toLowerCase() === 'admin';
+                        const isReal = !!orderIdRaw && !isManual;
+                        return (
+                          <>
+                            <div className="font-semibold text-lg flex items-center gap-2">
+                              <a href={`/producto/${r.productSlug || r.productId}${r.color ? `?color=${encodeURIComponent(String(r.color))}` : ''}`} className="text-white hover:underline break-words whitespace-normal">{r.productTitle || r.productId}</a>
+                              {/* Desktop/tablet badge (hidden on small screens) */}
+                              {isReal && <span title="Reseña verificada - proviene de un pedido real" className="hidden sm:inline-flex text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">Auténtica</span>}
+                              {isManual && <span title="Reseña creada manualmente por admin" className="hidden sm:inline-flex text-xs bg-gray-700 text-slate-200 px-2 py-0.5 rounded-full">🤖 Manual</span>}
+                            </div>
+
+                            {/* Mobile badge positioned bottom-right to avoid overflow (hidden on sm+) */}
+                            {isReal && <span title="Reseña verificada - proviene de un pedido real" className="absolute right-3 bottom-3 sm:hidden text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">Auténtica</span>}
+                            {isManual && <span title="Reseña creada manualmente por admin" className="absolute right-3 bottom-3 sm:hidden text-xs bg-gray-700 text-slate-200 px-2 py-0.5 rounded-full">🤖 Manual</span>}
+                          </>
+                        );
+                      })()}
                       <div className="text-sm text-slate-300 mt-1">{r.color ? `${r.color}` : ''}{r.size ? ` · ${r.size}` : ''}{(r.quantity !== undefined && r.quantity !== null) ? ` · x${r.quantity}` : ''}</div>
                       <div className="text-sm text-slate-400 mt-1">{
                         `Autor: ${r.authorName || r.author || '—'} · Pedido: ${r.orderId || (r.order && (r.order.id || r.order.orderId)) || '—'}`
