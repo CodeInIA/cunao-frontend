@@ -486,8 +486,8 @@ export default function ReviewsManager() {
                 <div className="p-4 flex-1">
                   <div className="flex justify-between items-start">
                     <div className="min-w-0">
-                      <div className="font-semibold text-lg truncate">
-                        <a href={`/producto/${r.productSlug || r.productId}${r.color ? `?color=${encodeURIComponent(String(r.color))}` : ''}`} className="text-white hover:underline">{r.productTitle || r.productId}</a>
+                      <div className="font-semibold text-lg">
+                        <a href={`/producto/${r.productSlug || r.productId}${r.color ? `?color=${encodeURIComponent(String(r.color))}` : ''}`} className="text-white hover:underline break-words whitespace-normal">{r.productTitle || r.productId}</a>
                       </div>
                       <div className="text-sm text-slate-300 mt-1">{r.color ? `${r.color}` : ''}{r.size ? ` · ${r.size}` : ''}{(r.quantity !== undefined && r.quantity !== null) ? ` · x${r.quantity}` : ''}</div>
                       <div className="mt-2 text-slate-200 break-words whitespace-normal">{r.body}</div>
