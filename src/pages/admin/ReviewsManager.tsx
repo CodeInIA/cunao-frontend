@@ -269,10 +269,11 @@ export default function ReviewsManager() {
       setDeleteModalId(null);
       const csrf = getCookie('csrfToken');
   await axios.delete(`/api/admin/reviews/${id}`, { headers: { 'x-csrf-token': csrf || '' } });
-  // success: refresh list to make sure server and client are consistent
-  console.debug('[ReviewsManager] delete succeeded, refreshing list for id=', id);
-  await fetchReviews();
-  toast.success('Reseña eliminada correctamente');
+    // success: refresh list to make sure server and client are consistent
+    // use cacheBust + retries to avoid stale/cached responses that could reintroduce the deleted item
+    console.debug('[ReviewsManager] delete succeeded, refreshing list for id=', id);
+    await fetchReviews({ cacheBust: true, retries: 3, delayMs: 400 });
+    toast.success('Reseña eliminada correctamente');
     } catch (e) {
       console.error(e);
       setReviews(prev);
