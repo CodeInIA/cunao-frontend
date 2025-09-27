@@ -448,8 +448,8 @@ export default function ReviewsManager() {
       )}
 
       {/* Modal crear reseña */}
-      {showCreate ? (
-  <div className="fixed inset-0 z-50 flex items-start justify-center pt-0 sm:pt-10 bg-black/60">
+    {showCreate ? (
+  <div className="fixed inset-0 z-50 flex items-start justify-center pt-0 bg-black/60">
           {/* Scrollbar styling for modal content: yellow thumb like the site */}
           <style>{`
             .admin-modal ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -459,11 +459,11 @@ export default function ReviewsManager() {
             /* For scrollable inner elements */
             .admin-modal .overflow-auto, .admin-modal .overflow-x-auto { scrollbar-color: #f59e0b #0f172a; }
           `}</style>
-          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-4 sm:p-6 rounded-none sm:rounded-lg w-full sm:max-w-xl border border-slate-700 h-full sm:h-auto sm:my-10 sm:mx-auto" style={{ display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+          <form onSubmit={createReview} className="admin-modal bg-slate-900 p-4 sm:p-6 rounded-none sm:rounded-lg w-full sm:max-w-xl border border-slate-700 h-full sm:h-auto sm:mt-[5px] sm:mx-auto" style={{ display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
             <h3 className="text-lg font-semibold mb-4 text-white">Crear reseña manual</h3>
             <div className="grid gap-3 overflow-auto" style={{ flex: 1 }}>
               <label className="text-sm text-slate-300">Producto</label>
-              <input value={productQuery} onChange={e=>setProductQuery(e.target.value)} placeholder="Buscar producto por título..." className="px-3 py-2 bg-slate-800 text-white rounded" />
+              <input value={productQuery} onChange={e=>setProductQuery(e.target.value)} placeholder="Buscar producto por título..." className="px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" />
               <div className="max-h-40 overflow-auto bg-slate-800 rounded p-2 admin-modal">
                 {/* If a product is selected, show only the compact selected item */}
                 {selectedProduct ? (
@@ -480,13 +480,12 @@ export default function ReviewsManager() {
                         <div className="text-sm text-white">{p.title || p.name || p.id}</div>
                         {newReview.productId===String(p.id) && <div className="text-xs bg-yellow-400 text-slate-900 px-2 py-0.5 rounded font-semibold">Selected</div>}
                       </div>
-                      {p.images && p.images[0] && <div className="text-xs text-slate-400">{String(p.images[0]).slice(0,60)}</div>}
                     </div>
                   ))
                 )}
               </div>
 
-              <input value={newReview.authorName} onChange={e=>{ setNewReview({...newReview, authorName: e.target.value}); setCreateErrors(prev=>({...prev, author: undefined})); }} placeholder="Autor (nombre)" className="px-3 py-2 bg-slate-800 text-white rounded" />
+              <input value={newReview.authorName} onChange={e=>{ setNewReview({...newReview, authorName: e.target.value}); setCreateErrors(prev=>({...prev, author: undefined})); }} placeholder="Autor (nombre)" className="px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" />
               {createErrors.author && <div className="text-sm text-red-400 mt-1">{createErrors.author}</div>}
                 {/* Rating and Status: stack on mobile, row on sm+ */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
@@ -501,16 +500,28 @@ export default function ReviewsManager() {
 
                   <div className="flex items-center gap-2 mt-2 sm:mt-0">
                     <label className="text-sm text-slate-300">Estado</label>
-                    <select value={newReview.status} onChange={e=>setNewReview({...newReview, status: e.target.value})} className="px-3 py-2 bg-slate-800 text-white rounded">
-                      <option value="pending">Pending</option>
-                      <option value="published">Published</option>
-                    </select>
+                    <div role="tablist" aria-label="Estado reseña" className="inline-flex bg-slate-800 rounded-md p-1">
+                      <button
+                        type="button"
+                        aria-pressed={newReview.status === 'pending'}
+                        onClick={() => setNewReview(prev => ({ ...prev, status: 'pending' }))}
+                        className={`px-3 py-1 text-sm rounded-l-md font-medium transition-all duration-150 ${newReview.status === 'pending' ? 'bg-yellow-400 text-slate-900 shadow-sm ring-1 ring-yellow-300' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        Pending
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={newReview.status === 'published'}
+                        onClick={() => setNewReview(prev => ({ ...prev, status: 'published' }))}
+                        className={`px-3 py-1 text-sm rounded-r-md font-medium transition-all duration-150 ${newReview.status === 'published' ? 'bg-yellow-400 text-slate-900 shadow-sm ring-1 ring-yellow-300' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        Published
+                      </button>
+                    </div>
                   </div>
                 </div>
 
               {/* Title removed (not part of review card). Description instead of body */}
               <label className="text-sm text-slate-300">Descripción</label>
-              <textarea value={newReview.description} onChange={e=>{ const val = e.target.value.slice(0, MAX_REVIEW_CHARS); setNewReview({...newReview, description: val}); setCreateErrors(prev=>({...prev, text: undefined})); setDescCount(val.length); }} placeholder="Descripción" maxLength={MAX_REVIEW_CHARS} className="px-3 py-2 bg-slate-800 text-white rounded" />
+              <textarea value={newReview.description} onChange={e=>{ const val = e.target.value.slice(0, MAX_REVIEW_CHARS); setNewReview({...newReview, description: val}); setCreateErrors(prev=>({...prev, text: undefined})); setDescCount(val.length); }} placeholder="Descripción" maxLength={MAX_REVIEW_CHARS} className="px-3 py-2 bg-slate-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-inset" />
               <div className="flex items-center justify-between mt-1">
                 <div>
                   {createErrors.text ? (
