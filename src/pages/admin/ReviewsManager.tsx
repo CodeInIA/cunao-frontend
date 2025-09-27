@@ -43,62 +43,6 @@ export default function ReviewsManager() {
   // fetch reviews only after authorization confirmed
   useEffect(() => { if (authorized) fetchReviews(); }, [filter, authorized]);
 
-  // If backend didn't provide productTitle or imageUrl for reviews, fetch product info and patch local state
-  useEffect(() => {
-    if (!reviews || reviews.length === 0) return;
-    let mounted = true;
-    (async function enrichMissing() {
-      const need = reviews.filter(r => !(r.productTitle && r.imageUrl));
-      if (need.length === 0) return;
-      try {
-        const updates: Record<string, any> = {};
-        await Promise.all(need.map(async (r) => {
-          try {
-            const prod = await (await import('../../services/api')).apiService.getProduct(String(r.productId));
-            if (!prod) return;
-            // build slug from title
-            const slug = prod.title ? prod.title.toString().toLowerCase().replace(/ñ/g,'n').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/[^\w\s-]/g,'').replace(/[\s_]+/g,'-').replace(/^-+|-+$/g,'') : '';
-            // find variant image by variantId
-            let imageUrl: string | undefined = undefined;
-            if (r.variantId && Array.isArray(prod.variants) && Array.isArray(prod.images)) {
-              const vId = Number(r.variantId);
-              // try helper: find variant by id and map to image via getVariantImage logic
-              const variant = prod.variants.find((v:any) => Number(v.id) === vId);
-              if (variant) {
-                // Use images array - conventions vary; try to find image matching variant.id in image metadata
-                const found = (prod.images || []).find((img:any) => {
-                  if (!img) return false;
-                  if (Array.isArray((img as any).variant_ids) && (img as any).variant_ids.includes(vId)) return true;
-                  if (Array.isArray((img as any).variants) && (img as any).variants.includes(vId)) return true;
-                  return false;
-                });
-                if (found) {
-                  // try common fields safely
-                  imageUrl = (found as any).secure_url || (found as any).src || (found as any).public_url || (found as any).path || undefined;
-                }
-              }
-            }
-            // fallback: use first image
-            if (!imageUrl && Array.isArray(prod.images) && prod.images.length>0) {
-              const first = prod.images[0] as any;
-              imageUrl = first && ((first as any).secure_url || (first as any).src || (first as any).public_url || (first as any).path) || undefined;
-            }
-            updates[r._id] = { productTitle: prod.title || undefined, productSlug: slug || undefined, imageUrl };
-          } catch (e) {
-            // ignore per-item
-          }
-        }));
-        if (!mounted) return;
-        if (Object.keys(updates).length > 0) {
-          setReviews(prev => prev.map(rv => updates[rv._id] ? ({ ...rv, ...updates[rv._id] }) : rv));
-        }
-      } catch (e) {
-        // ignore
-      }
-    })();
-    return () => { mounted = false; };
-  }, [reviews]);
-
   async function fetchReviews() {
     setLoading(true);
     try {
