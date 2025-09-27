@@ -441,14 +441,14 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
       {/* modal overlay */}
       {modalOpen && (
       <div onClick={() => setModalOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-  <div onClick={(e) => e.stopPropagation()} className="relative bg-slate-900 rounded-lg p-4 sm:p-6 w-full mx-4 sm:w-[90%] sm:mx-0 max-w-[420px] sm:max-w-4xl max-h-[90vh] overflow-hidden box-border">
+      <div onClick={(e) => e.stopPropagation()} className="relative bg-slate-900 rounded-lg p-4 sm:p-6 w-full mx-4 sm:w-[90%] sm:mx-0 max-w-[420px] sm:max-w-4xl max-h-[90vh] overflow-auto box-border flex flex-col">
           <button onClick={() => setModalOpen(false)} className="absolute top-3 right-3 text-slate-200"><X className="w-6 h-6" /></button>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {/* external arrows hidden on small screens to avoid stealing width */}
             <button onClick={() => setActiveCard(c => Math.max(0, c - 1))} className="p-2 text-slate-200 hidden sm:inline-flex"><ChevronLeft /></button>
             <div className="flex-1 min-w-0 w-full box-border px-4">
-              {/* image display: use 3:4 aspect frame to match review cards */}
-              <div className="w-full bg-black rounded-t-lg overflow-hidden flex items-center justify-center relative box-border aspect-[3/4]" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
+              {/* image display: use 3:4 aspect frame to match review cards; limit max-height so modal fits viewport */}
+              <div className="w-full bg-black rounded-t-lg overflow-hidden flex items-center justify-center relative box-border aspect-[3/4] max-h-[60vh] sm:max-h-[60vh]" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
                 {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
                 {(() => {
                   const rv = reviews[activeCard] || {};
@@ -459,17 +459,10 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
                   if (src) {
                     const url = getWebPImageUrl(src as any);
                     const isReviewPhoto = !!photoFromReview;
-                    if (isReviewPhoto) {
-                      return (
-                        <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%', height: '100%' }}>
-                          <img src={url} alt="big" className="w-full h-full object-cover max-w-full block" />
-                        </div>
-                      );
-                    }
-                    // fallback product image: keep full width so it's not horizontally cropped
+                    // show the full image inside the frame (no crop) for both review photos and fallback
                     return (
                       <div style={{ transition: 'opacity 180ms ease', opacity: imageVisible ? 1 : 0, width: '100%', height: '100%' }}>
-                        <img src={url} alt="big" className="w-full h-auto object-contain max-w-full block" />
+                        <img src={url} alt="big" className="w-full h-full object-contain max-w-full block" />
                       </div>
                     );
                   }
@@ -521,7 +514,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               })()}
 
               {/* modal: mostrar descripción completa (puede hacer scroll si es larga) */}
-              <div className="mt-2 text-slate-300 overflow-auto break-words whitespace-normal max-h-[36vh]">{reviews[activeCard]?.body}</div>
+              <div className="mt-2 text-slate-300 overflow-auto break-words whitespace-normal max-h-[28vh]">{reviews[activeCard]?.body}</div>
               {/* thumbnails for images of this review */}
               <div style={{ transition: 'opacity 180ms ease', opacity: contentVisible ? 1 : 0 }}>
                   <div className="mt-3 flex gap-2 overflow-x-auto">
