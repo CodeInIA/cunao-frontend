@@ -19,8 +19,8 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
       tabIndex={onOpen ? 0 : undefined}
       className="bg-slate-800 rounded-lg text-white cursor-pointer hover:shadow-lg transition-shadow overflow-hidden w-full max-w-full box-border flex flex-col min-w-0"
     >
-      {/* Cover image */}
-  <div className="flex-none w-full h-72 sm:h-56 bg-slate-900">
+      {/* Cover image: optimized aspect ratio for mobile portrait photos (9:16) */}
+      <div className="flex-none w-full bg-slate-900 flex items-center justify-center overflow-hidden aspect-[3/4] sm:aspect-[3/4] md:aspect-[3/4]">
         {(() => {
           // Prefer review photos (user uploaded). If missing, fallback to product/variant image
           const photoFromReview = review.photos && review.photos.length > 0 ? review.photos[0] : null;
@@ -29,7 +29,8 @@ export const ReviewCard: React.FC<{ review: any; onOpen?: () => void }> = ({ rev
           if (src) {
             // normalize/optimize URL when possible
             const url = getWebPImageUrl(src as any);
-            return <img src={url} alt={review.productTitle || 'imagen'} className="w-full max-w-full h-full object-cover block" />;
+            // use object-contain so tall images don't get cropped vertically
+            return <img src={url} alt={review.productTitle || 'imagen'} className="w-full max-w-full h-full object-contain block" />;
           }
           return <div className="w-full h-full flex items-center justify-center text-slate-500">Sin imagen</div>;
         })()}
