@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
@@ -41,6 +41,62 @@ export default function ReviewsManager() {
 
   // fetch reviews only after authorization confirmed
   useEffect(() => { if (authorized) fetchReviews(); }, [filter, authorized]);
+
+  // If backend didn't provide productTitle or imageUrl for reviews, fetch product info and patch local state
+  useEffect(() => {
+    if (!reviews || reviews.length === 0) return;
+    let mounted = true;
+    (async function enrichMissing() {
+      const need = reviews.filter(r => !(r.productTitle && r.imageUrl));
+      if (need.length === 0) return;
+      try {
+        const updates: Record<string, any> = {};
+        await Promise.all(need.map(async (r) => {
+          try {
+            const prod = await (await import('../../services/api')).apiService.getProduct(String(r.productId));
+            if (!prod) return;
+            // build slug from title
+            const slug = prod.title ? prod.title.toString().toLowerCase().replace(/ñ/g,'n').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/[^\w\s-]/g,'').replace(/[\s_]+/g,'-').replace(/^-+|-+$/g,'') : '';
+            // find variant image by variantId
+            let imageUrl: string | undefined = undefined;
+            if (r.variantId && Array.isArray(prod.variants) && Array.isArray(prod.images)) {
+              const vId = Number(r.variantId);
+              // try helper: find variant by id and map to image via getVariantImage logic
+              const variant = prod.variants.find((v:any) => Number(v.id) === vId);
+              if (variant) {
+                // Use images array - conventions vary; try to find image matching variant.id in image metadata
+                const found = (prod.images || []).find((img:any) => {
+                  if (!img) return false;
+                  if (Array.isArray((img as any).variant_ids) && (img as any).variant_ids.includes(vId)) return true;
+                  if (Array.isArray((img as any).variants) && (img as any).variants.includes(vId)) return true;
+                  return false;
+                });
+                if (found) {
+                  // try common fields safely
+                  imageUrl = (found as any).secure_url || (found as any).src || (found as any).public_url || (found as any).path || undefined;
+                }
+              }
+            }
+            // fallback: use first image
+            if (!imageUrl && Array.isArray(prod.images) && prod.images.length>0) {
+              const first = prod.images[0] as any;
+              imageUrl = first && ((first as any).secure_url || (first as any).src || (first as any).public_url || (first as any).path) || undefined;
+            }
+            updates[r._id] = { productTitle: prod.title || undefined, productSlug: slug || undefined, imageUrl };
+          } catch (e) {
+            // ignore per-item
+          }
+        }));
+        if (!mounted) return;
+        if (Object.keys(updates).length > 0) {
+          setReviews(prev => prev.map(rv => updates[rv._id] ? ({ ...rv, ...updates[rv._id] }) : rv));
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [reviews]);
 
   async function fetchReviews() {
     setLoading(true);
@@ -423,25 +479,36 @@ export default function ReviewsManager() {
       {loading ? <div>Cargando...</div> : (
         <div className="grid gap-4">
           {reviews.map(r => (
-            <div key={r._id} className="p-4 border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box', overflow: 'hidden' }}>
-              <div className="flex justify-between items-start">
-                <div className="min-w-0">
-                  <div className="font-semibold">{r.authorName} — {r.rating}★</div>
-                  <div className="text-sm text-slate-300 truncate">{r.productTitle || r.productId}</div>
-                  <div className="mt-2 text-slate-200 break-words whitespace-normal">{r.body}</div>
+            <div key={r._id} className="p-0 border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' }}>
+              <div className="flex">
+                {/* Left: variant image full height */}
+                <div className="flex-shrink-0 w-28 sm:w-32 bg-slate-700">
+                  <img src={r.imageUrl || (r.photos && r.photos[0]) || '/logo/logo-sin-letras.png'} alt={r.productTitle || r.productId} className="w-full h-full object-cover" />
                 </div>
-                <div className="flex flex-col gap-2 ml-4">
-                  {r.status === 'pending' && <button onClick={()=>confirmPublish(r._id)} className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-white rounded shadow">Publish</button>}
-                  <button onClick={()=>confirmRemove(r._id)} className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded shadow">Delete</button>
+                <div className="p-4 flex-1">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-lg truncate">
+                        <a href={`/producto/${r.productSlug || r.productId}`} className="text-white hover:underline">{r.productTitle || r.productId}</a>
+                      </div>
+                      <div className="text-sm text-slate-300 mt-1">{r.color ? `${r.color}` : ''}{r.size ? ` · ${r.size}` : ''}{(r.quantity !== undefined && r.quantity !== null) ? ` · x${r.quantity}` : ''}</div>
+                      <div className="mt-2 text-slate-200 break-words whitespace-normal">{r.body}</div>
+                    </div>
+                    <div className="flex flex-col gap-2 ml-4">
+                      {r.status === 'pending' && <button onClick={()=>confirmPublish(r._id)} className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-white rounded shadow">Publish</button>}
+                      <button onClick={()=>confirmRemove(r._id)} className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded shadow">Delete</button>
+                    </div>
+                  </div>
+                  {/* thumbnails (if any) */}
+                  {r.photos && r.photos.length>0 && (
+                    <div className="mt-3 flex gap-2 flex-wrap box-border">
+                      {r.photos.map((p:string,i:number) => (
+                        <img key={i} src={p} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded" />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-                {r.photos && r.photos.length>0 && (
-                <div className="mt-3 flex gap-2 flex-wrap box-border">
-                  {r.photos.map((p:string,i:number) => (
-                    <img key={i} src={p} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded" />
-                  ))}
-                </div>
-              )}
             </div>
           ))}
         </div>
