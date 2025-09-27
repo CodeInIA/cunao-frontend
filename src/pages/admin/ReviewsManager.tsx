@@ -29,6 +29,7 @@ export default function ReviewsManager() {
   const navigate = useNavigate();
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [descCount, setDescCount] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const touchTimer = useRef<number | null>(null);
@@ -52,6 +53,18 @@ export default function ReviewsManager() {
       console.error(e);
     } finally { setLoading(false); }
   }
+
+  const filteredReviews = React.useMemo(() => {
+    if (!searchQuery || !searchQuery.trim()) return reviews;
+    const q = searchQuery.trim().toLowerCase();
+    return reviews.filter(r => {
+      const title = String(r.productTitle || r.productId || '').toLowerCase();
+      const body = String(r.body || '').toLowerCase();
+      const author = String(r.authorName || r.author || '').toLowerCase();
+      const color = String(r.color || '').toLowerCase();
+      return title.includes(q) || body.includes(q) || author.includes(q) || color.includes(q);
+    });
+  }, [reviews, searchQuery]);
 
   useEffect(() => {
     // fetch products once for the selector
@@ -417,14 +430,17 @@ export default function ReviewsManager() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+        {/* Left: arrow + title (row 1) */}
+        <div className="flex items-center gap-3 order-1 min-w-0">
           <Link to="/admin/dashboard" className="p-2 rounded bg-slate-800 hover:bg-slate-700" title="Volver al dashboard">
             <ArrowLeft className="w-5 h-5 text-white" />
           </Link>
-          <h2 className="text-2xl font-bold">Reviews manager</h2>
+          <h2 className="text-2xl font-bold truncate">Reviews manager</h2>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Middle: selector + create (row 2 on mobile, row 3 on sm+) */}
+        <div className="order-2 sm:order-3 flex items-center gap-3 w-full sm:w-auto justify-start sm:justify-end shrink-0">
           <div className="inline-flex bg-slate-800 rounded-md p-1">
             <button
               onClick={() => { setFilter('pending'); fetchReviews(); }}
@@ -445,11 +461,22 @@ export default function ReviewsManager() {
             <span className="text-sm font-semibold">Crear</span>
           </button>
         </div>
+
+        {/* Right: search (row 3 on mobile, row 2 on sm+) */}
+        <div className="order-3 sm:order-2 w-full sm:max-w-[24rem] md:max-w-[420px]">
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Buscar reseñas... (autor, producto, texto)"
+            className="w-full bg-slate-800 text-slate-100 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+        </div>
       </div>
 
       {loading ? <div>Cargando...</div> : (
         <div className="grid gap-4">
-          {reviews.map(r => (
+          {filteredReviews.map(r => (
             <div key={r._id} className="p-0 border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' }}>
               <div className="flex">
                 {/* Left: variant image full height */}
