@@ -30,6 +30,7 @@ export default function ReviewsManager() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [descCount, setDescCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sourceFilter, setSourceFilter] = useState<'all'|'real'|'manual'>('all');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const touchTimer = useRef<number | null>(null);
@@ -55,16 +56,23 @@ export default function ReviewsManager() {
   }
 
   const filteredReviews = React.useMemo(() => {
-    if (!searchQuery || !searchQuery.trim()) return reviews;
-    const q = searchQuery.trim().toLowerCase();
+    const q = (searchQuery || '').trim().toLowerCase();
     return reviews.filter(r => {
+      // source filter
+      const orderIdRaw = (r.orderId || (r.order && (r.order.id || r.order.orderId)) || '').toString();
+      const isManual = orderIdRaw && orderIdRaw.toLowerCase() === 'admin';
+      const isReal = !!orderIdRaw && !isManual;
+      if (sourceFilter === 'manual' && !isManual) return false;
+      if (sourceFilter === 'real' && !isReal) return false;
+
+      if (!q) return true;
       const title = String(r.productTitle || r.productId || '').toLowerCase();
       const body = String(r.body || '').toLowerCase();
       const author = String(r.authorName || r.author || '').toLowerCase();
       const color = String(r.color || '').toLowerCase();
       return title.includes(q) || body.includes(q) || author.includes(q) || color.includes(q);
     });
-  }, [reviews, searchQuery]);
+  }, [reviews, searchQuery, sourceFilter]);
 
   useEffect(() => {
     // fetch products once for the selector
@@ -439,8 +447,29 @@ export default function ReviewsManager() {
           <h2 className="text-2xl font-bold truncate">Reviews manager</h2>
         </div>
 
-        {/* Middle: selector + create (row 2 on mobile, row 3 on sm+) */}
-        <div className="order-2 sm:order-3 flex items-center gap-3 w-full sm:w-auto justify-start sm:justify-end shrink-0">
+        {/* Middle: source filter (row 2 on mobile, combined with others on sm+) */}
+        <div className="order-2 sm:order-3 w-full sm:w-auto flex items-center justify-start sm:justify-end shrink-0 mb-0 sm:mb-0">
+          <div className="inline-flex items-center rounded-md bg-slate-800 p-1">
+            <button
+              onClick={() => setSourceFilter('all')}
+              className={`px-3 py-1 rounded text-sm ${sourceFilter==='all' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+              Todas
+            </button>
+            <button
+              onClick={() => setSourceFilter('real')}
+              className={`px-3 py-1 rounded text-sm ${sourceFilter==='real' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+              Reales
+            </button>
+            <button
+              onClick={() => setSourceFilter('manual')}
+              className={`px-3 py-1 rounded text-sm ${sourceFilter==='manual' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+              Manuales
+            </button>
+          </div>
+        </div>
+
+        {/* Selector + create (row 3 on mobile, row 3 on sm+) */}
+        <div className="order-3 sm:order-3 flex items-center gap-3 w-full sm:w-auto justify-start sm:justify-end shrink-0">
           <div className="inline-flex bg-slate-800 rounded-md p-1">
             <button
               onClick={() => { setFilter('pending'); fetchReviews(); }}
@@ -462,8 +491,8 @@ export default function ReviewsManager() {
           </button>
         </div>
 
-        {/* Right: search (row 3 on mobile, row 2 on sm+) */}
-        <div className="order-3 sm:order-2 w-full sm:max-w-[24rem] md:max-w-[420px]">
+        {/* Right: search (row 4 on mobile, row 2 on sm+) */}
+        <div className="order-4 sm:order-2 w-full sm:max-w-[24rem] md:max-w-[420px]">
           <input
             type="search"
             value={searchQuery}
@@ -490,6 +519,9 @@ export default function ReviewsManager() {
                         <a href={`/producto/${r.productSlug || r.productId}${r.color ? `?color=${encodeURIComponent(String(r.color))}` : ''}`} className="text-white hover:underline break-words whitespace-normal">{r.productTitle || r.productId}</a>
                       </div>
                       <div className="text-sm text-slate-300 mt-1">{r.color ? `${r.color}` : ''}{r.size ? ` · ${r.size}` : ''}{(r.quantity !== undefined && r.quantity !== null) ? ` · x${r.quantity}` : ''}</div>
+                      <div className="text-sm text-slate-400 mt-1">{
+                        `Autor: ${r.authorName || r.author || '—'} · Pedido: ${r.orderId || (r.order && (r.order.id || r.order.orderId)) || '—'}`
+                      }</div>
                       <div className="mt-2 text-slate-200 break-words whitespace-normal">{r.body}</div>
                     </div>
                     <div className="flex flex-col gap-2 ml-4">
@@ -501,7 +533,10 @@ export default function ReviewsManager() {
                   {r.photos && r.photos.length>0 && (
                     <div className="mt-3 flex gap-2 flex-wrap box-border">
                       {r.photos.map((p:string,i:number) => (
-                        <img key={i} src={p} onClick={()=>setLightboxImage(p)} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded cursor-pointer" />
+                        <div key={i} className="relative">
+                          <img src={p} onClick={()=>setLightboxImage(p)} className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] object-cover rounded cursor-pointer" />
+                          <div className="absolute top-1 left-1 bg-yellow-400 text-slate-900 rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold">{i+1}</div>
+                        </div>
                       ))}
                     </div>
                   )}
