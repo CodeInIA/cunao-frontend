@@ -443,55 +443,6 @@ export const ReviewPage: React.FC = () => {
   // show confirmation modal instead of native confirm
     setShowConfirm(true);
     return;
-
-    // construir payload
-    // payload por línea (lineKey tiene productId-idx)
-    const payload = Object.keys(selectedProducts).filter(key => selectedProducts[key]).map(lineKey => {
-      // extraer productId desde lineKey
-      const [productId] = lineKey.split('-');
-      return {
-        productId,
-        fieldKey: lineKey,
-        rating: ratings[lineKey] || 5,
-        title: '',
-        body: texts[lineKey] || '',
-        authorName: order.customerName || ''
-      };
-    });
-
-    const form = new FormData();
-    form.append('payload', JSON.stringify(payload));
-
-    // Adjuntar archivos con fieldname product-<lineKey>
-    Object.entries(files).forEach(([lineKey, fileArr]) => {
-      fileArr.forEach((obj) => form.append(`product-${lineKey}`, obj.file));
-    });
-
-    // final sanity-check on payload bodies
-    for (const p of payload) {
-      if ((p.body || '').length > MAX_REVIEW_CHARS) {
-        const pl = payload.length === 1 ? 'reseña' : 'reseñas';
-        alert(`Hay ${pl} que exceden el límite de caracteres. Corrige antes de enviar.`);
-        setSubmitting(false);
-        return;
-      }
-    }
-
-    try {
-      const res = await axios.post(`/api/reviews/submit/${token}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
-      if (res.data && res.data.success) {
-        const pl = payload.length === 1 ? 'reseña' : 'reseñas';
-        alert(`Gracias, tu ${pl} está en revisión.`);
-        navigate('/');
-      } else {
-        alert('Error al enviar reseñas');
-      }
-    } catch (e) {
-      console.error(e);
-  alert('Error al enviar reseñas');
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const handlePublishClick = () => {
@@ -548,7 +499,6 @@ export const ReviewPage: React.FC = () => {
           productId,
           fieldKey: lineKey,
           rating: ratings[lineKey] || 5,
-          title: '',
           body: texts[lineKey] || '',
           authorName: order.customerName || ''
         };
