@@ -366,15 +366,24 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
         const distanceFromEdge = baseDistance + (arrowEdgeExtra || 0);
         return (
           <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ left: `${distanceFromEdge}px` }}>
-            <button
-              onClick={() => { if (canPrev) prev(); }}
-              disabled={!canPrev}
-              aria-disabled={!canPrev}
-              aria-label="Anterior"
-              className={`bg-white/10 text-white w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition-colors duration-150 ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+            <div className="relative inline-block">
+              {/* group wrapper to allow tooltip and hover effects on desktop */}
+              <div className={`relative group`}>
+                <button
+                  onClick={() => { if (canPrev) prev(); }}
+                  disabled={!canPrev}
+                  aria-disabled={!canPrev}
+                  aria-label="Anterior"
+                  className={`bg-white/10 text-white w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition duration-150 ${canPrev ? 'group-hover:shadow-lg group-hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                {/* Tooltip only intended for desktop (this branch is already desktop-only) */}
+                <span style={{ zIndex: 9999 }} className="pointer-events-none absolute -top-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-slate-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap">
+                  Anterior
+                </span>
+              </div>
+            </div>
           </div>
         );
       })()}
@@ -392,15 +401,22 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
         const distanceFromEdgeR = baseDistanceR + (arrowEdgeExtra || 0);
         return (
           <div className="absolute top-1/2 transform -translate-y-1/2 z-10" style={{ right: `${distanceFromEdgeR}px` }}>
-            <button
-              onClick={() => { if (canNext) next(); }}
-              disabled={!canNext}
-              aria-disabled={!canNext}
-              aria-label="Siguiente"
-              className={`bg-white/10 text-white w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition-colors duration-150 ${canNext ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+            <div className="relative inline-block">
+              <div className={`relative group`}>
+                <button
+                  onClick={() => { if (canNext) next(); }}
+                  disabled={!canNext}
+                  aria-disabled={!canNext}
+                  aria-label="Siguiente"
+                  className={`bg-white/10 text-white w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition duration-150 ${canNext ? 'group-hover:shadow-lg group-hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                <span style={{ zIndex: 9999 }} className="pointer-events-none absolute -top-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-slate-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap">
+                  Siguiente
+                </span>
+              </div>
+            </div>
           </div>
         );
       })()}
@@ -442,10 +458,41 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
       {modalOpen && (
       <div onClick={() => setModalOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div onClick={(e) => e.stopPropagation()} className="relative bg-slate-900 rounded-lg p-4 sm:p-6 w-full mx-4 sm:w-[90%] sm:mx-0 max-w-[420px] sm:max-w-4xl max-h-[90vh] overflow-auto box-border flex flex-col">
-          <button onClick={() => setModalOpen(false)} className="absolute top-3 right-3 text-slate-200"><X className="w-6 h-6" /></button>
+          <div className="absolute top-3 right-3 text-slate-200">
+            <div className="relative inline-block">
+              <div className="relative group">
+                <button
+                  onClick={() => setModalOpen(false)}
+                  aria-label="Cerrar"
+                  className="text-slate-200 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-150 group-hover:shadow-lg group-hover:bg-white/10"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+                {/* tooltip only on desktop */}
+                <span style={{ zIndex: 10001 }} className="hidden sm:block pointer-events-none absolute -top-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-slate-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap">
+                  Cerrar
+                </span>
+              </div>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {/* external arrows hidden on small screens to avoid stealing width */}
-            <button onClick={() => setActiveCard(c => Math.max(0, c - 1))} className="p-2 text-slate-200 hidden sm:inline-flex"><ChevronLeft /></button>
+            <button
+              onClick={() => setActiveCard(c => Math.max(0, c - 1))}
+              disabled={!canPrevModal}
+              aria-disabled={!canPrevModal}
+              aria-label="Anterior review"
+              className={`p-2 text-slate-200 hidden sm:inline-flex`}
+            >
+              <div className={`relative group ${canPrevModal ? '' : 'opacity-40 cursor-not-allowed'}`}>
+                <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition duration-150 ${canPrevModal ? 'group-hover:shadow-lg group-hover:bg-white/10' : ''}`}>
+                  <ChevronLeft />
+                </div>
+                <span style={{ zIndex: 9999 }} className={`pointer-events-none absolute -top-8 left-1/2 transform -translate-x-1/2 opacity-0 transition-opacity duration-150 bg-slate-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap ${canPrevModal ? 'group-hover:opacity-100' : ''}`}>
+                  Anterior
+                </span>
+              </div>
+            </button>
             <div className="flex-1 min-w-0 w-full box-border px-4">
               {/* image display: use 3:4 aspect frame to match review cards; limit max-height so modal fits viewport */}
               <div className="w-full bg-transparent rounded-t-lg overflow-hidden flex items-center justify-center relative box-border aspect-[3/4] max-h-[60vh] sm:max-h-[60vh]" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
@@ -532,7 +579,22 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
                 </div>
               </div>
             </div>
-            <button onClick={() => setActiveCard(c => Math.min(reviews.length - 1, c + 1))} className="p-2 text-slate-200 hidden sm:inline-flex"><ChevronRight /></button>
+            <button
+              onClick={() => setActiveCard(c => Math.min(reviews.length - 1, c + 1))}
+              disabled={!canNextModal}
+              aria-disabled={!canNextModal}
+              aria-label="Siguiente review"
+              className={`p-2 text-slate-200 hidden sm:inline-flex`}
+            >
+              <div className={`relative group ${canNextModal ? '' : 'opacity-40 cursor-not-allowed'}`}>
+                <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition duration-150 ${canNextModal ? 'group-hover:shadow-lg group-hover:bg-white/10' : ''}`}>
+                  <ChevronRight />
+                </div>
+                <span style={{ zIndex: 9999 }} className={`pointer-events-none absolute -top-8 left-1/2 transform -translate-x-1/2 opacity-0 transition-opacity duration-150 bg-slate-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap ${canNextModal ? 'group-hover:opacity-100' : ''}`}>
+                  Siguiente
+                </span>
+              </div>
+            </button>
           </div>
           {/* mobile bottom controls: placed under all review info so they don't overlap content */}
           <div className="sm:hidden mt-4 flex items-center justify-center gap-6">

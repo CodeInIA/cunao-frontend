@@ -5,7 +5,6 @@ import { ArrowRight, Star, Truck, Shield, Heart } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
-import { FeaturedProductCard } from '../components/FeaturedProductCard';
 import ProductsCarousel from '../components/ProductsCarousel';
 import ReviewsCarousel from '../components/ReviewsCarousel';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
