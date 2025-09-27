@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReviewCard from './ReviewCard';
-import { ChevronLeft, ChevronRight, X, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, UserStar } from 'lucide-react';
 import { getWebPImageUrl } from '../utils/imageUtils';
 
 type Props = { productId?: string; maxVisible?: number; arrowEdgeExtra?: number };
@@ -344,6 +344,15 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   const averageRating = reviews.reduce((s, r) => s + (Number(r?.rating) || 0), 0) / reviews.length;
   const avgRounded = Math.round(averageRating * 10) / 10; // one decimal
   const avgRoundedInt = Math.round(averageRating); // for star meter (nearest int)
+  // percentage width to fill the stars (0..100)
+  const fillPercent = Math.max(0, Math.min(100, (averageRating / 5) * 100));
+
+  // Inline filled star SVG so clipping produces partial filled stars (lucide Star is outline-only)
+  const FilledStar: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }} {...props}>
+      <path d="M12 .587l3.668 7.431L23.6 9.75l-5.584 5.444L19.335 24 12 19.897 4.665 24l1.318-8.806L.399 9.75l7.932-1.732L12 .587z" />
+    </svg>
+  );
 
   return (
     <>
@@ -351,12 +360,36 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
         <div className="text-center">
           <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Esto opinan otros cuñaos</div>
           <div className="mt-2 flex items-center justify-center gap-3">
-            {/* stars */}
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className={`w-4 h-4 ${i < avgRoundedInt ? 'text-spanish-yellow' : 'text-slate-300'}`} />
-              ))}
+            {/* average number with user-star icon before the stars */}
+            <div className="flex items-center gap-2">
+              <UserStar className="w-5 h-5 text-spanish-yellow" />
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{avgRounded}</div>
             </div>
+
+            {/* stars with continuous fill: gray background stars and yellow foreground clipped by width */}
+            {/* Use a filled SVG star so clipping shows a proper partial fill (lucide Star is outline-only) */}
+            {/* local FilledStar component */}
+            
+            <div className="relative inline-block" aria-hidden>
+              {/* background (gray) stars */}
+              <div className="inline-flex items-center gap-1 text-slate-300" style={{ lineHeight: 0, whiteSpace: 'nowrap' }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <FilledStar key={`bg-${i}`} className="w-4 h-4" />
+                ))}
+              </div>
+              {/* foreground (yellow) clipped to percentage */}
+              <div
+                className="absolute left-0 top-0 overflow-hidden"
+                style={{ width: `${fillPercent}%`, pointerEvents: 'none', height: '100%', zIndex: 1 }}
+              >
+                <div className="inline-flex items-center gap-1 text-spanish-yellow" style={{ lineHeight: 0, transform: 'translateZ(0)' }}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <FilledStar key={`fg-${i}`} className="w-4 h-4" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">de {reviews.length} reseñas</div>
           </div>
         </div>
