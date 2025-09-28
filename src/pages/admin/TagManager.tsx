@@ -21,6 +21,7 @@ export default function TagManager() {
   const dragInfoRef = React.useRef<{ productId: string | null; index: number | null }>({ productId: null, index: null });
   const [dragActive, setDragActive] = useState<{ productId: string; index: number } | null>(null);
   const [highlightedTag, setHighlightedTag] = useState<Record<string, number | null>>({});
+  const [saveStatus, setSaveStatus] = useState<Record<string, 'idle'|'loading'|'success'|'error'>>({});
   // touch drag state for mobile long-press drag-and-drop
   const longPressTimerRef = React.useRef<number | null>(null);
   const touchStartPosRef = React.useRef<{ x: number; y: number } | null>(null);
@@ -50,17 +51,28 @@ export default function TagManager() {
 
   async function saveTags(productId: string, tags: string[]) {
     try {
+      // set loading state
+      setSaveStatus(s => ({ ...s, [productId]: 'loading' }));
       const csrf = getCookie('csrfToken');
       await axios.put(`/api/admin/products/${productId}/tags`, { tags }, { headers: { 'x-csrf-token': csrf || '' } });
+      // success animation
+      setSaveStatus(s => ({ ...s, [productId]: 'success' }));
       toast.success('Tags actualizados correctamente');
       // actualizar localmente
       setProducts(p => p.map(pp => pp.id === productId ? { ...pp, tags } : pp));
       // clear draft for product
       setDraftTags(d => { const copy = { ...d }; delete copy[productId]; return copy; });
-      setEditingId(null);
+      // keep success visible briefly before closing
+      window.setTimeout(() => {
+        setSaveStatus(s => ({ ...s, [productId]: 'idle' }));
+        setEditingId(null);
+      }, 900);
     } catch (e) {
       console.error(e);
+      setSaveStatus(s => ({ ...s, [productId]: 'error' }));
       toast.error('Error al actualizar tags');
+      // reset error state after short delay
+      window.setTimeout(() => setSaveStatus(s => ({ ...s, [productId]: 'idle' })), 1200);
     }
   }
 
@@ -270,7 +282,18 @@ export default function TagManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredProducts.map(prod => {
             const isEditing = editingId === prod.id;
-            const currentTags = isEditing ? (draftTags[prod.id] || []) : (Array.isArray(prod.tags) ? prod.tags : []);
+            const originalTags = Array.isArray(prod.tags) ? prod.tags : [];
+            const draft = Array.isArray(draftTags[prod.id]) ? draftTags[prod.id] : originalTags;
+            const currentTags = isEditing ? draft : originalTags;
+            // simple shallow equality check for tags arrays (order matters)
+            const hasChanges = (() => {
+              if (!Array.isArray(draft)) return false;
+              if (draft.length !== originalTags.length) return true;
+              for (let i = 0; i < draft.length; i++) {
+                if (draft[i] !== originalTags[i]) return true;
+              }
+              return false;
+            })();
             return (
               <div
                 key={prod.id}
@@ -364,7 +387,26 @@ export default function TagManager() {
                     ) : (
                       <>
                         <button className="inline-flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-md text-sm" onClick={() => cancelEditing(prod.id)}>Cancelar</button>
-                        <button className="inline-flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-md text-sm" onClick={() => saveTags(prod.id, draftTags[prod.id] || [])}><Check className="w-4 h-4" /> Guardar cambios</button>
+                        <button
+                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-md text-sm ${saveStatus[prod.id] === 'loading' ? 'bg-green-600/80 text-white cursor-wait' : saveStatus[prod.id] === 'success' ? 'bg-green-500 text-white' : saveStatus[prod.id] === 'error' ? 'bg-red-600 text-white' : 'bg-green-500 text-white'} ${(!hasChanges && saveStatus[prod.id] !== 'loading') ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          onClick={() => saveTags(prod.id, draft)}
+                          disabled={saveStatus[prod.id] === 'loading' || !hasChanges}
+                          aria-disabled={!hasChanges}
+                        >
+                          {saveStatus[prod.id] === 'loading' ? (
+                            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                            </svg>
+                          ) : saveStatus[prod.id] === 'success' ? (
+                            <span className="w-4 h-4 inline-flex items-center justify-center transform transition-transform duration-300 animate-pulse">
+                              <Check className="w-4 h-4" />
+                            </span>
+                          ) : (
+                            <Check className="w-4 h-4" />
+                          )}
+                          <span>{saveStatus[prod.id] === 'success' ? 'Guardado' : saveStatus[prod.id] === 'loading' ? 'Guardando...' : (!hasChanges ? 'Sin cambios' : 'Guardar cambios')}</span>
+                        </button>
                       </>
                     )}
                   </div>
