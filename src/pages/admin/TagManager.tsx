@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Plus, X, Edit, Check } from 'lucide-react';
 axios.defaults.withCredentials = true;
 
 function getCookie(name: string) {
@@ -16,6 +16,10 @@ export default function TagManager() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const navigate = useNavigate();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftTags, setDraftTags] = useState<Record<string, string[]>>({});
+  const dragInfoRef = React.useRef<{ productId: string | null; index: number | null }>({ productId: null, index: null });
+  const [highlightedTag, setHighlightedTag] = useState<Record<string, number | null>>({});
 
   useEffect(() => {
     let mounted = true;
@@ -40,10 +44,69 @@ export default function TagManager() {
       toast.success('Tags actualizados correctamente');
       // actualizar localmente
       setProducts(p => p.map(pp => pp.id === productId ? { ...pp, tags } : pp));
+      // clear draft for product
+      setDraftTags(d => { const copy = { ...d }; delete copy[productId]; return copy; });
+      setEditingId(null);
     } catch (e) {
       console.error(e);
       toast.error('Error al actualizar tags');
     }
+  }
+
+  function startEditing(productId: string, currentTags: string[]) {
+    setEditingId(productId);
+    setDraftTags(d => ({ ...d, [productId]: Array.isArray(currentTags) ? [...currentTags] : [] }));
+  }
+
+  function cancelEditing(productId: string) {
+    setDraftTags(d => { const copy = { ...d }; delete copy[productId]; return copy; });
+    setEditingId(null);
+  }
+
+  function addDraftTag(productId: string, tag: string) {
+    if (!tag || !tag.trim()) return;
+    setDraftTags(d => {
+      const cur = Array.isArray(d[productId]) ? [...d[productId]] : [];
+      if (cur.includes(tag)) return d;
+      const nextArr = [...cur, tag];
+      const next = { ...d, [productId]: nextArr };
+      // highlight the newly added tag briefly
+      setHighlightedTag(h => ({ ...h, [productId]: nextArr.length - 1 }));
+      setTimeout(() => {
+        setHighlightedTag(h => { const copy = { ...h }; delete copy[productId]; return copy; });
+      }, 1200);
+      return next;
+    });
+  }
+
+  function removeDraftTag(productId: string, index: number) {
+    setDraftTags(d => {
+      const cur = Array.isArray(d[productId]) ? [...d[productId]] : [];
+      cur.splice(index, 1);
+      return { ...d, [productId]: cur };
+    });
+  }
+
+  function onDragStart(productId: string, index: number, e: React.DragEvent) {
+    dragInfoRef.current = { productId, index };
+    try { e.dataTransfer!.setData('text/plain', String(index)); } catch {}
+  }
+
+  function onDragOver(e: React.DragEvent) { e.preventDefault(); }
+
+  function onDrop(productId: string, index: number) {
+    const info = dragInfoRef.current;
+    if (!info.productId || info.productId !== productId || info.index === null) return;
+    const from = info.index;
+    const to = index;
+    if (from === to) return;
+    setDraftTags(d => {
+      const cur = Array.isArray(d[productId]) ? [...d[productId]] : [];
+      const item = cur.splice(from, 1)[0];
+      cur.splice(to, 0, item);
+      return { ...d, [productId]: cur };
+    });
+    dragInfoRef.current = { productId: null, index: null };
   }
 
   const normalizedQuery = (searchQuery || '').trim().toLowerCase();
@@ -58,7 +121,7 @@ export default function TagManager() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/admin/dashboard')} className="p-2 rounded bg-slate-800 hover:bg-slate-700" aria-label="Volver al dashboard">
             <ArrowLeft className="w-5 h-5 text-slate-200" />
@@ -69,11 +132,11 @@ export default function TagManager() {
           </div>
         </div>
 
-        <div className="ml-auto">
+        <div className="w-full md:w-auto md:ml-auto mt-3 md:mt-0">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
-              className="pl-9 pr-3 py-2 rounded bg-slate-800 text-slate-100 w-80 placeholder:text-slate-400"
+              className="pl-9 pr-3 py-2 rounded bg-slate-800 text-slate-100 w-full md:w-80 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
               placeholder="Buscar por nombre o tag..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -85,23 +148,74 @@ export default function TagManager() {
 
       {loading ? <div>Cargando...</div> : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredProducts.map(prod => (
-            <div key={prod.id} className="flex gap-4 items-start bg-slate-800 p-4 rounded-md">
-              <img src={prod.image && (prod.image.cdnUrl || prod.image.src)} alt={prod.title} className="w-24 h-24 object-cover rounded" />
-              <div className="flex-1">
-                <div className="flex items-start gap-2">
-                  <h3 className="text-white font-semibold">{prod.title}</h3>
-                  <div className="ml-auto text-sm text-slate-400">{Array.isArray(prod.tags) ? prod.tags.length : 0} tags</div>
+          {filteredProducts.map(prod => {
+            const isEditing = editingId === prod.id;
+            const currentTags = isEditing ? (draftTags[prod.id] || []) : (Array.isArray(prod.tags) ? prod.tags : []);
+            return (
+              <div key={prod.id} className="bg-slate-800 p-4 rounded-md shadow-sm">
+                <div className="flex gap-4 items-stretch">
+                  <div className="flex-none w-28 overflow-hidden rounded-md flex items-center justify-center bg-slate-900">
+                    <img src={prod.image && (prod.image.cdnUrl || prod.image.src)} alt={prod.title} className="w-full h-auto object-contain" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-start gap-2">
+                      <h3 className="text-white font-semibold">{prod.title}</h3>
+                      <div className="ml-auto text-sm text-slate-400">{Array.isArray(prod.tags) ? prod.tags.length : 0} tags</div>
+                    </div>
+
+                    <div className="mt-3">
+                      {/* tags display */}
+                      <div className="flex flex-wrap gap-2">
+                        {currentTags.length === 0 && <div className="text-slate-400">Sin tags</div>}
+                        {currentTags.map((t: string, idx: number) => (
+                          <div
+                            key={t + idx}
+                            draggable={isEditing}
+                            onDragStart={(e) => onDragStart(prod.id, idx, e)}
+                            onDragOver={onDragOver}
+                            onDrop={() => onDrop(prod.id, idx)}
+                            className={`flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-full text-sm ${highlightedTag[prod.id] === idx ? 'ring-2 ring-yellow-400 border-yellow-400' : ''}`}
+                          >
+                            <span className="select-none">{t}</span>
+                            {isEditing && (
+                              <button className="ml-1 p-1 rounded-full hover:bg-slate-600" onClick={() => removeDraftTag(prod.id, idx)} aria-label={`Eliminar tag ${t}`}>
+                                <X className="w-3 h-3 text-slate-300" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {isEditing && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <input type="text" placeholder="Nueva tag" className="flex-1 bg-slate-900 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400" id={`newtag-${prod.id}`} />
+                        <button className="inline-flex items-center gap-2 bg-slate-700 px-3 py-2 rounded" onClick={() => {
+                          const el = document.getElementById(`newtag-${prod.id}`) as HTMLInputElement | null;
+                          if (!el) return;
+                          const v = (el.value || '').trim();
+                          if (!v) return;
+                          addDraftTag(prod.id, v);
+                          el.value = '';
+                        }} aria-label="Añadir tag"><Plus className="w-4 h-4" /></button>
+                      </div>
+                    )}
+
+                    <div className="mt-4 flex items-center gap-3">
+                      {!isEditing ? (
+                        <button className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold" onClick={() => startEditing(prod.id, prod.tags || [])}><Edit className="w-4 h-4" /> Editar tags</button>
+                      ) : (
+                        <>
+                          <button className="inline-flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-md text-sm" onClick={() => cancelEditing(prod.id)}>Cancelar</button>
+                          <button className="inline-flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-md text-sm" onClick={() => saveTags(prod.id, draftTags[prod.id] || [])}><Check className="w-4 h-4" /> Guardar cambios</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <textarea className="w-full mt-2 bg-slate-900 text-white p-2 rounded" defaultValue={Array.isArray(prod.tags) ? prod.tags.join(', ') : ''} onBlur={(e) => {
-                  const raw = e.currentTarget.value || '';
-                  const tags = raw.split(',').map((t:any)=>t.trim()).filter((t:any)=>t);
-                  saveTags(prod.id, tags);
-                }} />
-                <div className="text-xs text-slate-400 mt-1">Separadas por comas — los cambios se guardan al perder foco</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
