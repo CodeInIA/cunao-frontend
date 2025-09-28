@@ -19,6 +19,7 @@ export default function TagManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftTags, setDraftTags] = useState<Record<string, string[]>>({});
   const dragInfoRef = React.useRef<{ productId: string | null; index: number | null }>({ productId: null, index: null });
+  const [dragActive, setDragActive] = useState<{ productId: string; index: number } | null>(null);
   const [highlightedTag, setHighlightedTag] = useState<Record<string, number | null>>({});
   // touch drag state for mobile long-press drag-and-drop
   const longPressTimerRef = React.useRef<number | null>(null);
@@ -100,6 +101,12 @@ export default function TagManager() {
   function onDragStart(productId: string, index: number, e: React.DragEvent) {
     dragInfoRef.current = { productId, index };
     try { e.dataTransfer!.setData('text/plain', String(index)); } catch {}
+    setDragActive({ productId, index });
+  }
+
+  function onDragEnd() {
+    dragInfoRef.current = { productId: null, index: null };
+    setDragActive(null);
   }
 
   function onDragOver(e: React.DragEvent) { e.preventDefault(); }
@@ -117,6 +124,7 @@ export default function TagManager() {
       return { ...d, [productId]: cur };
     });
     dragInfoRef.current = { productId: null, index: null };
+    setDragActive(null);
   }
 
   // --- Touch handlers for mobile long-press drag ---
@@ -288,28 +296,29 @@ export default function TagManager() {
                   {/* tags display (full width under the header row) */}
                     <div className="flex flex-wrap gap-2">
                       {currentTags.length === 0 && <div className="text-slate-400">Sin tags</div>}
-                      {currentTags.map((t: string, idx: number) => {
+                                      {currentTags.map((t: string, idx: number) => {
                         const placeholderIndex = touchPlaceholder[prod.id];
                         const isPlaceholder = isTouchDragging && placeholderIndex === idx;
-                        return (
-                          <React.Fragment key={t + idx}>
-                            {isPlaceholder && (
-                              <div className="w-full h-10" aria-hidden />
-                            )}
-                            <div
+                                          return (
+                                            <React.Fragment key={t + idx}>
+                                              {isPlaceholder && (
+                                                <div className="w-full h-10 transition-all duration-200" aria-hidden />
+                                              )}
+                                              <div
                               data-tag-item
                               data-product-id={prod.id}
                               data-index={String(idx)}
                               draggable={isEditing}
-                              onDragStart={(e) => onDragStart(prod.id, idx, e)}
-                              onDragOver={onDragOver}
-                              onDrop={() => onDrop(prod.id, idx)}
+                                                onDragStart={(e) => onDragStart(prod.id, idx, e)}
+                                                onDragEnd={onDragEnd}
+                                                onDragEnter={(e) => { if (dragInfoRef.current.productId === prod.id) { e.preventDefault(); setTouchPlaceholder(p => ({ ...p, [prod.id]: idx })); } }}
+                                                onDragOver={(e) => { e.preventDefault(); }}
+                                                onDrop={() => onDrop(prod.id, idx)}
                               onTouchStart={isEditing ? ((e) => onTouchStartTag(prod.id, idx, t, e)) : undefined}
                               onTouchMove={isEditing ? ((e) => onTouchMoveTag(prod.id, e)) : undefined}
                               onTouchEnd={isEditing ? onTouchEndTag : undefined}
                               onTouchCancel={isEditing ? onTouchEndTag : undefined}
-                              className={`relative flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-full text-sm ${highlightedTag[prod.id] === idx ? 'ring-2 ring-yellow-400 border-yellow-400' : ''} ${isPlaceholder ? 'opacity-50 scale-95' : ''}`}
-                            >
+                                                className={`relative flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-full text-sm transition-transform duration-150 ease-in-out will-change-transform ${highlightedTag[prod.id] === idx ? 'ring-2 ring-yellow-400 border-yellow-400' : ''} ${isPlaceholder ? 'opacity-50 scale-95' : ''} ${dragActive && dragActive.productId === prod.id && dragActive.index === idx ? 'scale-105 shadow-lg z-20' : ''}`}>
                               {isEditing && (
                                 <span className="absolute -top-2 -left-2 bg-yellow-400 text-slate-900 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" aria-hidden>
                                   {idx + 1}
