@@ -33,6 +33,7 @@ const NewsletterPreferencesPage = lazy(() => import('./pages/NewsletterPreferenc
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then(m => ({ default: m.default })));
 const ReviewsManager = lazy(() => import('./pages/admin/ReviewsManager').then(m => ({ default: m.default })));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.default })));
+const TagManager = lazy(() => import('./pages/admin/TagManager').then(m => ({ default: m.default })));
 const AdminRoute = lazy(() => import('./components/AdminRoute').then(m => ({ default: m.default })));
 import './App.css';
 
@@ -103,6 +104,7 @@ useEffect(() => {
                 <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                   <Route path="/admin/review-manager" element={<AdminRoute><ReviewsManager /></AdminRoute>} />
+                  <Route path="/admin/tag-manager" element={<AdminRoute><TagManager /></AdminRoute>} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
