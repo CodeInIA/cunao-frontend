@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { apiService } from '../services/api';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, Shield, Heart } from 'lucide-react';
 import { useSmartNavigation } from '../hooks/useSmartNavigation';
@@ -31,10 +32,9 @@ export const HomePage: React.FC = () => {
     let mounted = true;
     const load = async () => {
       try {
-        const res = await axios.get('/api/reviews/list');
-        const list = res.data || [];
-        const total = list.length;
-        const sum = list.reduce((s: number, r: any) => s + (Number(r?.rating) || 0), 0);
+        const list = await apiService.getReviews();
+        const total = Array.isArray(list) ? list.length : 0;
+        const sum = (Array.isArray(list) ? list : []).reduce((s: number, r: any) => s + (Number(r?.rating) || 0), 0);
         const avg = total > 0 ? sum / total : 4.9;
         if (mounted) {
           setStoreAvg(Math.round(avg * 10) / 10);
@@ -47,70 +47,6 @@ export const HomePage: React.FC = () => {
     load();
     return () => { mounted = false; };
   }, []);
-
-  const handleAddToCart = (product: Product) => {
-    // Obtener el precio real del producto
-    const enabledVariants = (product.variants || []).filter(v => v?.is_enabled);
-    const minPrice = enabledVariants.length > 0 
-      ? Math.min(...enabledVariants.map(v => v.price).filter(p => typeof p === 'number'))
-      : 1999; // fallback en centavos
-    
-    // Obtener las opciones reales del producto
-    const enabledOptionIds = new Set(enabledVariants.flatMap(v => v.options));
-    const colorOptions = product.options?.find(o => o.type === 'color')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
-    const sizeOptions = product.options?.find(o => o.type === 'size')?.values.filter(val => enabledOptionIds.has(val.id)) || [];
-    
-    // Intentar encontrar la variante que corresponde a la imagen mostrada
-    const defaultImage = product.images?.[0];
-    let selectedVariant = enabledVariants[0];
-    let selectedColor = colorOptions[0]?.title || 'Negro';
-    let selectedSize = sizeOptions[0]?.title || 'M';
-    
-    // Si la imagen tiene variant_ids, usar esa variante
-    if (defaultImage?.variant_ids && defaultImage.variant_ids.length > 0) {
-      const imageVariantId = defaultImage.variant_ids[0];
-      const imageVariant = enabledVariants.find(v => v.id === imageVariantId);
-      if (imageVariant) {
-        selectedVariant = imageVariant;
-        
-        // Encontrar el color de esta variante específica
-        const variantColorOptionId = imageVariant.options.find(optId => 
-          colorOptions.some(colorOpt => colorOpt.id === optId)
-        );
-        if (variantColorOptionId) {
-          const variantColor = colorOptions.find(c => c.id === variantColorOptionId);
-          if (variantColor) {
-            selectedColor = variantColor.title;
-          }
-        }
-        
-        // Encontrar la talla de esta variante específica
-        const variantSizeOptionId = imageVariant.options.find(optId => 
-          sizeOptions.some(sizeOpt => sizeOpt.id === optId)
-        );
-        if (variantSizeOptionId) {
-          const variantSize = sizeOptions.find(s => s.id === variantSizeOptionId);
-          if (variantSize) {
-            selectedSize = variantSize.title;
-          }
-        }
-      }
-    }
-    
-    // Usar la variante seleccionada
-    const cartItem = {
-      productId: product.id,
-      variantId: selectedVariant.id,
-      quantity: 1,
-      title: product.title,
-      price: minPrice / 100, // Convertir de centavos a euros
-      image: product.images[0] ? getOptimizedImageUrl(product.images[0]) : '',
-      size: selectedSize,
-      color: selectedColor
-    };
-    
-    addItem(cartItem);
-  };
 
   const phrases = [
     "Esto no lo ves en el telediario",

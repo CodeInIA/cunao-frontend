@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { apiService } from '../services/api';
 import ReviewCard from './ReviewCard';
 import { ChevronLeft, ChevronRight, X, UserStar} from 'lucide-react';
 import Rating from '@mui/material/Rating';
@@ -34,8 +35,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await axios.get('/api/reviews/list' + (productId ? `?productId=${productId}` : ''));
-        const data = res.data || [];
+        const data = await apiService.getReviews(productId);
         // ordenar por rating (desc) y, en caso de empate, por fecha de creación (desc)
         const sorted = (Array.isArray(data) ? data.slice() : []).sort((a: any, b: any) => {
           const ra = (Number(b?.rating) || 0) - (Number(a?.rating) || 0);

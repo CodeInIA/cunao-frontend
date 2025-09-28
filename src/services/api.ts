@@ -46,6 +46,14 @@ export const apiService = {
     return response.data.data || [];
   },
 
+  // Reviews
+  async getReviews(productId?: string): Promise<any[]> {
+    const qs = productId ? `?productId=${encodeURIComponent(productId)}` : '';
+    // Many review endpoints return a plain array rather than the ApiResponse wrapper
+    const response = await api.get<any>(`/reviews/list${qs}`);
+    return response.data || [];
+  },
+
     // GPSR
   async getProductGPSR(id: string): Promise<Array<{title: string, text: string}>> {
     const response = await api.get<{ success: boolean; data: Array<{title: string, text: string}> }>(`/products/${id}/gpsr`);
