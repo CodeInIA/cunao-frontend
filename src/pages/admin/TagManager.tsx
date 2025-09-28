@@ -153,64 +153,69 @@ export default function TagManager() {
             const currentTags = isEditing ? (draftTags[prod.id] || []) : (Array.isArray(prod.tags) ? prod.tags : []);
             return (
               <div key={prod.id} className="bg-slate-800 p-4 rounded-md shadow-sm">
-                <div className="flex gap-4 items-stretch">
-                  <div className="flex-none w-28 overflow-hidden rounded-md flex items-center justify-center bg-slate-900">
-                    <img src={prod.image && (prod.image.cdnUrl || prod.image.src)} alt={prod.title} className="w-full h-auto object-contain" />
+                <div className="flex gap-4 items-center md:items-stretch">
+                  <div className="flex-none w-20 h-20 md:w-28 md:h-28 overflow-hidden rounded-md flex items-center justify-center bg-slate-900">
+                    <img src={prod.image && (prod.image.cdnUrl || prod.image.src)} alt={prod.title} className="h-full w-auto object-contain" />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-start gap-2">
-                      <h3 className="text-white font-semibold">{prod.title}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <h3 className="text-white font-semibold break-words">{prod.title}</h3>
                       <div className="ml-auto text-sm text-slate-400">{Array.isArray(prod.tags) ? prod.tags.length : 0} tags</div>
                     </div>
+                  </div>
+                </div>
 
-                    <div className="mt-3">
-                      {/* tags display */}
-                      <div className="flex flex-wrap gap-2">
-                        {currentTags.length === 0 && <div className="text-slate-400">Sin tags</div>}
-                        {currentTags.map((t: string, idx: number) => (
-                          <div
-                            key={t + idx}
-                            draggable={isEditing}
-                            onDragStart={(e) => onDragStart(prod.id, idx, e)}
-                            onDragOver={onDragOver}
-                            onDrop={() => onDrop(prod.id, idx)}
-                            className={`flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-full text-sm ${highlightedTag[prod.id] === idx ? 'ring-2 ring-yellow-400 border-yellow-400' : ''}`}
-                          >
-                            <span className="select-none">{t}</span>
-                            {isEditing && (
-                              <button className="ml-1 p-1 rounded-full hover:bg-slate-600" onClick={() => removeDraftTag(prod.id, idx)} aria-label={`Eliminar tag ${t}`}>
-                                <X className="w-3 h-3 text-slate-300" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
+                <div className="mt-3">
+                  {/* tags display (full width under the header row) */}
+                  <div className="flex flex-wrap gap-2">
+                    {currentTags.length === 0 && <div className="text-slate-400">Sin tags</div>}
+                    {currentTags.map((t: string, idx: number) => (
+                      <div
+                        key={t + idx}
+                        draggable={isEditing}
+                        onDragStart={(e) => onDragStart(prod.id, idx, e)}
+                        onDragOver={onDragOver}
+                        onDrop={() => onDrop(prod.id, idx)}
+                        className={`relative flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-full text-sm ${highlightedTag[prod.id] === idx ? 'ring-2 ring-yellow-400 border-yellow-400' : ''}`}
+                      >
+                        {isEditing && (
+                          <span className="absolute -top-2 -left-2 bg-yellow-400 text-slate-900 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" aria-hidden>
+                            {idx + 1}
+                          </span>
+                        )}
+                        <span className="select-none">{t}</span>
+                        {isEditing && (
+                          <button className="ml-1 p-1 rounded-full hover:bg-slate-600" onClick={() => removeDraftTag(prod.id, idx)} aria-label={`Eliminar tag ${t}`}>
+                            <X className="w-3 h-3 text-slate-300" />
+                          </button>
+                        )}
                       </div>
+                    ))}
+                  </div>
+
+                  {isEditing && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <input type="text" placeholder="Nueva tag" className="flex-1 min-w-0 bg-slate-900 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400" id={`newtag-${prod.id}`} />
+                      <button className="inline-flex items-center gap-2 bg-slate-700 px-3 py-2 rounded" onClick={() => {
+                        const el = document.getElementById(`newtag-${prod.id}`) as HTMLInputElement | null;
+                        if (!el) return;
+                        const v = (el.value || '').trim();
+                        if (!v) return;
+                        addDraftTag(prod.id, v);
+                        el.value = '';
+                      }} aria-label="Añadir tag"><Plus className="w-4 h-4" /></button>
                     </div>
+                  )}
 
-                    {isEditing && (
-                      <div className="mt-3 flex items-center gap-2">
-                        <input type="text" placeholder="Nueva tag" className="flex-1 bg-slate-900 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400" id={`newtag-${prod.id}`} />
-                        <button className="inline-flex items-center gap-2 bg-slate-700 px-3 py-2 rounded" onClick={() => {
-                          const el = document.getElementById(`newtag-${prod.id}`) as HTMLInputElement | null;
-                          if (!el) return;
-                          const v = (el.value || '').trim();
-                          if (!v) return;
-                          addDraftTag(prod.id, v);
-                          el.value = '';
-                        }} aria-label="Añadir tag"><Plus className="w-4 h-4" /></button>
-                      </div>
+                  <div className="mt-4 flex items-center gap-3">
+                    {!isEditing ? (
+                      <button className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold" onClick={() => startEditing(prod.id, prod.tags || [])}><Edit className="w-4 h-4" /> Editar tags</button>
+                    ) : (
+                      <>
+                        <button className="inline-flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-md text-sm" onClick={() => cancelEditing(prod.id)}>Cancelar</button>
+                        <button className="inline-flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-md text-sm" onClick={() => saveTags(prod.id, draftTags[prod.id] || [])}><Check className="w-4 h-4" /> Guardar cambios</button>
+                      </>
                     )}
-
-                    <div className="mt-4 flex items-center gap-3">
-                      {!isEditing ? (
-                        <button className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold" onClick={() => startEditing(prod.id, prod.tags || [])}><Edit className="w-4 h-4" /> Editar tags</button>
-                      ) : (
-                        <>
-                          <button className="inline-flex items-center gap-2 bg-slate-700 text-slate-100 px-3 py-1 rounded-md text-sm" onClick={() => cancelEditing(prod.id)}>Cancelar</button>
-                          <button className="inline-flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-md text-sm" onClick={() => saveTags(prod.id, draftTags[prod.id] || [])}><Check className="w-4 h-4" /> Guardar cambios</button>
-                        </>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
