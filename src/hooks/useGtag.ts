@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+import { config } from '../config';
 
 const GA_MEASUREMENT_ID = 'G-B2YZBLFSS5';
 
-const SERVER_FALLBACK_PATH = '/api/analytics/collect';
+const SERVER_FALLBACK_PATH = `${config.API_URL}/analytics/collect`;
 const CLIENT_ID_KEY = 'cunao.ga.client_id';
 
 function uuidv4() {

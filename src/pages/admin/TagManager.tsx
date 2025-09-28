@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { config } from '../../config';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, X, Edit, Check } from 'lucide-react';
@@ -38,7 +39,7 @@ export default function TagManager() {
     (async () => {
       try {
         setLoading(true);
-        const res = await axios.get('/api/admin/products', { params: { limit: 500 } });
+  const res = await axios.get(`${config.API_URL}/admin/products`, { params: { limit: 500 } });
         if (!mounted) return;
         setProducts(res.data && res.data.data ? res.data.data : []);
       } catch (e) {
@@ -54,7 +55,7 @@ export default function TagManager() {
       // set loading state
       setSaveStatus(s => ({ ...s, [productId]: 'loading' }));
       const csrf = getCookie('csrfToken');
-      await axios.put(`/api/admin/products/${productId}/tags`, { tags }, { headers: { 'x-csrf-token': csrf || '' } });
+  await axios.put(`${config.API_URL}/admin/products/${productId}/tags`, { tags }, { headers: { 'x-csrf-token': csrf || '' } });
       // success animation
       setSaveStatus(s => ({ ...s, [productId]: 'success' }));
       toast.success('Tags actualizados correctamente');

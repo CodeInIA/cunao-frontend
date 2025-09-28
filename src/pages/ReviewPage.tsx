@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { UploadCloud, Trash2, Loader, CheckCircle } from 'lucide-react';
 import axios from 'axios';
+import { config } from '../config';
 import { getOptimizedImageUrl, getVariantImages, getMainProductImage } from '../utils/imageUtils';
 
 export const ReviewPage: React.FC = () => {
@@ -35,7 +36,7 @@ export const ReviewPage: React.FC = () => {
   const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp'];
   useEffect(() => {
     if (!token) return;
-    axios.get(`/api/reviews/validate/${token}`).then(res => {
+  axios.get(`${config.API_URL}/reviews/validate/${token}`).then(res => {
       if (res.data && res.data.tokenUsed) {
         setValid(false);
         setTokenUsed(true);
@@ -57,7 +58,7 @@ export const ReviewPage: React.FC = () => {
 
         // Fetch all products concurrently and keep a map
         const productFetches = uniqueProductIds.map(pid =>
-          axios.get(`/api/products/${pid}`).then(prodRes => {
+          axios.get(`${config.API_URL}/products/${pid}`).then(prodRes => {
             const product = prodRes.data && prodRes.data.data ? prodRes.data.data : prodRes.data;
             return { pid, product };
           }).catch(() => ({ pid, product: null }))
@@ -511,7 +512,7 @@ export const ReviewPage: React.FC = () => {
         fileArr.forEach((obj) => form.append(`product-${lineKey}`, obj.file));
       });
 
-      const res = await axios.post(`/api/reviews/submit/${tokenLocal}`, form, {
+  const res = await axios.post(`${config.API_URL}/reviews/submit/${tokenLocal}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent: any) => {
           try {

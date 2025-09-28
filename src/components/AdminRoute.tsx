@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { config } from '../config';
 import { Navigate } from 'react-router-dom';
 
 axios.defaults.withCredentials = true;
@@ -12,7 +13,7 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
     let mounted = true;
     async function check() {
       try {
-        const res = await axios.get('/api/admin/me');
+        const res = await axios.get(`${config.API_URL}/admin/me`);
         if (!mounted) return;
         if (res.data && res.data.user) setAuthorized(true);
       } catch (e) {

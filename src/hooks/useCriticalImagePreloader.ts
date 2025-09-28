@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import type { Product } from '../types';
+import { config } from '../config';
 
 /**
  * Hook para precarga ultra-rápida de imágenes críticas
@@ -27,7 +28,7 @@ export function useCriticalImagePreloader() {
         logoImg.src = '/logo-sin-letras.webp';
         
         // Obtener productos destacados del API
-        const response = await fetch('/api/products/featured');
+  const response = await fetch(`${config.API_URL}/products/featured`);
         if (!response.ok) {
           console.warn('⚠️ No se pudieron cargar productos destacados');
           return;

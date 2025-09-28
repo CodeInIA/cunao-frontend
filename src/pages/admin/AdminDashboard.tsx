@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { config } from '../../config';
 import { Tag } from 'lucide-react';
 axios.defaults.withCredentials = true;
 
@@ -12,7 +13,7 @@ export default function AdminDashboard() {
     let mounted = true;
     (async () => {
       try {
-        const res = await axios.get('/api/admin/reviews', { params: { status: 'pending' } });
+  const res = await axios.get(`${config.API_URL}/admin/reviews`, { params: { status: 'pending' } });
         const list = res.data && (res.data.reviews || res.data) ? (res.data.reviews || res.data) : [];
         if (!mounted) return;
         setPendingCount(Array.isArray(list) ? list.length : 0);
@@ -33,7 +34,7 @@ export default function AdminDashboard() {
   function logout() {
     (async () => {
       try {
-        await axios.post('/api/admin/logout');
+  await axios.post(`${config.API_URL}/admin/logout`);
       } catch (e) {
         // ignore
       } finally {

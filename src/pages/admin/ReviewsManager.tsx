@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { config } from '../../config';
 import toast from 'react-hot-toast';
 import { Plus, ArrowLeft } from 'lucide-react';
 
@@ -58,7 +59,7 @@ export default function ReviewsManager() {
       try {
         const params: any = { status: filter };
         if (cacheBust) params._t = Date.now();
-        const res = await axios.get('/api/admin/reviews', { params, headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' } });
+  const res = await axios.get(`${config.API_URL}/admin/reviews`, { params, headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' } });
         const newReviews = res.data.reviews || res.data;
         console.debug('[ReviewsManager] fetchReviews got', Array.isArray(newReviews) ? newReviews.length : typeof newReviews, 'items', 'attempt=', attempt);
         setReviews(newReviews);
@@ -120,7 +121,7 @@ export default function ReviewsManager() {
     // fetch products once for the selector
     async function loadProducts() {
       try {
-  const res = await axios.get('/api/products', { params: { limit: 200 } });
+  const res = await axios.get(`${config.API_URL}/products`, { params: { limit: 200 } });
   // backend returns { success: true, data: products, message: ... }
   setProducts(res.data && res.data.data ? res.data.data : (res.data || []));
       } catch (e) {
@@ -183,7 +184,7 @@ export default function ReviewsManager() {
     let mounted = true;
     (async function check() {
       try {
-        const r = await axios.get('/api/admin/me');
+  const r = await axios.get(`${config.API_URL}/admin/me`);
         if (!mounted) return;
         if (r.data && r.data.user) setAuthorized(true);
         else { setAuthorized(false); navigate('/admin'); }
@@ -205,7 +206,7 @@ export default function ReviewsManager() {
       if (filter === 'pending') setReviews(r => r.filter(rv => rv._id !== id));
 
       const csrf = getCookie('csrfToken');
-      await axios.post(`/api/admin/reviews/publish/${id}`, {}, { headers: { 'x-csrf-token': csrf || '' } });
+  await axios.post(`${config.API_URL}/admin/reviews/publish/${id}`, {}, { headers: { 'x-csrf-token': csrf || '' } });
       // success: refresh list to ensure server/state consistency
       console.debug('[ReviewsManager] publish succeeded, refreshing list for id=', id);
   await fetchReviews({ cacheBust: true, retries: 3, delayMs: 400 });
@@ -237,7 +238,7 @@ export default function ReviewsManager() {
       if (filter === 'pending') setReviews(r => r.filter(rv => rv._id !== id));
 
       const csrf = getCookie('csrfToken');
-      await axios.post(`/api/admin/reviews/publish/${id}`, {}, { headers: { 'x-csrf-token': csrf || '' } });
+  await axios.post(`${config.API_URL}/admin/reviews/publish/${id}`, {}, { headers: { 'x-csrf-token': csrf || '' } });
       // show success toast and refresh list to ensure accurate data
       toast.success('Publicado correctamente');
   await fetchReviews({ cacheBust: true, retries: 3, delayMs: 400 });
@@ -268,7 +269,7 @@ export default function ReviewsManager() {
       setReviews(r => r.filter(rv => rv._id !== id));
       setDeleteModalId(null);
       const csrf = getCookie('csrfToken');
-  await axios.delete(`/api/admin/reviews/${id}`, { headers: { 'x-csrf-token': csrf || '' } });
+  await axios.delete(`${config.API_URL}/admin/reviews/${id}`, { headers: { 'x-csrf-token': csrf || '' } });
     // success: refresh list to make sure server and client are consistent
     // use cacheBust + retries to avoid stale/cached responses that could reintroduce the deleted item
     console.debug('[ReviewsManager] delete succeeded, refreshing list for id=', id);
@@ -321,7 +322,7 @@ export default function ReviewsManager() {
       // append files
       fileList.slice(0,5).forEach((f) => fd.append('files', f));
 
-  await axios.post('/api/admin/reviews/create', fd, { headers: { 'x-csrf-token': csrf || '' } });
+  await axios.post(`${config.API_URL}/admin/reviews/create`, fd, { headers: { 'x-csrf-token': csrf || '' } });
       setShowCreate(false);
   setNewReview({ productId: '', rating: 5, description: '', authorName: '', status: 'pending', color: '', size: '', quantity: 1 });
       setFileList([]);
