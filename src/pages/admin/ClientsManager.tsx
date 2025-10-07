@@ -356,42 +356,83 @@ export default function ClientsManager() {
       </div>
 
       <div className="bg-slate-800 rounded-lg overflow-hidden">
-        {loading ? <div className="p-8 text-center text-slate-400">Cargando clientes...</div> : clients.length === 0 ? <div className="p-8 text-center text-slate-400">No se encontraron clientes</div> : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-900">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Cliente</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Pedidos</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Marketing</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Registro</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-700">
-                {clients.map((client) => (
-                  <tr key={client._id} className="hover:bg-slate-700/50 transition">
-                    <td className="px-4 py-4">
-                      <div className="text-sm font-medium text-white">{client.name}</div>
-                      <div className="text-xs text-slate-400">{client.phone || 'Sin teléfono'}</div>
-                    </td>
-                    <td className="px-4 py-4"><div className="text-sm text-slate-300">{client.email}</div></td>
-                    <td className="px-4 py-4"><div className="flex items-center gap-1 text-sm text-slate-300"><ShoppingBag className="w-4 h-4" />{client.orderIds.length}</div></td>
-                    <td className="px-4 py-4">
-                      {client.emailMarketing ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-700"><Mail className="w-3 h-3" />Sí</span>
-                      ) : <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-700 text-slate-400">No</span>}
-                    </td>
-                    <td className="px-4 py-4"><div className="text-sm text-slate-400">{new Date(client.createdAt).toLocaleDateString('es-ES')}</div></td>
-                    <td className="px-4 py-4 text-right">
-                      <button onClick={() => handleViewClient(client)} className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-400 text-slate-900 rounded-md text-sm font-semibold hover:bg-yellow-300 transition"><Eye className="w-4 h-4" />Ver</button>
-                    </td>
+        {loading ? (
+          <div className="p-8 text-center text-slate-400">Cargando clientes...</div>
+        ) : clients.length === 0 ? (
+          <div className="p-8 text-center text-slate-400">No se encontraron clientes</div>
+        ) : (
+          <>
+            {/* Desktop: keep table for wider screens */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-900">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Cliente</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Pedidos</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Marketing</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Registro</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
                   </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  {clients.map((client) => (
+                    <tr key={client._id} className="hover:bg-slate-700/50 transition">
+                      <td className="px-4 py-4">
+                        <div className="text-sm font-medium text-white">{client.name}</div>
+                        <div className="text-xs text-slate-400">{client.phone || 'Sin teléfono'}</div>
+                      </td>
+                      <td className="px-4 py-4"><div className="text-sm text-slate-300">{client.email}</div></td>
+                      <td className="px-4 py-4"><div className="flex items-center gap-1 text-sm text-slate-300"><ShoppingBag className="w-4 h-4" />{client.orderIds.length}</div></td>
+                      <td className="px-4 py-4">
+                        {client.emailMarketing ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-700"><Mail className="w-3 h-3" />Sí</span>
+                        ) : <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-700 text-slate-400">No</span>}
+                      </td>
+                      <td className="px-4 py-4"><div className="text-sm text-slate-400">{new Date(client.createdAt).toLocaleDateString('es-ES')}</div></td>
+                      <td className="px-4 py-4 text-right">
+                        <button onClick={() => handleViewClient(client)} className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-400 text-slate-900 rounded-md text-sm font-semibold hover:bg-yellow-300 transition"><Eye className="w-4 h-4" />Ver</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile: compact cards that fit the screen width */}
+            <div className="block md:hidden">
+              <ul className="divide-y divide-slate-700">
+                {clients.map((client) => (
+                  <li key={client._id} className="p-4 hover:bg-slate-700/50 transition flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-white truncate">{client.name}</div>
+                          <div className="text-xs text-slate-400 truncate">{client.email}</div>
+                        </div>
+                        <div className="text-xs text-slate-400 text-right">{new Date(client.createdAt).toLocaleDateString('es-ES')}</div>
+                      </div>
+                      <div className="mt-2 flex items-center gap-3">
+                        <div className="flex items-center gap-1 text-sm text-slate-300"><ShoppingBag className="w-4 h-4" /> <span className="text-sm">{client.orderIds.length}</span></div>
+                        <div className="text-xs text-slate-400">{client.phone || 'Sin teléfono'}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-3">
+                      <div className="flex-shrink-0">
+                        {client.emailMarketing ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-700"><Mail className="w-3 h-3" />Sí</span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-700 text-slate-400">No</span>
+                        )}
+                      </div>
+                      <button onClick={() => handleViewClient(client)} className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-400 text-slate-900 rounded-md text-sm font-semibold hover:bg-yellow-300 transition"><Eye className="w-4 h-4" /></button>
+                    </div>
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </ul>
+            </div>
+          </>
         )}
       </div>
 
@@ -406,30 +447,31 @@ export default function ClientsManager() {
       )}
 
       {selectedClient && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-slate-800 rounded-xl max-w-5xl w-full my-8">
-            <div className="sticky top-0 bg-slate-900 p-6 border-b border-slate-700 flex items-center justify-between rounded-t-xl z-10">
-              <h3 className="text-2xl font-bold text-white">Detalles del Cliente</h3>
+        <div className="fixed inset-0 bg-black/70 md:bg-black/70 flex items-start md:items-center justify-center md:p-4 z-50 md:overflow-y-auto">
+          <div className="bg-slate-800 md:rounded-xl max-w-5xl w-full h-full md:h-auto md:my-8 flex flex-col">
+            <div className="bg-slate-900 p-3 md:p-6 border-b border-slate-700 flex items-center justify-between md:rounded-t-xl z-10 flex-shrink-0">
+              <h3 className="text-lg md:text-2xl font-bold text-white">Detalles del Cliente</h3>
               <button onClick={handleCloseModal} className="p-2 hover:bg-slate-800 rounded-lg transition">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            {loadingDetails ? <div className="p-8 text-center text-slate-400">Cargando detalles...</div> : clientDetails ? (
-              <div className="p-6 space-y-6 max-h-[calc(90vh-100px)] overflow-y-auto">
-                <div className="bg-slate-900 rounded-lg p-6">
-                  <h4 className="text-lg font-semibold text-white mb-4">Información Personal</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label className="text-sm text-slate-400">Nombre</label><p className="text-white font-medium">{selectedClient.name}</p></div>
-                    <div><label className="text-sm text-slate-400">Email</label><p className="text-white font-medium">{selectedClient.email}</p></div>
-                    <div><label className="text-sm text-slate-400">Teléfono</label><p className="text-white font-medium">{selectedClient.phone || 'No disponible'}</p></div>
-                    <div><label className="text-sm text-slate-400">Marketing</label><p className="text-white font-medium">{selectedClient.emailMarketing ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+            {loadingDetails ? <div className="p-4 md:p-8 text-center text-slate-400 flex-1 flex items-center justify-center">Cargando detalles...</div> : clientDetails ? (
+              <div className="p-3 md:p-6 space-y-3 md:space-y-6 overflow-y-auto flex-1 scrollbar-spanish"
+              >
+                <div className="bg-slate-900 rounded-lg p-3 md:p-6">
+                  <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Información Personal</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    <div><label className="text-xs md:text-sm text-slate-400">Nombre</label><p className="text-sm md:text-base text-white font-medium break-words">{selectedClient.name}</p></div>
+                    <div><label className="text-xs md:text-sm text-slate-400">Email</label><p className="text-sm md:text-base text-white font-medium break-all">{selectedClient.email}</p></div>
+                    <div><label className="text-xs md:text-sm text-slate-400">Teléfono</label><p className="text-sm md:text-base text-white font-medium">{selectedClient.phone || 'No disponible'}</p></div>
+                    <div><label className="text-xs md:text-sm text-slate-400">Marketing</label><p className="text-sm md:text-base text-white font-medium">{selectedClient.emailMarketing ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
                   </div>
                 </div>
 
-                <div className="bg-slate-900 rounded-lg p-6">
-                  <h4 className="text-lg font-semibold text-white mb-4">Dirección</h4>
-                  <div className="text-slate-300 space-y-1">
+                <div className="bg-slate-900 rounded-lg p-3 md:p-6">
+                  <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Dirección</h4>
+                  <div className="text-sm md:text-base text-slate-300 space-y-1">
                     <p>{selectedClient.address.line1}</p>
                     {selectedClient.address.line2 && <p>{selectedClient.address.line2}</p>}
                     <p>{selectedClient.address.postal_code} {selectedClient.address.city}{selectedClient.address.state && `, ${selectedClient.address.state}`}</p>
@@ -438,77 +480,77 @@ export default function ClientsManager() {
                 </div>
 
                 {selectedClient.newsletterId && (
-                  <div className="bg-slate-900 rounded-lg p-6">
-                    <h4 className="text-lg font-semibold text-white mb-4">Estado Newsletter</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div><label className="text-sm text-slate-400">Newsletter</label><p className="text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newsletter ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
-                      <div><label className="text-sm text-slate-400">Promociones</label><p className="text-white font-medium">{clientDetails.client.newsletterId?.preferences?.promotions ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
-                      <div><label className="text-sm text-slate-400">Nuevos Productos</label><p className="text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newProducts ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+                  <div className="bg-slate-900 rounded-lg p-3 md:p-6">
+                    <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Estado Newsletter</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                      <div><label className="text-xs md:text-sm text-slate-400">Newsletter</label><p className="text-sm md:text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newsletter ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+                      <div><label className="text-xs md:text-sm text-slate-400">Promociones</label><p className="text-sm md:text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.promotions ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+                      <div><label className="text-xs md:text-sm text-slate-400">Nuevos Productos</label><p className="text-sm md:text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newProducts ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
                     </div>
                   </div>
                 )}
 
-                <div className="bg-slate-900 rounded-lg p-6">
-                  <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><ShoppingBag className="w-5 h-5" />Pedidos ({clientDetails.orders?.length || 0})</h4>
+                <div className="bg-slate-900 rounded-lg p-3 md:p-6">
+                  <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4 flex items-center gap-2"><ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />Pedidos ({clientDetails.orders?.length || 0})</h4>
                   {clientDetails.orders && clientDetails.orders.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3 md:space-y-4">
                       {clientDetails.orders.map((order: any, idx: number) => (
-                        <div key={idx} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-                          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-700">
+                        <div key={idx} className="bg-slate-800 rounded-lg p-3 md:p-4 border border-slate-700">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 md:mb-4 pb-2 md:pb-3 border-b border-slate-700">
                             <div>
-                              <p className="text-white font-semibold">Pedido #{order.orderId}</p>
-                              <p className="text-sm text-slate-400">{new Date(order.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                              <p className="text-sm md:text-base text-white font-semibold">Pedido #{order.orderId}</p>
+                              <p className="text-xs md:text-sm text-slate-400">{new Date(order.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-white font-bold text-xl">{order.total?.toFixed(2)}€</p>
-                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-900/50 text-green-300 border border-green-700' : order.status === 'pending' ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-slate-700 text-slate-300'}`}>{order.status}</span>
+                            <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                              <p className="text-lg md:text-xl text-white font-bold">{order.total?.toFixed(2)}€</p>
+                              <span className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-900/50 text-green-300 border border-green-700' : order.status === 'pending' ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-slate-700 text-slate-300'}`}>{order.status}</span>
                             </div>
                           </div>
                           {order.items && order.items.length > 0 && (
-                            <div className="space-y-3">
+                            <div className="space-y-2 md:space-y-3">
                               {order.items.map((item: any, itemIdx: number) => (
-                                <div key={itemIdx} className="flex items-center gap-4 bg-slate-700/50 p-3 rounded-lg">
+                                <div key={itemIdx} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-700/50 p-2 md:p-3 rounded-lg">
                                   {item.productImage ? (
-                                    <img src={item.productImage} alt={item.productTitle} className="w-20 h-20 object-cover rounded-lg border-2 border-slate-600 flex-shrink-0" />
+                                    <img src={item.productImage} alt={item.productTitle} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border-2 border-slate-600 flex-shrink-0 mx-auto sm:mx-0" />
                                   ) : (
-                                    <div className="w-20 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0"><Package className="w-8 h-8 text-slate-400" /></div>
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0"><Package className="w-6 h-6 md:w-8 md:h-8 text-slate-400" /></div>
                                   )}
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-white font-medium truncate">{item.productTitle}</p>
-                                    <div className="flex items-center gap-3 mt-1 text-sm text-slate-400">
-                                      <span>Cantidad: {item.quantity}</span>
-                                      <span>•</span>
-                                      <span>Precio unit.: {item.price.toFixed(2)}€</span>
+                                    <p className="text-sm md:text-base text-white font-medium truncate">{item.productTitle}</p>
+                                    <div className="flex flex-wrap items-center gap-2 mt-1 text-xs md:text-sm text-slate-400">
+                                      <span>Cant: {item.quantity}</span>
+                                      <span className="hidden sm:inline">•</span>
+                                      <span>Precio: {item.price.toFixed(2)}€</span>
                                       {item.size && item.size !== 'N/A' && (
                                         <>
-                                          <span>•</span>
+                                          <span className="hidden sm:inline">•</span>
                                           <span>Talla: {item.size}</span>
                                         </>
                                       )}
                                       {item.color && item.color !== 'N/A' && (
                                         <>
-                                          <span>•</span>
+                                          <span className="hidden sm:inline">•</span>
                                           <span>Color: {item.color}</span>
                                         </>
                                       )}
                                     </div>
                                   </div>
-                                  <div className="text-right flex-shrink-0"><p className="text-white font-bold text-lg">{(item.price * item.quantity).toFixed(2)}€</p></div>
+                                  <div className="text-center sm:text-right flex-shrink-0"><p className="text-base md:text-lg text-white font-bold">{(item.price * item.quantity).toFixed(2)}€</p></div>
                                 </div>
                               ))}
                             </div>
                           )}
                           {order.shippingCost !== undefined && (
-                            <div className="mt-4 pt-3 border-t border-slate-700">
-                              <div className="flex justify-between text-sm text-slate-400 mb-1"><span>Subtotal:</span><span>{(order.total - order.shippingCost).toFixed(2)}€</span></div>
-                              <div className="flex justify-between text-sm text-slate-400 mb-2"><span>Envío:</span><span>{order.shippingCost.toFixed(2)}€</span></div>
-                              <div className="flex justify-between text-lg font-bold text-white"><span>Total:</span><span>{order.total.toFixed(2)}€</span></div>
+                            <div className="mt-3 md:mt-4 pt-3 border-t border-slate-700">
+                              <div className="flex justify-between text-xs md:text-sm text-slate-400 mb-1"><span>Subtotal:</span><span>{(order.total - order.shippingCost).toFixed(2)}€</span></div>
+                              <div className="flex justify-between text-xs md:text-sm text-slate-400 mb-2"><span>Envío:</span><span>{order.shippingCost.toFixed(2)}€</span></div>
+                              <div className="flex justify-between text-base md:text-lg font-bold text-white"><span>Total:</span><span>{order.total.toFixed(2)}€</span></div>
                             </div>
                           )}
                         </div>
                       ))}
                     </div>
-                  ) : <p className="text-slate-400 text-center py-8">No hay pedidos registrados</p>}
+                  ) : <p className="text-slate-400 text-center py-4 md:py-8 text-sm md:text-base">No hay pedidos registrados</p>}
                 </div>
               </div>
             ) : null}
