@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { config } from '../../config';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Plus, Edit2, Trash2, Percent, Calendar, Tag as TagIcon, Mail } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, Percent, Calendar, Tag as TagIcon, Mail, Search } from 'lucide-react';
 
 axios.defaults.withCredentials = true;
 
@@ -14,6 +14,8 @@ interface DiscountCode {
   expiryDate?: string;
   isActive: boolean;
   appliesTo: 'subtotal' | 'shipping';
+  maxUses?: number | null;
+  usedCount: number;
   createdAt: string;
   updatedAt: string;
   isValid: boolean;
@@ -37,12 +39,16 @@ export default function DiscountManager() {
   const [loadingSubscribers, setLoadingSubscribers] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [codeToDelete, setCodeToDelete] = useState<{ id: string; code: string } | null>(null);
+  const [subscriberSearchTerm, setSubscriberSearchTerm] = useState('');
+  const [discountSearchTerm, setDiscountSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'most-used' | 'least-used'>('recent');
   const [formData, setFormData] = useState({
     code: '',
     discountPercentage: 10,
     expiryDate: '',
     isActive: true,
-    appliesTo: 'subtotal' as 'subtotal' | 'shipping'
+    appliesTo: 'subtotal' as 'subtotal' | 'shipping',
+    maxUses: '' as string | number
   });
 
   // Validaciones en tiempo real (solo si hay contenido)
@@ -95,7 +101,8 @@ export default function DiscountManager() {
       discountPercentage: 10,
       expiryDate: '',
       isActive: true,
-      appliesTo: 'subtotal'
+      appliesTo: 'subtotal',
+      maxUses: ''
     });
     setEditingCode(null);
     setShowCreate(false);
@@ -114,7 +121,8 @@ export default function DiscountManager() {
       discountPercentage: code.discountPercentage,
       expiryDate: code.expiryDate ? new Date(code.expiryDate).toISOString().split('T')[0] : '',
       isActive: code.isActive,
-      appliesTo: code.appliesTo
+      appliesTo: code.appliesTo,
+      maxUses: code.maxUses ?? ''
     });
     setShowCreate(true);
   }
@@ -175,6 +183,23 @@ export default function DiscountManager() {
       return;
     }
 
+    // Validación de maxUses
+    if (formData.maxUses !== '' && formData.maxUses !== null) {
+      const maxUsesNum = Number(formData.maxUses);
+      if (isNaN(maxUsesNum) || !Number.isInteger(maxUsesNum) || maxUsesNum < 1) {
+        toast.error('El número máximo de usos debe ser un entero positivo o dejarse vacío para usos ilimitados');
+        return;
+      }
+      
+      // Si estamos editando, verificar que maxUses no sea menor que usedCount
+      if (editingCode && editingCode.usedCount > 0) {
+        if (maxUsesNum < editingCode.usedCount) {
+          toast.error(`El número máximo de usos no puede ser menor que los usos actuales (${editingCode.usedCount})`);
+          return;
+        }
+      }
+    }
+
     const csrfToken = getCookie('csrfToken');
     if (!csrfToken) {
       toast.error('Token CSRF no encontrado');
@@ -199,6 +224,14 @@ export default function DiscountManager() {
 
     if (formData.expiryDate) {
       payload.expiryDate = formData.expiryDate;
+    }
+
+    // Añadir maxUses (enviar null si está vacío para usos ilimitados)
+    if (formData.maxUses !== '' && formData.maxUses !== null) {
+      payload.maxUses = Number(formData.maxUses);
+    } else if (editingCode) {
+      // Si estamos editando y maxUses está vacío, enviar null explícitamente
+      payload.maxUses = null;
     }
 
     // Añadir información de emails personalizados si aplica
@@ -282,6 +315,31 @@ export default function DiscountManager() {
       day: 'numeric' 
     });
   }
+
+  // Filter subscribers by search term
+  const filteredSubscribers = subscribers.filter(sub => 
+    sub.email.toLowerCase().includes(subscriberSearchTerm.toLowerCase())
+  );
+
+  // Filter and sort discount codes
+  const filteredAndSortedCodes = discountCodes
+    .filter(code => 
+      code.code.toLowerCase().includes(discountSearchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'recent':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'most-used':
+          return b.usedCount - a.usedCount;
+        case 'least-used':
+          return a.usedCount - b.usedCount;
+        default:
+          return 0;
+      }
+    });
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -466,6 +524,65 @@ export default function DiscountManager() {
                   <option value="shipping">Envío</option>
                 </select>
               </div>
+
+              {/* Max Uses */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Número máximo de usos
+                  {editingCode && editingCode.usedCount > 0 && (
+                    <span className="text-xs text-yellow-400 ml-2">
+                      (mínimo: {editingCode.usedCount})
+                    </span>
+                  )}
+                </label>
+                <input
+                  type="number"
+                  min={editingCode ? editingCode.usedCount : 1}
+                  step="1"
+                  value={formData.maxUses}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Permitir vacío para borrar
+                    if (value === '') {
+                      setFormData({ ...formData, maxUses: '' });
+                      return;
+                    }
+                    
+                    // Solo permitir números (validación básica mientras escribe)
+                    const numValue = parseInt(value);
+                    if (!isNaN(numValue)) {
+                      setFormData({ ...formData, maxUses: numValue });
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const value = e.target.value;
+                    if (value === '') return; // Permitir vacío
+                    
+                    const numValue = parseInt(value);
+                    const minValue = editingCode ? editingCode.usedCount : 1;
+                    
+                    // Validar al perder el foco
+                    if (!isNaN(numValue) && numValue < minValue) {
+                      toast.error(`El número mínimo de usos es ${minValue}`, { duration: 3000 });
+                      setFormData({ ...formData, maxUses: minValue });
+                    }
+                  }}
+                  onKeyPress={(e) => {
+                    // Solo permitir números
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  placeholder="Ilimitado"
+                  className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <p className="text-xs text-slate-400 mt-1">
+                  {editingCode && editingCode.usedCount > 0 
+                    ? `Ya se han usado ${editingCode.usedCount} veces. Deja vacío para usos ilimitados.`
+                    : 'Dejar vacío para usos ilimitados'
+                  }
+                </p>
+              </div>
             </div>
 
             {/* Active Status */}
@@ -605,17 +722,30 @@ export default function DiscountManager() {
                           </div>
                         ) : subscribers.length > 0 ? (
                           <>
+                            {/* Search Bar for Subscribers */}
+                            <div className="mb-3 relative">
+                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                              <input
+                                type="text"
+                                value={subscriberSearchTerm}
+                                onChange={(e) => setSubscriberSearchTerm(e.target.value)}
+                                placeholder="Buscar por email..."
+                                className="w-full pl-10 pr-3 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+                              />
+                            </div>
+
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
                               <span className="text-xs text-slate-400">
                                 {selectedEmails.length} de {subscribers.length} seleccionados
+                                {subscriberSearchTerm && ` • ${filteredSubscribers.length} coincidencias`}
                               </span>
                               <div className="flex flex-wrap gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => setSelectedEmails(subscribers.map(s => s.email))}
+                                  onClick={() => setSelectedEmails(filteredSubscribers.map(s => s.email))}
                                   className="text-xs text-yellow-400 hover:text-yellow-300 whitespace-nowrap"
                                 >
-                                  Seleccionar todos
+                                  {subscriberSearchTerm ? 'Seleccionar coincidencias' : 'Seleccionar todos'}
                                 </button>
                                 <span className="text-slate-600">|</span>
                                 <button
@@ -628,7 +758,8 @@ export default function DiscountManager() {
                               </div>
                             </div>
                             <div className="max-h-64 overflow-y-auto bg-slate-700/50 rounded-lg border border-slate-600 p-2 sm:p-3 space-y-1.5 sm:space-y-2">
-                              {subscribers.map((subscriber) => (
+                              {filteredSubscribers.length > 0 ? (
+                                filteredSubscribers.map((subscriber) => (
                                 <label
                                   key={subscriber.email}
                                   className="flex items-center gap-2 sm:gap-3 cursor-pointer group hover:bg-slate-600/40 p-2 sm:p-3 rounded-lg transition-all border border-transparent hover:border-yellow-400/30"
@@ -668,7 +799,12 @@ export default function DiscountManager() {
                                     </span>
                                   )}
                                 </label>
-                              ))}
+                              ))
+                              ) : (
+                                <div className="text-center py-4 text-slate-400 text-xs">
+                                  No se encontraron coincidencias
+                                </div>
+                              )}
                             </div>
                           </>
                         ) : (
@@ -731,6 +867,47 @@ export default function DiscountManager() {
 
       {/* Discount Codes List */}
       <div className="space-y-4">
+        {!showCreate && discountCodes.length > 0 && (
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-4 space-y-3">
+            <h3 className="text-lg font-semibold text-white">Buscar y Filtrar</h3>
+            
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={discountSearchTerm}
+                onChange={(e) => setDiscountSearchTerm(e.target.value)}
+                placeholder="Buscar cupón por código..."
+                className="w-full pl-12 pr-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              />
+            </div>
+
+            {/* Sort Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <label className="flex-1">
+                <span className="text-xs text-slate-400 block mb-1">Ordenar por:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'recent' | 'oldest' | 'most-used' | 'least-used')}
+                  className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+                >
+                  <option value="recent">Más reciente primero</option>
+                  <option value="oldest">Más antiguo primero</option>
+                  <option value="most-used">Más usado primero</option>
+                  <option value="least-used">Menos usado primero</option>
+                </select>
+              </label>
+
+              <div className="flex items-end">
+                <span className="text-xs text-slate-400 px-3 py-2">
+                  {filteredAndSortedCodes.length} de {discountCodes.length} cupones
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
@@ -742,8 +919,18 @@ export default function DiscountManager() {
             <p className="text-slate-400 text-lg">No hay cupones creados aún</p>
             <p className="text-slate-500 text-sm mt-2">Crea tu primer cupón de descuento</p>
           </div>
+        ) : filteredAndSortedCodes.length === 0 ? (
+          <div className="text-center py-12 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700">
+            <p className="text-slate-400 text-lg">No se encontraron cupones con ese criterio</p>
+            <button
+              onClick={() => setDiscountSearchTerm('')}
+              className="mt-4 text-yellow-400 hover:text-yellow-300 underline text-sm"
+            >
+              Limpiar búsqueda
+            </button>
+          </div>
         ) : (
-          discountCodes.map((code) => (
+          filteredAndSortedCodes.map((code) => (
             <div
               key={code._id}
               className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow"
@@ -793,6 +980,20 @@ export default function DiscountManager() {
                       <Calendar className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                       <span className="text-sm truncate">
                         {formatDate(code.expiryDate)}
+                      </span>
+                    </div>
+
+                    {/* Usage Stats */}
+                    <div className="flex items-center gap-2 text-slate-300 min-w-0">
+                      <svg className="w-4 h-4 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <span className="text-sm truncate">
+                        Usos: <span className="font-semibold">
+                          {code.maxUses !== null && code.maxUses !== undefined 
+                            ? `${code.usedCount}/${code.maxUses}` 
+                            : `${code.usedCount} (ilimitado)`}
+                        </span>
                       </span>
                     </div>
                   </div>
