@@ -20,6 +20,12 @@ interface DiscountCode {
   scheduledEmailSend?: boolean;
   wasScheduled?: boolean;
   emailsSent?: boolean;
+  emailsSentTo?: string[];
+  usedBy?: Array<{
+    email: string;
+    name?: string;
+    usedAt: string;
+  }>;
   createdAt: string;
   updatedAt: string;
   isValid: boolean;
@@ -43,6 +49,8 @@ export default function DiscountManager() {
   const [loadingSubscribers, setLoadingSubscribers] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [codeToDelete, setCodeToDelete] = useState<{ id: string; code: string } | null>(null);
+  const [showEmailsSentModal, setShowEmailsSentModal] = useState<string | null>(null);
+  const [showUsedByModal, setShowUsedByModal] = useState<string | null>(null);
   const [subscriberSearchTerm, setSubscriberSearchTerm] = useState('');
   const [discountSearchTerm, setDiscountSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'most-used' | 'least-used'>('recent');
@@ -1528,6 +1536,30 @@ export default function DiscountManager() {
                       <> • Actualizado: {new Date(code.updatedAt).toLocaleDateString('es-ES')}</>
                     )}
                   </div>
+
+                  {/* Botones para ver listas */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {code.emailsSentTo && code.emailsSentTo.length > 0 && (
+                      <button
+                        onClick={() => setShowEmailsSentModal(code._id)}
+                        className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                        Ver emails enviados ({code.emailsSentTo.length})
+                      </button>
+                    )}
+                    {code.usedBy && code.usedBy.length > 0 && (
+                      <button
+                        onClick={() => setShowUsedByModal(code._id)}
+                        className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Ver clientes ({code.usedBy.length})
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}
@@ -1616,6 +1648,162 @@ export default function DiscountManager() {
           </div>
         </div>
       )}
+
+      {/* Modal: Emails Enviados */}
+      {showEmailsSentModal && (() => {
+        const code = discountCodes.find(c => c._id === showEmailsSentModal);
+        if (!code) return null;
+        
+        return (
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            onClick={() => setShowEmailsSentModal(null)}
+          >
+            <div 
+              className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              style={{ animation: 'scaleIn 0.2s ease-out' }}
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-500/20 rounded-lg">
+                      <Mail className="w-6 h-6 text-indigo-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Emails Enviados</h3>
+                      <p className="text-sm text-slate-400 mt-1">Cupón: <span className="text-yellow-400 font-mono">{code.code}</span></p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowEmailsSentModal(null)}
+                    className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(80vh-180px)] custom-scrollbar">
+                <p className="text-sm text-slate-400 mb-4">
+                  Total de emails enviados: <span className="text-indigo-400 font-semibold">{code.emailsSentTo?.length || 0}</span>
+                </p>
+                <div className="space-y-2">
+                  {code.emailsSentTo?.map((email, index) => (
+                    <div key={index} className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-indigo-500/30 transition-colors">
+                      <div className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <span className="text-sm text-slate-300 flex-1 break-all">{email}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-slate-700">
+                <button
+                  onClick={() => setShowEmailsSentModal(null)}
+                  className="w-full px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-semibold transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Modal: Clientes que usaron el cupón */}
+      {showUsedByModal && (() => {
+        const code = discountCodes.find(c => c._id === showUsedByModal);
+        if (!code) return null;
+        
+        return (
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            onClick={() => setShowUsedByModal(null)}
+          >
+            <div 
+              className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              style={{ animation: 'scaleIn 0.2s ease-out' }}
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-500/20 rounded-lg">
+                      <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Clientes que usaron el cupón</h3>
+                      <p className="text-sm text-slate-400 mt-1">Cupón: <span className="text-yellow-400 font-mono">{code.code}</span></p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowUsedByModal(null)}
+                    className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(80vh-180px)] custom-scrollbar">
+                <p className="text-sm text-slate-400 mb-4">
+                  Total de usos: <span className="text-green-400 font-semibold">{code.usedBy?.length || 0}</span>
+                </p>
+                <div className="space-y-2">
+                  {code.usedBy?.map((usage, index) => (
+                    <div key={index} className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-green-500/30 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-green-400 font-semibold text-sm">{usage.name ? usage.name.charAt(0).toUpperCase() : '?'}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {usage.name && (
+                            <p className="text-sm font-semibold text-slate-200 mb-1">{usage.name}</p>
+                          )}
+                          <p className="text-sm text-slate-400 break-all">{usage.email}</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Usado el {new Date(usage.usedAt).toLocaleString('es-ES', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-slate-700">
+                <button
+                  onClick={() => setShowUsedByModal(null)}
+                  className="w-full px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-semibold transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <style>
         {`
