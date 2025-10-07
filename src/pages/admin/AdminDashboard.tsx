@@ -67,6 +67,31 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:gap-6">
+        {/* Dashboard de Clientes - PRIMERA CARD */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate('/admin/clients')}
+          onKeyDown={(e) => handleKeyNavigate(e, () => navigate('/admin/clients'))}
+          className="group relative overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-4 md:p-6 shadow-lg transform transition hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-400 cursor-pointer"
+        >
+          <div className="flex items-start gap-3 md:gap-4">
+            <div className="flex-none w-12 h-12 md:w-14 md:h-14 rounded-lg bg-slate-700/60 flex items-center justify-center">
+              <Users className="w-6 h-6 md:w-7 md:h-7 text-yellow-300" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base md:text-lg font-semibold text-white">Dashboard de Clientes</h3>
+              <p className="text-sm md:text-base text-slate-300 mt-1">Gestionar clientes, ver pedidos, newsletter y toda su información.</p>
+
+              <div className="mt-3 md:mt-4 flex items-center gap-3">
+                <button className="ml-auto inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Abrir</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reviews Manager */}
         <div
           role="button"
           tabIndex={0}
@@ -93,6 +118,8 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Tag Manager */}
         <div
           role="button"
           tabIndex={0}
@@ -116,6 +143,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Gestión de Cupones */}
         <div
           role="button"
           tabIndex={0}
@@ -131,29 +159,6 @@ export default function AdminDashboard() {
             <div className="flex-1 min-w-0">
               <h3 className="text-base md:text-lg font-semibold text-white">Gestión de Cupones</h3>
               <p className="text-sm md:text-base text-slate-300 mt-1">Crear, editar y eliminar códigos de descuento para clientes.</p>
-
-              <div className="mt-3 md:mt-4 flex items-center gap-3">
-                <button className="ml-auto inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Abrir</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => navigate('/admin/clients')}
-          onKeyDown={(e) => handleKeyNavigate(e, () => navigate('/admin/clients'))}
-          className="group relative overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-4 md:p-6 shadow-lg transform transition hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-400 cursor-pointer"
-        >
-          <div className="flex items-start gap-3 md:gap-4">
-            <div className="flex-none w-12 h-12 md:w-14 md:h-14 rounded-lg bg-slate-700/60 flex items-center justify-center">
-              <Users className="w-6 h-6 md:w-7 md:h-7 text-yellow-300" />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base md:text-lg font-semibold text-white">Dashboard de Clientes</h3>
-              <p className="text-sm md:text-base text-slate-300 mt-1">Gestionar clientes, ver pedidos, newsletter y toda su información.</p>
 
               <div className="mt-3 md:mt-4 flex items-center gap-3">
                 <button className="ml-auto inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Abrir</button>
