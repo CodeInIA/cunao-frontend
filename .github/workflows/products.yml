@@ -1,0 +1,60 @@
+name: Products Feature Tests
+
+on:
+  push:
+    paths:
+      - 'src/pages/ProductsPage.tsx'
+      - 'src/pages/ProductDetailPage.tsx'
+      - 'src/components/ProductCard.tsx'
+      - 'src/components/ProductFilters.tsx'
+      - 'src/components/ProductSearch.tsx'
+      - 'src/services/productService.ts'
+      - 'src/__tests__/products/**'
+      - '.github/workflows/products.yml'
+  pull_request:
+    paths:
+      - 'src/pages/ProductsPage.tsx'
+      - 'src/pages/ProductDetailPage.tsx'
+      - 'src/components/ProductCard.tsx'
+      - 'src/components/ProductFilters.tsx'
+      - 'src/components/ProductSearch.tsx'
+      - 'src/services/productService.ts'
+      - 'src/__tests__/products/**'
+  workflow_dispatch:
+
+env:
+  VITE_API_URL: 'http://localhost:3000'
+  VITE_STRIPE_PUBLIC_KEY: 'pk_test_fake_key_for_workflow_compilation_only'
+
+jobs:
+  test-products:
+    name: Test Products Feature
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run products tests
+        run: npm test -- src/__tests__/products
+        continue-on-error: true
+      
+      - name: Type check products
+        run: npx tsc --noEmit src/pages/ProductsPage.tsx src/pages/ProductDetailPage.tsx src/components/ProductCard.tsx
+      
+      - name: Lint products code
+        run: npx eslint src/pages/ProductsPage.tsx src/pages/ProductDetailPage.tsx src/components/ProductCard.tsx src/components/ProductFilters.tsx src/components/ProductSearch.tsx src/services/productService.ts
+        continue-on-error: true

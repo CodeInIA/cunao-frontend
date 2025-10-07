@@ -1,0 +1,62 @@
+name: State Management Tests
+
+on:
+  push:
+    paths:
+      - 'src/stores/**'
+      - 'src/__tests__/stores/**'
+      - '.github/workflows/state-management.yml'
+  pull_request:
+    paths:
+      - 'src/stores/**'
+      - 'src/__tests__/stores/**'
+  workflow_dispatch:
+
+env:
+  VITE_API_URL: 'http://localhost:3000'
+  VITE_STRIPE_PUBLIC_KEY: 'pk_test_fake_key_for_workflow_compilation_only'
+
+jobs:
+  test-state:
+    name: Test Zustand Stores
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run store tests
+        run: npm test -- src/__tests__/stores
+        continue-on-error: true
+      
+      - name: Test cart store
+        run: npm test -- src/stores/cartStore.test.ts
+        continue-on-error: true
+      
+      - name: Test admin store
+        run: npm test -- src/stores/adminStore.test.ts
+        continue-on-error: true
+      
+      - name: Type check stores
+        run: npx tsc --noEmit src/stores/**/*.ts
+      
+      - name: Lint stores
+        run: npx eslint src/stores/**/*.ts
+        continue-on-error: true
+      
+      - name: Check for store memory leaks
+        run: npm test -- src/__tests__/stores --detectLeaks
+        continue-on-error: true

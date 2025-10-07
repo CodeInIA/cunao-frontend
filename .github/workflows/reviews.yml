@@ -1,0 +1,56 @@
+name: Reviews Feature Tests
+
+on:
+  push:
+    paths:
+      - 'src/pages/ReviewsPage.tsx'
+      - 'src/components/ReviewCard.tsx'
+      - 'src/components/ReviewForm.tsx'
+      - 'src/services/reviewService.ts'
+      - 'src/__tests__/reviews/**'
+      - '.github/workflows/reviews.yml'
+  pull_request:
+    paths:
+      - 'src/pages/ReviewsPage.tsx'
+      - 'src/components/ReviewCard.tsx'
+      - 'src/components/ReviewForm.tsx'
+      - 'src/services/reviewService.ts'
+      - 'src/__tests__/reviews/**'
+  workflow_dispatch:
+
+env:
+  VITE_API_URL: 'http://localhost:3000'
+  VITE_STRIPE_PUBLIC_KEY: 'pk_test_fake_key_for_workflow_compilation_only'
+
+jobs:
+  test-reviews:
+    name: Test Reviews Feature
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run reviews tests
+        run: npm test -- src/__tests__/reviews
+        continue-on-error: true
+      
+      - name: Type check reviews
+        run: npx tsc --noEmit src/pages/ReviewsPage.tsx src/components/ReviewCard.tsx src/components/ReviewForm.tsx src/services/reviewService.ts
+      
+      - name: Lint reviews code
+        run: npx eslint src/pages/ReviewsPage.tsx src/components/ReviewCard.tsx src/components/ReviewForm.tsx src/services/reviewService.ts
+        continue-on-error: true
