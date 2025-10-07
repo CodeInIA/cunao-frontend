@@ -578,3 +578,29 @@ html {
 .marquee-sep { white-space: nowrap; padding: 0 0.25rem; opacity: 0.95; display: inline-flex; align-items: center; height: 100%; }
 .marquee-break { display: inline-block; width: 1px; margin: 0 1rem; align-self: center; height: 60%; background: rgba(255,255,255,0.16); }
 .animate-marquee { animation: marquee var(--marquee-duration, 22s) linear infinite; will-change: transform; }
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(51, 65, 85, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.5) rgba(51, 65, 85, 0.3);
+}
