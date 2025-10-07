@@ -61,9 +61,9 @@ jobs:
           test -f src/pages/HomePage.tsx
           test -f src/pages/ProductsPage.tsx
           test -f src/pages/ProductDetailPage.tsx
-          test -f src/pages/CartPage.tsx
           test -f src/pages/CheckoutPage.tsx
-          test -f src/pages/ReviewsPage.tsx
-          test -f src/pages/AdminPage.tsx
+          test -f src/pages/ReviewPage.tsx
           test -f src/pages/ContactPage.tsx
+          test -f src/pages/AboutPage.tsx
+          test -f src/pages/SuccessPage.tsx
           echo "All route pages exist!"
