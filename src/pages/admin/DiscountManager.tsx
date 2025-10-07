@@ -324,63 +324,55 @@ export default function DiscountManager() {
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Descuento (%) *
                 </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={formData.discountPercentage}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      // Validar rango inmediatamente
-                      if (!isNaN(value) && value >= 1 && value <= 100) {
-                        setFormData({ ...formData, discountPercentage: value });
-                      } else if (e.target.value === '') {
-                        setFormData({ ...formData, discountPercentage: 0 });
+                <input
+                  type="number"
+                  value={formData.discountPercentage === 0 ? '' : formData.discountPercentage}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Si está vacío, poner 0 internamente pero mostrar vacío
+                    if (value === '') {
+                      setFormData({ ...formData, discountPercentage: 0 });
+                      return;
+                    }
+                    
+                    const numValue = parseInt(value);
+                    // Validar que sea un número y esté en el rango
+                    if (!isNaN(numValue)) {
+                      // Permitir cualquier número para escribir, pero limitar en el rango
+                      if (numValue >= 1 && numValue <= 100) {
+                        setFormData({ ...formData, discountPercentage: numValue });
+                      } else if (numValue > 100) {
+                        setFormData({ ...formData, discountPercentage: 100 });
+                      } else if (numValue < 1) {
+                        setFormData({ ...formData, discountPercentage: numValue });
                       }
-                    }}
-                    min="1"
-                    max="100"
-                    step="1"
-                    className={`w-full pl-4 pr-12 py-2 bg-slate-700 text-white rounded-lg border focus:outline-none focus:ring-2 appearance-none ${
-                      formData.discountPercentage > 0 && !isPercentageValid
-                        ? 'border-red-500 focus:ring-red-400'
-                        : 'border-slate-600 focus:ring-yellow-400'
-                    }`}
-                    required
-                    title="El porcentaje debe ser un número entero entre 1 y 100"
-                    style={{
-                      MozAppearance: 'textfield',
-                      WebkitAppearance: 'none',
-                      margin: 0
-                    }}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newValue = Math.min(100, formData.discountPercentage + 1);
-                        setFormData({ ...formData, discountPercentage: newValue });
-                      }}
-                      className="w-6 h-4 flex items-center justify-center bg-slate-600 hover:bg-yellow-400 hover:text-slate-900 rounded-sm transition-colors text-slate-300 text-xs"
-                      tabIndex={-1}
-                    >
-                      ▲
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newValue = Math.max(1, formData.discountPercentage - 1);
-                        setFormData({ ...formData, discountPercentage: newValue });
-                      }}
-                      className="w-6 h-4 flex items-center justify-center bg-slate-600 hover:bg-yellow-400 hover:text-slate-900 rounded-sm transition-colors text-slate-300 text-xs"
-                      tabIndex={-1}
-                    >
-                      ▼
-                    </button>
-                  </div>
-                  <span className="absolute right-14 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none font-semibold">
-                    %
-                  </span>
-                </div>
+                    }
+                  }}
+                  onKeyPress={(e) => {
+                    // Solo permitir números (0-9)
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    // Prevenir pegar texto que no sea numérico
+                    const paste = e.clipboardData.getData('text');
+                    if (!/^\d+$/.test(paste)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  min="1"
+                  max="100"
+                  step="1"
+                  placeholder="10"
+                  className={`w-full px-4 py-2 bg-slate-700 text-white rounded-lg border focus:outline-none focus:ring-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                    formData.discountPercentage > 0 && !isPercentageValid
+                      ? 'border-red-500 focus:ring-red-400'
+                      : 'border-slate-600 focus:ring-yellow-400'
+                  }`}
+                  required
+                  title="El porcentaje debe ser un número entero entre 1 y 100"
+                />
                 <p className={`text-xs mt-1 ${
                   formData.discountPercentage > 0 && !isPercentageValid ? 'text-red-400' : 'text-slate-400'
                 }`}>
