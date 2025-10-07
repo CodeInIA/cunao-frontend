@@ -47,7 +47,7 @@ jobs:
         continue-on-error: true
       
       - name: Type check stores
-        run: npx tsc --noEmit src/stores/cartStore.ts src/stores/productStore.ts
+        run: npx tsc --project tsconfig.app.json --noEmit
         continue-on-error: true
       
       - name: Lint stores

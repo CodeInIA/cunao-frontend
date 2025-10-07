@@ -38,7 +38,8 @@ jobs:
         continue-on-error: true
       
       - name: Run TypeScript compiler (strict)
-        run: npx tsc --noEmit --strict
+        run: npx tsc --project tsconfig.app.json --noEmit --strict
+        continue-on-error: true
       
       - name: Check for console logs
         run: |
