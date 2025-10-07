@@ -31,6 +31,8 @@ export default function DiscountManager() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingCode, setEditingCode] = useState<DiscountCode | null>(null);
   const [sendEmail, setSendEmail] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [codeToDelete, setCodeToDelete] = useState<{ id: string; code: string } | null>(null);
   const [formData, setFormData] = useState({
     code: '',
     discountPercentage: 10,
@@ -202,8 +204,6 @@ export default function DiscountManager() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('¿Estás seguro de eliminar este cupón?')) return;
-
     const csrfToken = getCookie('csrfToken');
     if (!csrfToken) {
       toast.error('Token CSRF no encontrado');
@@ -217,10 +217,22 @@ export default function DiscountManager() {
       );
       toast.success('Cupón eliminado correctamente');
       fetchDiscountCodes();
+      setShowDeleteModal(false);
+      setCodeToDelete(null);
     } catch (error) {
       console.error(error);
       toast.error('Error al eliminar el cupón');
     }
+  }
+
+  function confirmDelete(id: string, code: string) {
+    setCodeToDelete({ id, code });
+    setShowDeleteModal(true);
+  }
+
+  function cancelDelete() {
+    setShowDeleteModal(false);
+    setCodeToDelete(null);
   }
 
   function formatDate(dateString?: string) {
@@ -234,38 +246,38 @@ export default function DiscountManager() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto">
           <Link 
             to="/admin/dashboard" 
-            className="p-2 rounded bg-slate-800 hover:bg-slate-700" 
+            className="p-2 rounded bg-slate-800 hover:bg-slate-700 flex-shrink-0" 
             title="Volver al dashboard"
           >
             <ArrowLeft className="w-5 h-5 text-slate-300" />
           </Link>
-          <div>
-            <h2 className="text-3xl font-serif font-bold text-white">Gestión de Cupones</h2>
-            <p className="text-slate-400 mt-1">Crear, editar y eliminar códigos de descuento</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">Gestión de Cupones</h2>
+            <p className="text-sm md:text-base text-slate-400 mt-1">Crear, editar y eliminar códigos de descuento</p>
           </div>
         </div>
         
         {!showCreate && (
           <button
             onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+            className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 w-full sm:w-auto justify-center flex-shrink-0"
           >
             <Plus className="w-5 h-5" />
-            Nuevo Cupón
+            <span className="whitespace-nowrap">Nuevo Cupón</span>
           </button>
         )}
       </div>
 
       {/* Create/Edit Form */}
       {showCreate && (
-        <div className="mb-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-6 shadow-lg">
-          <h3 className="text-xl font-semibold text-white mb-4">
+        <div className="mb-6 md:mb-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-4 md:p-6 shadow-lg">
+          <h3 className="text-lg md:text-xl font-semibold text-white mb-4">
             {editingCode ? 'Editar Cupón' : 'Crear Nuevo Cupón'}
           </h3>
           
@@ -312,29 +324,63 @@ export default function DiscountManager() {
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Descuento (%) *
                 </label>
-                <input
-                  type="number"
-                  value={formData.discountPercentage}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    // Validar rango inmediatamente
-                    if (!isNaN(value) && value >= 1 && value <= 100) {
-                      setFormData({ ...formData, discountPercentage: value });
-                    } else if (e.target.value === '') {
-                      setFormData({ ...formData, discountPercentage: 0 });
-                    }
-                  }}
-                  min="1"
-                  max="100"
-                  step="1"
-                  className={`w-full px-4 py-2 bg-slate-700 text-white rounded-lg border focus:outline-none focus:ring-2 ${
-                    formData.discountPercentage > 0 && !isPercentageValid
-                      ? 'border-red-500 focus:ring-red-400'
-                      : 'border-slate-600 focus:ring-yellow-400'
-                  }`}
-                  required
-                  title="El porcentaje debe ser un número entero entre 1 y 100"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={formData.discountPercentage}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      // Validar rango inmediatamente
+                      if (!isNaN(value) && value >= 1 && value <= 100) {
+                        setFormData({ ...formData, discountPercentage: value });
+                      } else if (e.target.value === '') {
+                        setFormData({ ...formData, discountPercentage: 0 });
+                      }
+                    }}
+                    min="1"
+                    max="100"
+                    step="1"
+                    className={`w-full pl-4 pr-12 py-2 bg-slate-700 text-white rounded-lg border focus:outline-none focus:ring-2 appearance-none ${
+                      formData.discountPercentage > 0 && !isPercentageValid
+                        ? 'border-red-500 focus:ring-red-400'
+                        : 'border-slate-600 focus:ring-yellow-400'
+                    }`}
+                    required
+                    title="El porcentaje debe ser un número entero entre 1 y 100"
+                    style={{
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none',
+                      margin: 0
+                    }}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newValue = Math.min(100, formData.discountPercentage + 1);
+                        setFormData({ ...formData, discountPercentage: newValue });
+                      }}
+                      className="w-6 h-4 flex items-center justify-center bg-slate-600 hover:bg-yellow-400 hover:text-slate-900 rounded-sm transition-colors text-slate-300 text-xs"
+                      tabIndex={-1}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newValue = Math.max(1, formData.discountPercentage - 1);
+                        setFormData({ ...formData, discountPercentage: newValue });
+                      }}
+                      className="w-6 h-4 flex items-center justify-center bg-slate-600 hover:bg-yellow-400 hover:text-slate-900 rounded-sm transition-colors text-slate-300 text-xs"
+                      tabIndex={-1}
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  <span className="absolute right-14 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none font-semibold">
+                    %
+                  </span>
+                </div>
                 <p className={`text-xs mt-1 ${
                   formData.discountPercentage > 0 && !isPercentageValid ? 'text-red-400' : 'text-slate-400'
                 }`}>
@@ -393,48 +439,67 @@ export default function DiscountManager() {
             </div>
 
             {/* Active Status */}
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="w-5 h-5 text-yellow-400 bg-slate-700 border-slate-600 rounded focus:ring-yellow-400"
-              />
-              <label htmlFor="isActive" className="text-sm font-medium text-slate-300">
-                Cupón activo
+            <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
+              <label htmlFor="isActive" className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-600 rounded-full peer-checked:bg-yellow-400 transition-colors duration-300"></div>
+                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5"></div>
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors">
+                    Cupón activo
+                  </span>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {formData.isActive ? 'Los clientes pueden usar este cupón' : 'El cupón no estará disponible para uso'}
+                  </p>
+                </div>
               </label>
             </div>
 
             {/* Send Email to Subscribers - Solo al crear */}
             {!editingCode && (
-              <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="sendEmail"
-                    checked={sendEmail}
-                    onChange={(e) => setSendEmail(e.target.checked)}
-                    className="w-5 h-5 text-yellow-400 bg-slate-700 border-slate-600 rounded focus:ring-yellow-400 mt-0.5"
-                  />
-                  <div>
-                    <label htmlFor="sendEmail" className="text-sm font-medium text-slate-300 cursor-pointer">
-                      📧 Enviar cupón por email a suscriptores
-                    </label>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Se enviará el cupón a todos los usuarios suscritos a la newsletter con promociones activadas
+              <div className="bg-gradient-to-br from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-lg p-4">
+                <label htmlFor="sendEmail" className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative mt-0.5">
+                    <input
+                      type="checkbox"
+                      id="sendEmail"
+                      checked={sendEmail}
+                      onChange={(e) => setSendEmail(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-600 rounded-full peer-checked:bg-yellow-400 transition-colors duration-300"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5"></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">
+                        Enviar cupón por email a suscriptores
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                      Se enviará el cupón a todos los usuarios suscritos a la newsletter con promociones activadas. 
+                      Recibirás un reporte con las estadísticas de envío.
                     </p>
                   </div>
-                </div>
+                </label>
               </div>
             )}
 
             {/* Buttons */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`px-6 py-2 rounded-md font-semibold shadow focus:outline-none focus:ring-2 transition-all ${
+                className={`flex-1 px-6 py-2 rounded-md font-semibold shadow focus:outline-none focus:ring-2 transition-all ${
                   isFormValid
                     ? 'bg-yellow-400 text-slate-900 hover:bg-yellow-300 focus:ring-yellow-300 cursor-pointer'
                     : 'bg-slate-600 text-slate-400 cursor-not-allowed opacity-60'
@@ -446,7 +511,7 @@ export default function DiscountManager() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="bg-slate-700 text-slate-300 px-6 py-2 rounded-md font-semibold shadow hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500"
+                className="flex-1 bg-slate-700 text-slate-300 px-6 py-2 rounded-md font-semibold shadow hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500"
               >
                 Cancelar
               </button>
@@ -483,17 +548,17 @@ export default function DiscountManager() {
           discountCodes.map((code) => (
             <div
               key={code._id}
-              className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-6 shadow-lg hover:shadow-xl transition-shadow"
+              className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-4 md:p-6 shadow-lg hover:shadow-xl transition-shadow"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="flex-1 min-w-0 w-full">
                   {/* Code and Status */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-2xl font-bold text-yellow-400 font-mono">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <h3 className="text-xl md:text-2xl font-bold text-yellow-400 font-mono break-all">
                       {code.code}
                     </h3>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      className={`px-2 md:px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
                         code.isValid
                           ? 'bg-green-500/20 text-green-400'
                           : 'bg-red-500/20 text-red-400'
@@ -502,40 +567,40 @@ export default function DiscountManager() {
                       {code.isValid ? 'Activo' : 'Inactivo/Expirado'}
                     </span>
                     {!code.isActive && (
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400">
+                      <span className="px-2 md:px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400 whitespace-nowrap">
                         Desactivado
                       </span>
                     )}
                   </div>
 
                   {/* Details Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div className="flex items-center gap-2 text-slate-300">
-                      <Percent className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mt-4">
+                    <div className="flex items-center gap-2 text-slate-300 min-w-0">
+                      <Percent className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <span className="text-sm truncate">
                         <span className="font-semibold">{code.discountPercentage}%</span> de descuento
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-slate-300">
-                      <TagIcon className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm">
+                    <div className="flex items-center gap-2 text-slate-300 min-w-0">
+                      <TagIcon className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <span className="text-sm truncate">
                         Aplica a: <span className="font-semibold">
                           {code.appliesTo === 'subtotal' ? 'Subtotal' : 'Envío'}
                         </span>
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-slate-300">
-                      <Calendar className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm">
+                    <div className="flex items-center gap-2 text-slate-300 min-w-0">
+                      <Calendar className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <span className="text-sm truncate">
                         {formatDate(code.expiryDate)}
                       </span>
                     </div>
                   </div>
 
                   {/* Dates */}
-                  <div className="mt-4 text-xs text-slate-500">
+                  <div className="mt-4 text-xs text-slate-500 break-words">
                     Creado: {new Date(code.createdAt).toLocaleDateString('es-ES')}
                     {code.updatedAt !== code.createdAt && (
                       <> • Actualizado: {new Date(code.updatedAt).toLocaleDateString('es-ES')}</>
@@ -544,20 +609,20 @@ export default function DiscountManager() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 ml-4">
+                <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
                   <button
                     onClick={() => handleEdit(code)}
-                    className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition"
+                    className="flex-1 sm:flex-none p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition"
                     title="Editar cupón"
                   >
-                    <Edit2 className="w-5 h-5" />
+                    <Edit2 className="w-5 h-5 mx-auto" />
                   </button>
                   <button
-                    onClick={() => handleDelete(code._id)}
-                    className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition"
+                    onClick={() => confirmDelete(code._id, code.code)}
+                    className="flex-1 sm:flex-none p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition"
                     title="Eliminar cupón"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-5 h-5 mx-auto" />
                   </button>
                 </div>
               </div>
@@ -565,6 +630,78 @@ export default function DiscountManager() {
           ))
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && codeToDelete && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity duration-200"
+          style={{ animation: 'fadeIn 0.2s ease-out' }}
+        >
+          <div 
+            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 shadow-2xl max-w-md w-full mx-auto"
+            style={{ animation: 'scaleIn 0.3s ease-out' }}
+          >
+            {/* Header */}
+            <div className="p-4 md:p-6 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                  <Trash2 className="w-5 h-5 md:w-6 md:h-6 text-red-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-lg md:text-xl font-bold text-white">Eliminar Cupón</h3>
+                  <p className="text-xs md:text-sm text-slate-400 mt-0.5">Esta acción no se puede deshacer</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 md:p-6">
+              <p className="text-sm md:text-base text-slate-300 mb-4">
+                ¿Estás seguro de que deseas eliminar el cupón de descuento?
+              </p>
+              <div className="bg-slate-700/50 rounded-lg p-3 md:p-4 border border-slate-600">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <span className="text-xs md:text-sm text-slate-400">Código:</span>
+                  <span className="text-base md:text-lg font-bold text-yellow-400 font-mono break-all">{codeToDelete.code}</span>
+                </div>
+              </div>
+              <p className="text-xs text-red-400 mt-4 flex items-start gap-2">
+                <span className="text-base md:text-lg flex-shrink-0">⚠️</span>
+                <span>Los clientes ya no podrán usar este cupón de descuento.</span>
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 md:p-6 border-t border-slate-700 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={cancelDelete}
+                className="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDelete(codeToDelete.id)}
+                className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+          }
+        `}
+      </style>
     </div>
   );
 }
