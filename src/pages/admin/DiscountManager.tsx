@@ -596,7 +596,14 @@ export default function DiscountManager() {
                     type="checkbox"
                     id="isActive"
                     checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    onChange={(e) => {
+                      const isActive = e.target.checked;
+                      setFormData({ ...formData, isActive });
+                      // Si se desactiva el cupón, también desactivar el envío de email
+                      if (!isActive && sendEmail) {
+                        setSendEmail(false);
+                      }
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-slate-600 rounded-full peer-checked:bg-yellow-400 transition-colors duration-300"></div>
@@ -613,8 +620,8 @@ export default function DiscountManager() {
               </label>
             </div>
 
-            {/* Send Email to Subscribers - Solo al crear */}
-            {!editingCode && (
+            {/* Send Email to Subscribers - Solo al crear y si el cupón está activo */}
+            {!editingCode && formData.isActive && (
               <div className="bg-gradient-to-br from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-lg p-4 space-y-4">
                 <label htmlFor="sendEmail" className="flex items-start gap-3 cursor-pointer group">
                   <div className="relative mt-0.5">
