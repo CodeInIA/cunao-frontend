@@ -35,6 +35,7 @@ const ReviewsManager = lazy(() => import('./pages/admin/ReviewsManager').then(m 
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.default })));
 const TagManager = lazy(() => import('./pages/admin/TagManager').then(m => ({ default: m.default })));
 const DiscountManager = lazy(() => import('./pages/admin/DiscountManager').then(m => ({ default: m.default })));
+const ClientsManager = lazy(() => import('./pages/admin/ClientsManager').then(m => ({ default: m.default })));
 const AdminRoute = lazy(() => import('./components/AdminRoute').then(m => ({ default: m.default })));
 import './App.css';
 
@@ -107,6 +108,7 @@ useEffect(() => {
                   <Route path="/admin/review-manager" element={<AdminRoute><ReviewsManager /></AdminRoute>} />
                   <Route path="/admin/tag-manager" element={<AdminRoute><TagManager /></AdminRoute>} />
                   <Route path="/admin/discount-manager" element={<AdminRoute><DiscountManager /></AdminRoute>} />
+                  <Route path="/admin/clients" element={<AdminRoute><ClientsManager /></AdminRoute>} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
