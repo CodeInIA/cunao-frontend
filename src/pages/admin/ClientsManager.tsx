@@ -47,6 +47,13 @@ export default function ClientsManager() {
 
   useEffect(() => { fetchClients(); fetchStats(); }, [currentPage, searchTerm, filterEmailMarketing, period]);
 
+  // Limpiar el overflow del body al desmontar el componente
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   async function fetchStats() {
     try {
       const res = await axios.get(`${config.API_URL}/admin/clients/stats`, { params: { period } });
@@ -83,9 +90,16 @@ export default function ClientsManager() {
     setSelectedClient(client);
     setClientDetails(null);
     fetchClientDetails(client._id);
+    // Bloquear scroll del body
+    document.body.style.overflow = 'hidden';
   }
 
-  function handleCloseModal() { setSelectedClient(null); setClientDetails(null); }
+  function handleCloseModal() { 
+    setSelectedClient(null); 
+    setClientDetails(null);
+    // Restaurar scroll del body
+    document.body.style.overflow = 'unset';
+  }
 
   function handleSearch(e: React.FormEvent) { e.preventDefault(); setCurrentPage(1); fetchClients(); }
 
@@ -447,31 +461,30 @@ export default function ClientsManager() {
       )}
 
       {selectedClient && (
-        <div className="fixed inset-0 bg-black/70 md:bg-black/70 flex items-start md:items-center justify-center md:p-4 z-50 md:overflow-y-auto">
-          <div className="bg-slate-800 md:rounded-xl max-w-5xl w-full h-full md:h-auto md:my-8 flex flex-col">
-            <div className="bg-slate-900 p-3 md:p-6 border-b border-slate-700 flex items-center justify-between md:rounded-t-xl z-10 flex-shrink-0">
-              <h3 className="text-lg md:text-2xl font-bold text-white">Detalles del Cliente</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center md:p-4 z-50 overflow-y-auto">
+          <div className="bg-slate-800 md:rounded-xl max-w-5xl w-full h-full md:h-auto md:max-h-[90vh] md:my-8 flex flex-col">
+            <div className="bg-slate-900 p-4 md:p-6 border-b border-slate-700 flex items-center justify-between md:rounded-t-xl flex-shrink-0">
+              <h3 className="text-xl md:text-2xl font-bold text-white">Detalles del Cliente</h3>
               <button onClick={handleCloseModal} className="p-2 hover:bg-slate-800 rounded-lg transition">
-                <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            {loadingDetails ? <div className="p-4 md:p-8 text-center text-slate-400 flex-1 flex items-center justify-center">Cargando detalles...</div> : clientDetails ? (
-              <div className="p-3 md:p-6 space-y-3 md:space-y-6 overflow-y-auto flex-1 scrollbar-spanish"
-              >
-                <div className="bg-slate-900 rounded-lg p-3 md:p-6">
-                  <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Información Personal</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                    <div><label className="text-xs md:text-sm text-slate-400">Nombre</label><p className="text-sm md:text-base text-white font-medium break-words">{selectedClient.name}</p></div>
-                    <div><label className="text-xs md:text-sm text-slate-400">Email</label><p className="text-sm md:text-base text-white font-medium break-all">{selectedClient.email}</p></div>
-                    <div><label className="text-xs md:text-sm text-slate-400">Teléfono</label><p className="text-sm md:text-base text-white font-medium">{selectedClient.phone || 'No disponible'}</p></div>
-                    <div><label className="text-xs md:text-sm text-slate-400">Marketing</label><p className="text-sm md:text-base text-white font-medium">{selectedClient.emailMarketing ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+            {loadingDetails ? <div className="p-8 text-center text-slate-400 flex-1 flex items-center justify-center">Cargando detalles...</div> : clientDetails ? (
+              <div className="p-4 md:p-6 space-y-4 md:space-y-6 overflow-y-auto flex-1 scrollbar-spanish">
+                <div className="bg-slate-900 rounded-lg p-4 md:p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4">Información Personal</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label className="text-sm text-slate-400">Nombre</label><p className="text-base text-white font-medium break-words">{selectedClient.name}</p></div>
+                    <div><label className="text-sm text-slate-400">Email</label><p className="text-base text-white font-medium break-all">{selectedClient.email}</p></div>
+                    <div><label className="text-sm text-slate-400">Teléfono</label><p className="text-base text-white font-medium">{selectedClient.phone || 'No disponible'}</p></div>
+                    <div><label className="text-sm text-slate-400">Marketing</label><p className="text-base text-white font-medium">{selectedClient.emailMarketing ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
                   </div>
                 </div>
 
-                <div className="bg-slate-900 rounded-lg p-3 md:p-6">
-                  <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Dirección</h4>
-                  <div className="text-sm md:text-base text-slate-300 space-y-1">
+                <div className="bg-slate-900 rounded-lg p-4 md:p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4">Dirección</h4>
+                  <div className="text-base text-slate-300 space-y-1">
                     <p>{selectedClient.address.line1}</p>
                     {selectedClient.address.line2 && <p>{selectedClient.address.line2}</p>}
                     <p>{selectedClient.address.postal_code} {selectedClient.address.city}{selectedClient.address.state && `, ${selectedClient.address.state}`}</p>
@@ -480,44 +493,44 @@ export default function ClientsManager() {
                 </div>
 
                 {selectedClient.newsletterId && (
-                  <div className="bg-slate-900 rounded-lg p-3 md:p-6">
-                    <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Estado Newsletter</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                      <div><label className="text-xs md:text-sm text-slate-400">Newsletter</label><p className="text-sm md:text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newsletter ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
-                      <div><label className="text-xs md:text-sm text-slate-400">Promociones</label><p className="text-sm md:text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.promotions ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
-                      <div><label className="text-xs md:text-sm text-slate-400">Nuevos Productos</label><p className="text-sm md:text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newProducts ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+                  <div className="bg-slate-900 rounded-lg p-4 md:p-6">
+                    <h4 className="text-lg font-semibold text-white mb-4">Estado Newsletter</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div><label className="text-sm text-slate-400">Newsletter</label><p className="text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newsletter ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+                      <div><label className="text-sm text-slate-400">Promociones</label><p className="text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.promotions ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+                      <div><label className="text-sm text-slate-400">Nuevos Productos</label><p className="text-base text-white font-medium">{clientDetails.client.newsletterId?.preferences?.newProducts ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
                     </div>
                   </div>
                 )}
 
-                <div className="bg-slate-900 rounded-lg p-3 md:p-6">
-                  <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4 flex items-center gap-2"><ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />Pedidos ({clientDetails.orders?.length || 0})</h4>
+                <div className="bg-slate-900 rounded-lg p-4 md:p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><ShoppingBag className="w-5 h-5" />Pedidos ({clientDetails.orders?.length || 0})</h4>
                   {clientDetails.orders && clientDetails.orders.length > 0 ? (
-                    <div className="space-y-3 md:space-y-4">
+                    <div className="space-y-4">
                       {clientDetails.orders.map((order: any, idx: number) => (
-                        <div key={idx} className="bg-slate-800 rounded-lg p-3 md:p-4 border border-slate-700">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 md:mb-4 pb-2 md:pb-3 border-b border-slate-700">
+                        <div key={idx} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-slate-700">
                             <div>
-                              <p className="text-sm md:text-base text-white font-semibold">Pedido #{order.orderId}</p>
-                              <p className="text-xs md:text-sm text-slate-400">{new Date(order.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                              <p className="text-base text-white font-semibold">Pedido #{order.orderId}</p>
+                              <p className="text-sm text-slate-400">{new Date(order.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                             <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                              <p className="text-lg md:text-xl text-white font-bold">{order.total?.toFixed(2)}€</p>
-                              <span className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-900/50 text-green-300 border border-green-700' : order.status === 'pending' ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-slate-700 text-slate-300'}`}>{order.status}</span>
+                              <p className="text-xl text-white font-bold">{order.total?.toFixed(2)}€</p>
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-900/50 text-green-300 border border-green-700' : order.status === 'pending' ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-slate-700 text-slate-300'}`}>{order.status}</span>
                             </div>
                           </div>
                           {order.items && order.items.length > 0 && (
-                            <div className="space-y-2 md:space-y-3">
+                            <div className="space-y-3">
                               {order.items.map((item: any, itemIdx: number) => (
-                                <div key={itemIdx} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-700/50 p-2 md:p-3 rounded-lg">
+                                <div key={itemIdx} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-700/50 p-3 rounded-lg">
                                   {item.productImage ? (
-                                    <img src={item.productImage} alt={item.productTitle} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border-2 border-slate-600 flex-shrink-0 mx-auto sm:mx-0" />
+                                    <img src={item.productImage} alt={item.productTitle} className="w-20 h-20 object-cover rounded-lg border-2 border-slate-600 flex-shrink-0 mx-auto sm:mx-0" />
                                   ) : (
-                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0"><Package className="w-6 h-6 md:w-8 md:h-8 text-slate-400" /></div>
+                                    <div className="w-20 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0"><Package className="w-8 h-8 text-slate-400" /></div>
                                   )}
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm md:text-base text-white font-medium truncate">{item.productTitle}</p>
-                                    <div className="flex flex-wrap items-center gap-2 mt-1 text-xs md:text-sm text-slate-400">
+                                    <p className="text-base text-white font-medium truncate">{item.productTitle}</p>
+                                    <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-slate-400">
                                       <span>Cant: {item.quantity}</span>
                                       <span className="hidden sm:inline">•</span>
                                       <span>Precio: {item.price.toFixed(2)}€</span>
@@ -535,22 +548,44 @@ export default function ClientsManager() {
                                       )}
                                     </div>
                                   </div>
-                                  <div className="text-center sm:text-right flex-shrink-0"><p className="text-base md:text-lg text-white font-bold">{(item.price * item.quantity).toFixed(2)}€</p></div>
+                                  <div className="text-center sm:text-right flex-shrink-0"><p className="text-lg text-white font-bold">{(item.price * item.quantity).toFixed(2)}€</p></div>
                                 </div>
                               ))}
                             </div>
                           )}
                           {order.shippingCost !== undefined && (
-                            <div className="mt-3 md:mt-4 pt-3 border-t border-slate-700">
-                              <div className="flex justify-between text-xs md:text-sm text-slate-400 mb-1"><span>Subtotal:</span><span>{(order.total - order.shippingCost).toFixed(2)}€</span></div>
-                              <div className="flex justify-between text-xs md:text-sm text-slate-400 mb-2"><span>Envío:</span><span>{order.shippingCost.toFixed(2)}€</span></div>
-                              <div className="flex justify-between text-base md:text-lg font-bold text-white"><span>Total:</span><span>{order.total.toFixed(2)}€</span></div>
+                            <div className="mt-4 pt-3 border-t border-slate-700">
+                              <div className="flex justify-between text-sm text-slate-400 mb-1"><span>Subtotal:</span><span>{(order.total - order.shippingCost).toFixed(2)}€</span></div>
+                              <div className="flex justify-between text-sm text-slate-400 mb-2"><span>Envío:</span><span>{order.shippingCost.toFixed(2)}€</span></div>
+                              {order.discountCode && order.discountPercentage && (
+                                <div className="mb-2 p-2 bg-green-900/20 border border-green-700/50 rounded-lg">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span className="text-sm font-semibold text-green-400">
+                                        Descuento: {order.discountCode}
+                                      </span>
+                                      <span className="text-xs text-green-300">
+                                        ({order.discountPercentage}%)
+                                      </span>
+                                      {order.discountAppliesTo && (
+                                        <span className="px-2 py-0.5 bg-green-900/50 border border-green-700 rounded text-xs text-green-300">
+                                          {order.discountAppliesTo === 'shipping' ? 'Envío' : 'Subtotal'}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-sm font-bold text-green-400">
+                                      -{order.discountAmount?.toFixed(2) || '0.00'}€
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              <div className="flex justify-between text-lg font-bold text-white"><span>Total:</span><span>{order.total.toFixed(2)}€</span></div>
                             </div>
                           )}
                         </div>
                       ))}
                     </div>
-                  ) : <p className="text-slate-400 text-center py-4 md:py-8 text-sm md:text-base">No hay pedidos registrados</p>}
+                  ) : <p className="text-slate-400 text-center py-8 text-base">No hay pedidos registrados</p>}
                 </div>
               </div>
             ) : null}
