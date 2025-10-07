@@ -31,6 +31,10 @@ export default function DiscountManager() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingCode, setEditingCode] = useState<DiscountCode | null>(null);
   const [sendEmail, setSendEmail] = useState(false);
+  const [emailRecipientType, setEmailRecipientType] = useState<'all' | 'custom'>('all');
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [subscribers, setSubscribers] = useState<Array<{email: string; hasPromotions: boolean; createdAt: string}>>([]);
+  const [loadingSubscribers, setLoadingSubscribers] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [codeToDelete, setCodeToDelete] = useState<{ id: string; code: string } | null>(null);
   const [formData, setFormData] = useState({
@@ -41,16 +45,19 @@ export default function DiscountManager() {
     appliesTo: 'subtotal' as 'subtotal' | 'shipping'
   });
 
-  // Validaciones en tiempo real
-  const isCodeValid = formData.code.trim().length >= 3 && 
-                      formData.code.trim().length <= 20 && 
-                      /^[A-ZÁÉÍÓÚÑ0-9_-]+$/i.test(formData.code.trim());
+  // Validaciones en tiempo real (solo si hay contenido)
+  const isCodeValid = !formData.code.trim() || (
+    formData.code.trim().length >= 3 && 
+    formData.code.trim().length <= 20 && 
+    /^[A-ZÁÉÍÓÚÑ0-9_-]+$/i.test(formData.code.trim())
+  );
   
   const isPercentageValid = formData.discountPercentage >= 1 && 
                            formData.discountPercentage <= 100 && 
                            Number.isInteger(formData.discountPercentage);
   
-  const isFormValid = isCodeValid && isPercentageValid;
+  // El formulario es válido solo si hay código Y es válido
+  const isFormValid = formData.code.trim().length >= 3 && isCodeValid && isPercentageValid;
 
   useEffect(() => {
     fetchDiscountCodes();
@@ -69,6 +76,19 @@ export default function DiscountManager() {
     }
   }
 
+  async function fetchSubscribers() {
+    setLoadingSubscribers(true);
+    try {
+      const res = await axios.get(`${config.API_URL}/admin/newsletter-subscribers`);
+      setSubscribers(res.data.subscribers || []);
+    } catch (e) {
+      console.error(e);
+      toast.error('Error cargando suscriptores');
+    } finally {
+      setLoadingSubscribers(false);
+    }
+  }
+
   function resetForm() {
     setFormData({
       code: '',
@@ -80,6 +100,11 @@ export default function DiscountManager() {
     setEditingCode(null);
     setShowCreate(false);
     setSendEmail(false);
+    setEmailRecipientType('all');
+    setSelectedEmails([]);
+    
+    // Scroll al top de la página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleEdit(code: DiscountCode) {
@@ -156,6 +181,14 @@ export default function DiscountManager() {
       return;
     }
 
+    // Validar emails personalizados si se seleccionó esa opción
+    if (sendEmail && emailRecipientType === 'custom') {
+      if (selectedEmails.length === 0) {
+        toast.error('Debes seleccionar al menos un email');
+        return;
+      }
+    }
+
     const payload: any = {
       code: formData.code.trim().toUpperCase(),
       discountPercentage: formData.discountPercentage,
@@ -166,6 +199,11 @@ export default function DiscountManager() {
 
     if (formData.expiryDate) {
       payload.expiryDate = formData.expiryDate;
+    }
+
+    // Añadir información de emails personalizados si aplica
+    if (sendEmail && emailRecipientType === 'custom') {
+      payload.customEmails = selectedEmails;
     }
 
     try {
@@ -457,7 +495,7 @@ export default function DiscountManager() {
 
             {/* Send Email to Subscribers - Solo al crear */}
             {!editingCode && (
-              <div className="bg-gradient-to-br from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-lg p-4">
+              <div className="bg-gradient-to-br from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-lg p-4 space-y-4">
                 <label htmlFor="sendEmail" className="flex items-start gap-3 cursor-pointer group">
                   <div className="relative mt-0.5">
                     <input
@@ -474,15 +512,183 @@ export default function DiscountManager() {
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-yellow-400" />
                       <span className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">
-                        Enviar cupón por email a suscriptores
+                        Enviar cupón por email
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                      Se enviará el cupón a todos los usuarios suscritos a la newsletter con promociones activadas. 
-                      Recibirás un reporte con las estadísticas de envío.
+                      Envía el cupón de descuento a usuarios específicos por correo electrónico.
                     </p>
                   </div>
                 </label>
+
+                {/* Email Recipients Selector */}
+                {sendEmail && (
+                  <div className="space-y-3 pl-0 sm:pl-14">
+                    <div className="space-y-3">
+                      {/* Opción: Todos los suscriptores */}
+                      <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group p-2 sm:p-3 rounded-lg border-2 transition-all hover:bg-slate-600/20 border-slate-600 hover:border-yellow-400/50 has-[:checked]:border-yellow-400 has-[:checked]:bg-yellow-400/10">
+                        <div className="relative flex-shrink-0">
+                          <input
+                            type="radio"
+                            name="emailRecipientType"
+                            value="all"
+                            checked={emailRecipientType === 'all'}
+                            onChange={(e) => setEmailRecipientType('all')}
+                            className="sr-only peer"
+                          />
+                          <div className="w-5 h-5 bg-slate-600 border-2 border-slate-500 rounded-full peer-checked:border-yellow-400 transition-all duration-200 flex items-center justify-center">
+                            {emailRecipientType === 'all' && (
+                              <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full"></div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs sm:text-sm font-medium text-slate-200 group-hover:text-white transition-colors block">
+                            Todos los suscriptores con promociones activadas
+                          </span>
+                          <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">
+                            Envío masivo a todos los usuarios que aceptaron promociones
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Opción: Lista personalizada */}
+                      <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group p-2 sm:p-3 rounded-lg border-2 transition-all hover:bg-slate-600/20 border-slate-600 hover:border-yellow-400/50 has-[:checked]:border-yellow-400 has-[:checked]:bg-yellow-400/10">
+                        <div className="relative flex-shrink-0">
+                          <input
+                            type="radio"
+                            name="emailRecipientType"
+                            value="custom"
+                            checked={emailRecipientType === 'custom'}
+                            onChange={(e) => setEmailRecipientType('custom')}
+                            className="sr-only peer"
+                          />
+                          <div className="w-5 h-5 bg-slate-600 border-2 border-slate-500 rounded-full peer-checked:border-yellow-400 transition-all duration-200 flex items-center justify-center">
+                            {emailRecipientType === 'custom' && (
+                              <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full"></div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs sm:text-sm font-medium text-slate-200 group-hover:text-white transition-colors block">
+                            Lista personalizada de emails
+                          </span>
+                          <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">
+                            Selecciona manualmente los destinatarios
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {/* Custom Email List Selector */}
+                    {emailRecipientType === 'custom' && (
+                      <div className="space-y-3">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <label className="block text-xs font-medium text-slate-300">
+                            Selecciona los destinatarios
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!subscribers.length) fetchSubscribers();
+                            }}
+                            className="text-xs text-yellow-400 hover:text-yellow-300 underline whitespace-nowrap"
+                          >
+                            {subscribers.length > 0 ? 'Actualizar lista' : 'Cargar suscriptores'}
+                          </button>
+                        </div>
+
+                        {loadingSubscribers ? (
+                          <div className="text-center py-4">
+                            <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-yellow-400"></div>
+                            <p className="text-xs text-slate-400 mt-2">Cargando suscriptores...</p>
+                          </div>
+                        ) : subscribers.length > 0 ? (
+                          <>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+                              <span className="text-xs text-slate-400">
+                                {selectedEmails.length} de {subscribers.length} seleccionados
+                              </span>
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedEmails(subscribers.map(s => s.email))}
+                                  className="text-xs text-yellow-400 hover:text-yellow-300 whitespace-nowrap"
+                                >
+                                  Seleccionar todos
+                                </button>
+                                <span className="text-slate-600">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedEmails([])}
+                                  className="text-xs text-yellow-400 hover:text-yellow-300 whitespace-nowrap"
+                                >
+                                  Deseleccionar todos
+                                </button>
+                              </div>
+                            </div>
+                            <div className="max-h-64 overflow-y-auto bg-slate-700/50 rounded-lg border border-slate-600 p-2 sm:p-3 space-y-1.5 sm:space-y-2">
+                              {subscribers.map((subscriber) => (
+                                <label
+                                  key={subscriber.email}
+                                  className="flex items-center gap-2 sm:gap-3 cursor-pointer group hover:bg-slate-600/40 p-2 sm:p-3 rounded-lg transition-all border border-transparent hover:border-yellow-400/30"
+                                >
+                                  {/* Custom Checkbox */}
+                                  <div className="relative flex-shrink-0">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedEmails.includes(subscriber.email)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedEmails([...selectedEmails, subscriber.email]);
+                                        } else {
+                                          setSelectedEmails(selectedEmails.filter(email => email !== subscriber.email));
+                                        }
+                                      }}
+                                      className="sr-only peer"
+                                    />
+                                    <div className="w-4 h-4 sm:w-5 sm:h-5 bg-slate-600 border-2 border-slate-500 rounded peer-checked:bg-yellow-400 peer-checked:border-yellow-400 transition-all duration-200 flex items-center justify-center">
+                                      {selectedEmails.includes(subscriber.email) && (
+                                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  <span className="text-xs sm:text-sm text-slate-300 group-hover:text-white transition-colors flex-1 truncate font-medium min-w-0">
+                                    {subscriber.email}
+                                  </span>
+                                  
+                                  {subscriber.hasPromotions && (
+                                    <span className="text-xs bg-green-500/20 text-green-400 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-semibold flex items-center gap-1 flex-shrink-0">
+                                      <span className="w-1.5 h-1.5 bg-green-400 rounded-full hidden sm:inline-block"></span>
+                                      <span className="hidden sm:inline">Promociones</span>
+                                      <span className="sm:hidden">✓</span>
+                                    </span>
+                                  )}
+                                </label>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center py-4 text-slate-400 text-xs">
+                            Haz clic en "Cargar suscriptores" para ver la lista
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      {emailRecipientType === 'all' 
+                        ? '📧 Se enviará a todos los usuarios suscritos a la newsletter con promociones activadas.'
+                        : selectedEmails.length > 0
+                          ? `📧 Se enviará a ${selectedEmails.length} destinatario${selectedEmails.length !== 1 ? 's' : ''} seleccionado${selectedEmails.length !== 1 ? 's' : ''}.`
+                          : '📧 Selecciona los destinatarios de la lista.'
+                      }
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -509,12 +715,12 @@ export default function DiscountManager() {
               </button>
             </div>
             
-            {/* Validation Summary */}
-            {!isFormValid && (
+            {/* Validation Summary - Solo muestra si hay contenido inválido */}
+            {!isFormValid && formData.code.trim().length > 0 && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
                 <p className="text-sm text-red-400 font-medium">⚠️ Completa los campos requeridos:</p>
                 <ul className="text-xs text-red-300 mt-2 ml-4 list-disc space-y-1">
-                  {!isCodeValid && <li>Código válido (3-20 caracteres, letras, números, guiones)</li>}
+                  {formData.code.trim().length > 0 && !isCodeValid && <li>Código válido (3-20 caracteres, letras, números, guiones)</li>}
                   {!isPercentageValid && <li>Porcentaje válido (número entero entre 1-100)</li>}
                 </ul>
               </div>
