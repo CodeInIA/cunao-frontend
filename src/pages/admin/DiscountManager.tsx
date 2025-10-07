@@ -39,6 +39,17 @@ export default function DiscountManager() {
     appliesTo: 'subtotal' as 'subtotal' | 'shipping'
   });
 
+  // Validaciones en tiempo real
+  const isCodeValid = formData.code.trim().length >= 3 && 
+                      formData.code.trim().length <= 20 && 
+                      /^[A-ZÁÉÍÓÚÑ0-9_-]+$/i.test(formData.code.trim());
+  
+  const isPercentageValid = formData.discountPercentage >= 1 && 
+                           formData.discountPercentage <= 100 && 
+                           Number.isInteger(formData.discountPercentage);
+  
+  const isFormValid = isCodeValid && isPercentageValid;
+
   useEffect(() => {
     fetchDiscountCodes();
   }, []);
@@ -84,13 +95,56 @@ export default function DiscountManager() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     
+    // Validación del código
     if (!formData.code.trim()) {
       toast.error('El código es requerido');
       return;
     }
 
+    // Validar formato del código (3-20 caracteres, letras, números, guiones y guiones bajos)
+    const codeRegex = /^[A-ZÁÉÍÓÚÑ0-9_-]{3,20}$/i;
+    if (!codeRegex.test(formData.code.trim())) {
+      toast.error('El código debe tener entre 3 y 20 caracteres y solo puede contener letras (incluida Ñ), números, guiones y guiones bajos');
+      return;
+    }
+
+    // Validación del porcentaje
+    if (!formData.discountPercentage || isNaN(formData.discountPercentage)) {
+      toast.error('El porcentaje de descuento es requerido');
+      return;
+    }
+
     if (formData.discountPercentage < 1 || formData.discountPercentage > 100) {
       toast.error('El porcentaje debe estar entre 1 y 100');
+      return;
+    }
+
+    // Validar que sea un número entero
+    if (!Number.isInteger(formData.discountPercentage)) {
+      toast.error('El porcentaje de descuento debe ser un número entero');
+      return;
+    }
+
+    // Validación de fecha de expiración
+    if (formData.expiryDate) {
+      const expiryDateObj = new Date(formData.expiryDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day
+      
+      if (isNaN(expiryDateObj.getTime())) {
+        toast.error('La fecha de expiración no es válida');
+        return;
+      }
+
+      if (expiryDateObj <= today) {
+        toast.error('La fecha de expiración debe ser futura');
+        return;
+      }
+    }
+
+    // Validación de appliesTo
+    if (!formData.appliesTo || !['subtotal', 'shipping'].includes(formData.appliesTo)) {
+      toast.error('Debe seleccionar si el descuento aplica al subtotal o al envío');
       return;
     }
 
@@ -225,14 +279,31 @@ export default function DiscountManager() {
                 <input
                   type="text"
                   value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    // Solo permitir caracteres válidos
+                    const sanitized = value.replace(/[^A-ZÁÉÍÓÚÑ0-9_-]/gi, '');
+                    setFormData({ ...formData, code: sanitized });
+                  }}
                   placeholder="VERANO2024"
-                  className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  className={`w-full px-4 py-2 bg-slate-700 text-white rounded-lg border focus:outline-none focus:ring-2 ${
+                    formData.code && !isCodeValid 
+                      ? 'border-red-500 focus:ring-red-400' 
+                      : 'border-slate-600 focus:ring-yellow-400'
+                  }`}
                   required
+                  minLength={3}
                   maxLength={20}
+                  pattern="[A-ZÁÉÍÓÚÑ0-9_-]{3,20}"
+                  title="El código debe tener entre 3 y 20 caracteres y solo puede contener letras, números, guiones y guiones bajos"
                 />
-                <p className="text-xs text-slate-400 mt-1">
-                  3-20 caracteres (letras, números, guiones)
+                <p className={`text-xs mt-1 ${
+                  formData.code && !isCodeValid ? 'text-red-400' : 'text-slate-400'
+                }`}>
+                  {formData.code && !isCodeValid 
+                    ? '⚠️ Código inválido: debe tener 3-20 caracteres válidos' 
+                    : '3-20 caracteres (letras, números, guiones y guiones bajos)'
+                  }
                 </p>
               </div>
 
@@ -244,12 +315,34 @@ export default function DiscountManager() {
                 <input
                   type="number"
                   value={formData.discountPercentage}
-                  onChange={(e) => setFormData({ ...formData, discountPercentage: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    // Validar rango inmediatamente
+                    if (!isNaN(value) && value >= 1 && value <= 100) {
+                      setFormData({ ...formData, discountPercentage: value });
+                    } else if (e.target.value === '') {
+                      setFormData({ ...formData, discountPercentage: 0 });
+                    }
+                  }}
                   min="1"
                   max="100"
-                  className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  step="1"
+                  className={`w-full px-4 py-2 bg-slate-700 text-white rounded-lg border focus:outline-none focus:ring-2 ${
+                    formData.discountPercentage > 0 && !isPercentageValid
+                      ? 'border-red-500 focus:ring-red-400'
+                      : 'border-slate-600 focus:ring-yellow-400'
+                  }`}
                   required
+                  title="El porcentaje debe ser un número entero entre 1 y 100"
                 />
+                <p className={`text-xs mt-1 ${
+                  formData.discountPercentage > 0 && !isPercentageValid ? 'text-red-400' : 'text-slate-400'
+                }`}>
+                  {formData.discountPercentage > 0 && !isPercentageValid
+                    ? '⚠️ Debe ser un número entero entre 1 y 100'
+                    : 'Número entero entre 1 y 100'
+                  }
+                </p>
               </div>
 
               {/* Expiry Date */}
@@ -260,12 +353,26 @@ export default function DiscountManager() {
                 <input
                   type="date"
                   value={formData.expiryDate}
-                  onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                  onChange={(e) => {
+                    const selectedDate = e.target.value;
+                    if (selectedDate) {
+                      const dateObj = new Date(selectedDate);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      
+                      if (dateObj <= today) {
+                        toast.error('La fecha debe ser futura', { duration: 3000 });
+                        return;
+                      }
+                    }
+                    setFormData({ ...formData, expiryDate: selectedDate });
+                  }}
                   min={new Date().toISOString().split('T')[0]}
                   className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  title="La fecha de expiración debe ser futura (opcional)"
                 />
                 <p className="text-xs text-slate-400 mt-1">
-                  Dejar vacío para cupón permanente
+                  Dejar vacío para cupón permanente (sin fecha de expiración)
                 </p>
               </div>
 
@@ -326,7 +433,13 @@ export default function DiscountManager() {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="bg-yellow-400 text-slate-900 px-6 py-2 rounded-md font-semibold shadow hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                disabled={!isFormValid}
+                className={`px-6 py-2 rounded-md font-semibold shadow focus:outline-none focus:ring-2 transition-all ${
+                  isFormValid
+                    ? 'bg-yellow-400 text-slate-900 hover:bg-yellow-300 focus:ring-yellow-300 cursor-pointer'
+                    : 'bg-slate-600 text-slate-400 cursor-not-allowed opacity-60'
+                }`}
+                title={!isFormValid ? 'Completa todos los campos requeridos correctamente' : ''}
               >
                 {editingCode ? 'Actualizar' : 'Crear'} Cupón
               </button>
@@ -338,6 +451,17 @@ export default function DiscountManager() {
                 Cancelar
               </button>
             </div>
+            
+            {/* Validation Summary */}
+            {!isFormValid && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                <p className="text-sm text-red-400 font-medium">⚠️ Completa los campos requeridos:</p>
+                <ul className="text-xs text-red-300 mt-2 ml-4 list-disc space-y-1">
+                  {!isCodeValid && <li>Código válido (3-20 caracteres, letras, números, guiones)</li>}
+                  {!isPercentageValid && <li>Porcentaje válido (número entero entre 1-100)</li>}
+                </ul>
+              </div>
+            )}
           </form>
         </div>
       )}
