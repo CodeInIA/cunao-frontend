@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { config } from '../../config';
-import { Tag } from 'lucide-react';
+import { Tag, Percent } from 'lucide-react';
 axios.defaults.withCredentials = true;
 
 export default function AdminDashboard() {
@@ -108,6 +108,29 @@ export default function AdminDashboard() {
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-white">Tag Manager</h3>
               <p className="text-slate-300 mt-1">Editar las etiquetas (tags) de los productos y sincronizarlas con Printify.</p>
+
+              <div className="mt-4 flex items-center gap-3">
+                <button className="ml-auto inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Abrir</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate('/admin/discount-manager')}
+          onKeyDown={(e) => handleKeyNavigate(e, () => navigate('/admin/discount-manager'))}
+          className="group relative overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 p-6 shadow-lg transform transition hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-400 cursor-pointer"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex-none w-14 h-14 rounded-lg bg-slate-700/60 flex items-center justify-center">
+              <Percent className="w-7 h-7 text-yellow-300" />
+            </div>
+
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-white">Gestión de Cupones</h3>
+              <p className="text-slate-300 mt-1">Crear, editar y eliminar códigos de descuento para clientes.</p>
 
               <div className="mt-4 flex items-center gap-3">
                 <button className="ml-auto inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-3 py-1 rounded-md text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Abrir</button>
