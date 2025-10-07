@@ -125,6 +125,9 @@ export default function DiscountManager() {
       maxUses: code.maxUses ?? ''
     });
     setShowCreate(true);
+    
+    // Scroll al top de la página para mostrar el formulario
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -871,38 +874,41 @@ export default function DiscountManager() {
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-4 space-y-3">
             <h3 className="text-lg font-semibold text-white">Buscar y Filtrar</h3>
             
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="text"
-                value={discountSearchTerm}
-                onChange={(e) => setDiscountSearchTerm(e.target.value)}
-                placeholder="Buscar cupón por código..."
-                className="w-full pl-12 pr-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              />
-            </div>
+            {/* Search Bar and Filters - Row on desktop, column on mobile */}
+            <div className="flex flex-col lg:flex-row gap-3 lg:items-end">
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="text"
+                  value={discountSearchTerm}
+                  onChange={(e) => setDiscountSearchTerm(e.target.value)}
+                  placeholder="Buscar cupón por código..."
+                  className="w-full pl-12 pr-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                />
+              </div>
 
-            {/* Sort Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <label className="flex-1">
-                <span className="text-xs text-slate-400 block mb-1">Ordenar por:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'recent' | 'oldest' | 'most-used' | 'least-used')}
-                  className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
-                >
-                  <option value="recent">Más reciente primero</option>
-                  <option value="oldest">Más antiguo primero</option>
-                  <option value="most-used">Más usado primero</option>
-                  <option value="least-used">Menos usado primero</option>
-                </select>
-              </label>
+              {/* Sort Filters */}
+              <div className="flex flex-col sm:flex-row gap-3 lg:flex-row lg:items-end">
+                <label className="flex-1 sm:flex-1 lg:w-auto lg:min-w-[250px]">
+                  <span className="text-xs text-slate-400 block mb-1">Ordenar por:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'recent' | 'oldest' | 'most-used' | 'least-used')}
+                    className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+                  >
+                    <option value="recent">Más reciente primero</option>
+                    <option value="oldest">Más antiguo primero</option>
+                    <option value="most-used">Más usado primero</option>
+                    <option value="least-used">Menos usado primero</option>
+                  </select>
+                </label>
 
-              <div className="flex items-end">
-                <span className="text-xs text-slate-400 px-3 py-2">
-                  {filteredAndSortedCodes.length} de {discountCodes.length} cupones
-                </span>
+                <div className="flex items-center sm:items-end lg:pb-2">
+                  <span className="text-xs text-slate-400 whitespace-nowrap">
+                    {filteredAndSortedCodes.length} de {discountCodes.length} cupones
+                  </span>
+                </div>
               </div>
             </div>
           </div>
