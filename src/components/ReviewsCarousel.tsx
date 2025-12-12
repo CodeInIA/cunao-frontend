@@ -22,6 +22,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   const [visible, setVisible] = useState<number>(maxVisible);
   const [index, setIndex] = useState(0);
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const [filterPhotosOnly, setFilterPhotosOnly] = useState(false);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const trackRef = React.useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -103,11 +104,16 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     return () => window.removeEventListener('resize', update);
   }, [maxVisible]);
 
+  // Calcular reviews filtradas lo antes posible
+  const displayedReviews = filterPhotosOnly 
+    ? reviews.filter(r => Array.isArray(r?.photos) && r.photos.length > 0)
+    : reviews;
+
   // reset index when reviews/visible change; ensure it's within bounds (index is the start item index)
   useEffect(() => {
-    const maxIdx = Math.max(0, reviews.length - effectiveVisible);
+    const maxIdx = Math.max(0, displayedReviews.length - effectiveVisible);
     setIndex(i => Math.min(i, maxIdx));
-  }, [reviews.length, visible, windowWidth]);
+  }, [displayedReviews.length, visible, windowWidth, filterPhotosOnly]);
 
   // Ensure layout recalculation (centering) after reviews are loaded or when
   // the container size changes (images/fonts may change layout after first paint).
@@ -118,7 +124,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     const trigger = () => window.requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
     const t = window.setTimeout(trigger, 50);
     return () => clearTimeout(t);
-  }, [reviews.length]);
+  }, [displayedReviews.length]);
 
   // Observe container size changes and trigger the same recalculation. This
   // covers cases where images load after mount and change the layout.
@@ -136,7 +142,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   const effectiveVisible = windowWidth < 640 ? 1 : visible;
 
   // navigation: index is the start item index (leftmost visible card). Move one item at a time.
-  const maxIndex = Math.max(0, reviews.length - effectiveVisible);
+  const maxIndex = Math.max(0, displayedReviews.length - effectiveVisible);
   const prev = () => setIndex(i => Math.max(0, i - 1));
   const next = () => setIndex(i => Math.min(maxIndex, i + 1));
   const canPrev = index > 0;
@@ -191,7 +197,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   const [activeImage, setActiveImage] = useState(0);
   // modal navigation availability (defined after activeCard)
   const canPrevModal = activeCard > 0;
-  const canNextModal = activeCard < Math.max(0, reviews.length - 1);
+  const canNextModal = activeCard < Math.max(0, displayedReviews.length - 1);
   // touch/swipe refs for carousel and modal
   const carouselTouchStartX = React.useRef<number | null>(null);
   const carouselTouchDeltaX = React.useRef<number>(0);
@@ -257,7 +263,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     const delta = modalTouchDeltaX.current || 0;
     const threshold = 40; // px
     if (delta > threshold) changeActiveCardAnimated(Math.max(0, activeCard - 1));
-    else if (delta < -threshold) changeActiveCardAnimated(Math.min(reviews.length - 1, activeCard + 1));
+    else if (delta < -threshold) changeActiveCardAnimated(Math.min(displayedReviews.length - 1, activeCard + 1));
     modalTouchStartX.current = null;
     modalTouchDeltaX.current = 0;
   };
@@ -297,9 +303,9 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
       if (e.key === 'Escape') setModalOpen(false);
       if (e.key === 'ArrowRight') {
         // advance image or card
-        const imgs = reviews[activeCard]?.photos || [];
+        const imgs = displayedReviews[activeCard]?.photos || [];
         if (activeImage < imgs.length - 1) changeActiveImageAnimated(activeImage + 1);
-        else changeActiveCardAnimated(Math.min(reviews.length - 1, activeCard + 1));
+        else changeActiveCardAnimated(Math.min(displayedReviews.length - 1, activeCard + 1));
       }
       if (e.key === 'ArrowLeft') {
         if (activeImage > 0) changeActiveImageAnimated(activeImage - 1);
@@ -308,7 +314,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [modalOpen, activeCard, activeImage, reviews]);
+  }, [modalOpen, activeCard, activeImage, displayedReviews]);
 
   // prevent background scroll when modal is open
   useEffect(() => {
@@ -326,10 +332,9 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     if (!modalOpen) return;
     setActiveImage(0);
   }, [activeCard, modalOpen]);
-
   // Compute widths and center offset. For non-mobile (>=640) we always center the visible group
-  const totalTrackWidth = itemWidth ? itemWidth * reviews.length + (itemGap ? itemGap * (reviews.length - 1) : 0) : undefined;
-  const visibleGroupWidth = itemWidth ? itemWidth * Math.min(effectiveVisible, reviews.length) + (itemGap ? itemGap * Math.max(0, Math.min(effectiveVisible, reviews.length) - 1) : 0) : undefined;
+  const totalTrackWidth = itemWidth ? itemWidth * displayedReviews.length + (itemGap ? itemGap * (displayedReviews.length - 1) : 0) : undefined;
+  const visibleGroupWidth = itemWidth ? itemWidth * Math.min(effectiveVisible, displayedReviews.length) + (itemGap ? itemGap * Math.max(0, Math.min(effectiveVisible, displayedReviews.length) - 1) : 0) : undefined;
 
   let transformValue: string;
   if (itemWidth) {
@@ -350,15 +355,19 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     display: 'flex',
     transition: isDragging ? 'none' : 'transform 300ms cubic-bezier(.2,.9,.2,1)',
     transform: transformValue,
-    width: itemWidth ? `${totalTrackWidth}px` : `${(reviews.length * 100) / effectiveVisible}%`,
+    width: itemWidth ? `${totalTrackWidth}px` : `${(displayedReviews.length * 100) / effectiveVisible}%`,
     gap: itemGap ? `${itemGap}px` : undefined,
   };
 
   if (reviews.length === 0) return null;
 
-  // average rating for header
-  const averageRating = reviews.length ? reviews.reduce((s, r) => s + (Number(r?.rating) || 0), 0) / reviews.length : 0;
+  // Si no hay reviews que mostrar después del filtro, retornar null
+  if (displayedReviews.length === 0) return null;
+
+  // average rating for header (usando reviews filtradas)
+  const averageRating = displayedReviews.length ? displayedReviews.reduce((s, r) => s + (Number(r?.rating) || 0), 0) / displayedReviews.length : 0;
   const avgRounded = Math.round(averageRating * 10) / 10; // one decimal
+  const reviewsWithPhotos = reviews.filter(r => Array.isArray(r?.photos) && r.photos.length > 0).length;
 
 
 
@@ -389,8 +398,26 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               sx={{ color: 'var(--tw-color-spanish-yellow, #f5c518)' }} />
             </div>
 
-            <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">de {reviews.length} reseñas</div>
+            <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">de {displayedReviews.length} reseñas</div>
           </div>
+          {/* Botón de filtro para mostrar solo reviews con foto */}
+          {reviewsWithPhotos > 0 && (
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => setFilterPhotosOnly(!filterPhotosOnly)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${
+                  filterPhotosOnly
+                    ? 'bg-spanish-yellow text-slate-900 hover:bg-yellow-400'
+                    : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                </svg>
+                {filterPhotosOnly ? `Mostrando ${displayedReviews.length}` : `Ver con foto (${reviewsWithPhotos})`}
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <div ref={containerRef} className="relative px-4 sm:px-0">
@@ -426,7 +453,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
   {/* viewport: on desktop limit width to the visible group and center it so side cards are clipped */}
   <div className="overflow-hidden" style={{ width: windowWidth >= 640 && typeof visibleGroupWidth === 'number' ? `${visibleGroupWidth}px` : '100%', margin: '0 auto' }}>
   <div ref={trackRef} style={trackStyle} className="flex" onTouchStart={onTrackTouchStart} onTouchMove={onTrackTouchMove} onTouchEnd={onTrackTouchEnd}>
-          {reviews.map((r, idx) => (
+          {displayedReviews.map((r, idx) => (
             <div key={r._id} style={{ width: itemWidth ? `${itemWidth}px` : `${100 / effectiveVisible}%`, flex: '0 0 auto' }} className="px-0 sm:px-2 min-w-0">
               <ReviewCard review={r} onOpen={() => { setModalOpen(true); setActiveCard(idx); setActiveImage(0); }} />
             </div>
@@ -464,7 +491,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
           <button onClick={() => { if (canPrev) prev(); }} disabled={!canPrev} aria-disabled={!canPrev} className={`p-2 rounded-full bg-white/10 text-white ${canPrev ? 'hover:bg-white/20' : 'opacity-40 cursor-not-allowed'}`}>◀</button>
           <div className="flex items-center gap-2">
               {(() => {
-              const pages = Math.max(1, Math.ceil(reviews.length / effectiveVisible));
+              const pages = Math.max(1, Math.ceil(displayedReviews.length / effectiveVisible));
               // activePage: when desktop (index is page) it's just index; on mobile index might be item index so derive page
               const activePage = windowWidth >= 640 ? index : Math.floor(index / effectiveVisible);
               const maxDots = 7; // máximo de puntitos a mostrar entre las flechas en móvil
@@ -537,7 +564,7 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               <div className="w-full bg-transparent rounded-t-lg overflow-hidden flex items-center justify-center relative box-border aspect-[3/4] max-h-[60vh] sm:max-h-[60vh]" onTouchStart={onModalTouchStart} onTouchMove={onModalTouchMove} onTouchEnd={onModalTouchEnd}>
                 {/* overlay arrows for mobile removed - arrows will be placed below the review info */}
                 {(() => {
-                  const rv = reviews[activeCard] || {};
+                  const rv = displayedReviews[activeCard] || {};
                   const photos: string[] = rv.photos || [];
                   const photoFromReview = photos.length > 0 ? photos[activeImage] : null;
                   const fallback = rv.imageUrl || rv.productImage || rv.product_image || null;
@@ -560,13 +587,13 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               {/* mobile controls moved below thumbnails */}
               <div className="mt-3 flex items-center justify-between">
                 <div className="text-slate-200">
-                  <div className="font-semibold">{shortenName(reviews[activeCard]?.authorName)}</div>
-                  {reviews[activeCard]?.productTitle ? (
+                  <div className="font-semibold">{shortenName(displayedReviews[activeCard]?.authorName)}</div>
+                  {displayedReviews[activeCard]?.productTitle ? (
                     <a
                       onClick={(e) => e.stopPropagation()}
-                      href={reviews[activeCard]?.productSlug ? `/producto/${reviews[activeCard].productSlug}` : `/product/${reviews[activeCard].productId}`}
+                      href={displayedReviews[activeCard]?.productSlug ? `/producto/${displayedReviews[activeCard].productSlug}` : `/product/${displayedReviews[activeCard].productId}`}
                       className="text-xs text-slate-400 hover:text-yellow-400 block"
-                      title={`Ver ${reviews[activeCard].productTitle}`}
+                      title={`Ver ${displayedReviews[activeCard].productTitle}`}
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -575,15 +602,15 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
                         textOverflow: 'ellipsis',
                       }}
                     >
-                      {reviews[activeCard].productTitle}
+                      {displayedReviews[activeCard].productTitle}
                     </a>
                   ) : null}
                 </div>
-                <div className="text-spanish-yellow">{reviews[activeCard]?.rating}★</div>
+                <div className="text-spanish-yellow">{displayedReviews[activeCard]?.rating}★</div>
               </div>
               {/* modal: mostrar la fila sutil de talla/color/cantidad (si existe) debajo del título */}
               {(() => {
-                const rv = reviews[activeCard] || {};
+                const rv = displayedReviews[activeCard] || {};
                 const size = rv.size || rv.talla || rv.productSize || rv.product_size;
                 const color = rv.color || rv.colour || rv.productColor || rv.product_color;
                 const qty = rv.quantity || rv.qty || rv.cantidad || rv.amount;
@@ -600,26 +627,26 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
               })()}
 
               {/* modal: mostrar descripción completa (puede hacer scroll si es larga) */}
-              <div className="mt-2 text-slate-300 overflow-auto break-words whitespace-normal max-h-[28vh]">{reviews[activeCard]?.body}</div>
+              <div className="mt-2 text-slate-300 overflow-auto break-words whitespace-normal max-h-[28vh]">{displayedReviews[activeCard]?.body}</div>
               {/* thumbnails for images of this review */}
               <div style={{ transition: 'opacity 180ms ease', opacity: contentVisible ? 1 : 0 }}>
                   <div className="mt-3 flex gap-2 overflow-x-auto">
-                  {(reviews[activeCard]?.photos || []).map((p: string, i: number) => (
+                  {(displayedReviews[activeCard]?.photos || []).map((p: string, i: number) => (
                     <button key={i} onClick={() => changeActiveImageAnimated(i)} className={`w-12 aspect-[3/4] bg-slate-800 rounded overflow-hidden shrink-0 flex items-center justify-center ${i===activeImage ? 'border-2 border-yellow-400' : ''}`}>
                       <img src={p} alt={`thumb-${i}`} className="w-full h-full object-cover block" />
                     </button>
                   ))}
                   {/* If there are no photos but we have a fallback image, show it as a single thumbnail */}
-                  {(!(reviews[activeCard]?.photos || []).length && (reviews[activeCard]?.imageUrl || reviews[activeCard]?.productImage || reviews[activeCard]?.product_image)) ? (
+                  {(!(displayedReviews[activeCard]?.photos || []).length && (displayedReviews[activeCard]?.imageUrl || displayedReviews[activeCard]?.productImage || displayedReviews[activeCard]?.product_image)) ? (
                     <div className={`w-12 aspect-[3/4] bg-slate-800 rounded overflow-hidden shrink-0 flex items-center justify-center border-2 border-yellow-400`}>
-                      <img src={getWebPImageUrl(reviews[activeCard].imageUrl || reviews[activeCard].productImage || reviews[activeCard].product_image)} alt={`thumb-fallback`} className="w-full h-full object-cover block" />
+                      <img src={getWebPImageUrl(displayedReviews[activeCard].imageUrl || displayedReviews[activeCard].productImage || displayedReviews[activeCard].product_image)} alt={`thumb-fallback`} className="w-full h-full object-cover block" />
                     </div>
                   ) : null}
                 </div>
               </div>
             </div>
             <button
-              onClick={() => setActiveCard(c => Math.min(reviews.length - 1, c + 1))}
+              onClick={() => setActiveCard(c => Math.min(displayedReviews.length - 1, c + 1))}
               disabled={!canNextModal}
               aria-disabled={!canNextModal}
               aria-label="Siguiente review"
