@@ -36,10 +36,22 @@ const ReviewsCarousel: React.FC<Props> = ({ productId, maxVisible = 6, arrowEdge
     const fetchReviews = async () => {
       try {
         const data = await apiService.getReviews(productId);
-        // ordenar por rating (desc) y, en caso de empate, por fecha de creación (desc)
+        // Ordenar por: 1) Rating (desc), 2) Con fotos primero, 3) Fecha más reciente (desc)
         const sorted = (Array.isArray(data) ? data.slice() : []).sort((a: any, b: any) => {
-          const ra = (Number(b?.rating) || 0) - (Number(a?.rating) || 0);
-          if (ra !== 0) return ra;
+          // 1. Comparar por rating (descendente)
+          const ratingA = Number(a?.rating) || 0;
+          const ratingB = Number(b?.rating) || 0;
+          const ratingDiff = ratingB - ratingA;
+          if (ratingDiff !== 0) return ratingDiff;
+          
+          // 2. Si tienen el mismo rating, las con fotos primero
+          const hasPhotosA = Array.isArray(a?.photos) && a.photos.length > 0;
+          const hasPhotosB = Array.isArray(b?.photos) && b.photos.length > 0;
+          if (hasPhotosA !== hasPhotosB) {
+            return hasPhotosB ? 1 : -1; // B (con fotos) primero si tiene fotos
+          }
+          
+          // 3. Si ambas tienen o no tienen fotos, ordenar por fecha (más reciente primero)
           const dateB = new Date(b?.createdAt || b?.created_at || 0).getTime();
           const dateA = new Date(a?.createdAt || a?.created_at || 0).getTime();
           return dateB - dateA;
