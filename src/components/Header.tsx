@@ -443,7 +443,7 @@ export const Header: React.FC = () => {
                 <button aria-label="Cerrar" onClick={() => closeNewsletter(false)} className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/10 transition-colors">
                   <X size={18} />
                 </button>
-                <h3 className="text-lg font-semibold mb-2 text-center pr-5">Dame tu mail y te mando las mejores perlas del cuñao</h3>
+                <h3 className="text-lg font-semibold mb-2 text-center pr-5">Dame tu mail y te mando las mejores perlas del cuñadismo</h3>
                 <p className="text-sm text-slate-300 mb-4 text-center">Es para las frases de cuñao semanales: te enviamos consejos, trucos y perlas para ser el mejor cuñao de España. Nada de spam.</p>
                 <form onSubmit={submitNewsletter} className="space-y-3">
                   <div className="w-full">
