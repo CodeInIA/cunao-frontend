@@ -340,7 +340,7 @@ export const Footer: React.FC = () => {
         <div className="border-t border-slate-700 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-slate-400 mb-4 md:mb-0">
-              © 2025 Cuñadismo Ilustrado. Todos los derechos reservados.
+              © 2026 Cuñadismo Ilustrado. Todos los derechos reservados.
             </div>
             
             <div className="flex space-x-6 text-sm">
