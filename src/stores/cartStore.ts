@@ -108,7 +108,7 @@ export const useCartStore = create<CartStore>()(
         if (!sizeOption || !colorOption) return;
 
         const newVariant = product.variants?.find(v => 
-          v.is_enabled && v.options.includes(sizeOption.id) && v.options.includes(colorOption.id)
+          v.is_enabled && v.is_available && v.options.includes(sizeOption.id) && v.options.includes(colorOption.id)
         );
 
         if (!newVariant || newVariant.id === oldVariantId) return;

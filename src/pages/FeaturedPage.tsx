@@ -20,7 +20,7 @@ export const FeaturedPage: React.FC = () => {
 
   const handleAddToCart = (product: Product) => {
     // Obtener el precio real del producto
-    const enabledVariants = (product.variants || []).filter(v => v?.is_enabled);
+    const enabledVariants = (product.variants || []).filter(v => v?.is_enabled && v?.is_available !== false);
     const minPrice = enabledVariants.length > 0 
       ? Math.min(...enabledVariants.map(v => v.price).filter(p => typeof p === 'number'))
       : 1999; // fallback en centavos

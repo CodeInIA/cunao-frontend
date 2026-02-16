@@ -19,6 +19,7 @@ export const ProductDetailPage: React.FC = () => {
 
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: number }>({});
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [isVariantOutOfStock, setIsVariantOutOfStock] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState<ProductImage | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -117,6 +118,34 @@ export const ProductDetailPage: React.FC = () => {
     return { colors: availableColors, sizes: availableSizes };
   }, [currentProduct?.variants, allProductOptions]);
 
+  // Determinar qué combinaciones de color+talla están en stock
+  const isOptionInStock = useMemo(() => {
+    if (!currentProduct?.variants) return { colors: new Map(), sizes: new Map(), combo: new Map() };
+    const colorsInStock = new Map<number, boolean>();
+    const sizesInStockForColor = new Map<string, boolean>(); // key: "colorId-sizeId"
+    
+    // Un color está disponible si al menos una variante con ese color tiene is_available && is_enabled
+    for (const color of allProductOptions.colors) {
+      const hasAvailable = currentProduct.variants.some(v => 
+        v.is_enabled && v.is_available && v.options.includes(color.id)
+      );
+      colorsInStock.set(color.id, hasAvailable);
+    }
+    
+    // Para cada combinación color-talla, verificar si está en stock
+    for (const color of allProductOptions.colors) {
+      for (const size of allProductOptions.sizes) {
+        const variant = currentProduct.variants.find(v => 
+          v.is_enabled && v.options.includes(color.id) && v.options.includes(size.id)
+        );
+        const key = `${color.id}-${size.id}`;
+        sizesInStockForColor.set(key, variant ? variant.is_available : false);
+      }
+    }
+    
+    return { colors: colorsInStock, sizes: sizesInStockForColor };
+  }, [currentProduct?.variants, allProductOptions]);
+
   const selectedColorName = useMemo(() => {
     return allProductOptions.colors?.find(c => c.id === selectedOptions.color)?.title;
   }, [selectedOptions.color, allProductOptions.colors]);
@@ -158,13 +187,19 @@ export const ProductDetailPage: React.FC = () => {
         // Prioridad 2: Cargar la variante marcada como "default" por Printify
         if (!variantToSelect) {
             const defaultVariant = currentProduct.variants.find(v => v.is_default && v.is_enabled);
-            if (defaultVariant) variantToSelect = defaultVariant;
+            if (defaultVariant) {
+              variantToSelect = defaultVariant;
+              setIsVariantOutOfStock(!defaultVariant.is_available);
+            }
         }
 
         // Prioridad 3: Cargar la primera variante disponible como último recurso
         if (!variantToSelect) {
             const firstAvailableVariant = currentProduct.variants.find(v => v.is_enabled);
-            if (firstAvailableVariant) variantToSelect = firstAvailableVariant;
+            if (firstAvailableVariant) {
+              variantToSelect = firstAvailableVariant;
+              setIsVariantOutOfStock(!firstAvailableVariant.is_available);
+            }
         }
         
         // Si hemos encontrado una variante, establecemos su estado
@@ -203,6 +238,8 @@ export const ProductDetailPage: React.FC = () => {
         v.options.includes(selectedOptions.size)
       );
       setSelectedVariant(variant || null);
+      // Comprobar si la variante está agotada (is_enabled pero no is_available)
+      setIsVariantOutOfStock(variant ? !variant.is_available : false);
     }
   }, [selectedOptions, currentProduct]);
 
@@ -719,16 +756,18 @@ export const ProductDetailPage: React.FC = () => {
                 Color: <span className="font-normal text-white capitalize">{selectedColorName}</span>
               </h3>
               <div className="flex flex-wrap gap-3">
-                {availableOptions.colors.map((color: any) => (
+                {availableOptions.colors.map((color: any) => {
+                  const colorInStock = isOptionInStock.colors.get(color.id) !== false;
+                  return (
                   <button
                     key={color.id}
                     onClick={() => handleOptionChange('color', color.id)}
-                    className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center ${
+                    className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center relative ${
                       selectedOptions.color === color.id
                         ? 'border-spanish-yellow ring-2 ring-spanish-yellow'
                         : 'border-slate-600 hover:border-slate-400'
-                    }`}
-                    title={color.title}
+                    } ${!colorInStock ? 'opacity-50' : ''}`}
+                    title={color.title + (!colorInStock ? ' (Agotado)' : '')}
                   >
                     <div
                       className="w-8 h-8 rounded-full"
@@ -737,8 +776,14 @@ export const ProductDetailPage: React.FC = () => {
                     {selectedOptions.color === color.id && (
                       <Check size={16} className="text-white absolute mix-blend-difference" />
                     )}
+                    {!colorInStock && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-10 h-0.5 bg-red-500 rotate-45 absolute" />
+                      </div>
+                    )}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -758,20 +803,34 @@ export const ProductDetailPage: React.FC = () => {
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {availableOptions.sizes.map((size: any) => (
+                {availableOptions.sizes.map((size: any) => {
+                  const comboKey = `${selectedOptions.color}-${size.id}`;
+                  const sizeInStock = isOptionInStock.sizes.get(comboKey) !== false;
+                  return (
                   <button
                     key={size.id}
-                    onClick={() => handleOptionChange('size', size.id)}
-                    className={`px-4 py-2 rounded-lg border-2 transition-colors font-semibold ${
-                      selectedOptions.size === size.id
-                        ? 'bg-spanish-yellow text-slate-900 border-spanish-yellow'
-                        : 'bg-slate-800 text-slate-300 border-slate-600 hover:border-slate-400'
+                    onClick={() => sizeInStock && handleOptionChange('size', size.id)}
+                    disabled={!sizeInStock}
+                    className={`px-4 py-2 rounded-lg border-2 transition-colors font-semibold relative ${
+                      !sizeInStock
+                        ? 'bg-slate-800/50 text-slate-500 border-slate-700 cursor-not-allowed line-through'
+                        : selectedOptions.size === size.id
+                          ? 'bg-spanish-yellow text-slate-900 border-spanish-yellow'
+                          : 'bg-slate-800 text-slate-300 border-slate-600 hover:border-slate-400'
                     }`}
+                    title={!sizeInStock ? `${size.title} - Agotado` : size.title}
                   >
                     {size.title}
+                    {!sizeInStock && (
+                      <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                        Agotado
+                      </span>
+                    )}
                   </button>
-                ))}
+                  );
+                })}
               </div>
+
             </div>
           )}
           <div className="mb-8">
@@ -788,11 +847,15 @@ export const ProductDetailPage: React.FC = () => {
           </div>
           <button
             onClick={handleAddToCart}
-            disabled={!selectedVariant}
-            className="w-full md:w-auto bg-spanish-yellow text-slate-900 font-bold px-8 py-4 rounded-lg shadow border-2 border-spanish-yellow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:bg-yellow-400 hover:scale-105 hover:shadow-lg hover:text-slate-900"
+            disabled={!selectedVariant || isVariantOutOfStock}
+            className={`w-full md:w-auto font-bold px-8 py-4 rounded-lg shadow border-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+              isVariantOutOfStock
+                ? 'bg-red-600/20 text-red-400 border-red-600/50'
+                : 'bg-spanish-yellow text-slate-900 border-spanish-yellow hover:bg-yellow-400 hover:scale-105 hover:shadow-lg hover:text-slate-900'
+            }`}
           >
             <ShoppingCart size={20} />
-            {selectedVariant ? 'Añadir al carrito' : 'Selecciona Talla y Color'}
+            {isVariantOutOfStock ? 'Agotado' : selectedVariant ? 'Añadir al carrito' : 'Selecciona Talla y Color'}
           </button>
           <div className="mt-8">
             <div className="rich-text mb-6" dangerouslySetInnerHTML={{ __html: descriptionMainHtml }} />

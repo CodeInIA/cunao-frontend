@@ -108,6 +108,23 @@ export const CartSidebar: React.FC = () => {
                 
                 // Obtener la imagen correcta para esta variante específica
                 const currentVariant = product.variants?.find(v => v.id === item.variantId);
+                const currentVariantOutOfStock = currentVariant ? !currentVariant.is_available : false;
+
+                // Determinar qué combinaciones están en stock
+                const currentColorId = colorOptions.find(c => c.title === item.color)?.id;
+                const currentSizeId = sizeOptions.find(s => s.title === item.size)?.id;
+                const isSizeInStock = (sizeTitle: string) => {
+                  const sizeId = sizeOptions.find(s => s.title === sizeTitle)?.id;
+                  if (!sizeId || !currentColorId) return true;
+                  const v = enabledVariants.find(v => v.options.includes(currentColorId) && v.options.includes(sizeId));
+                  return v ? v.is_available !== false : false;
+                };
+                const isColorInStock = (colorTitle: string) => {
+                  const colorId = colorOptions.find(c => c.title === colorTitle)?.id;
+                  if (!colorId || !currentSizeId) return true;
+                  const v = enabledVariants.find(v => v.options.includes(colorId) && v.options.includes(currentSizeId));
+                  return v ? v.is_available !== false : false;
+                };
                 const variantImage = currentVariant
                   ? product.images?.find(img => img.variant_ids.includes(currentVariant.id))
                   : null;
@@ -137,28 +154,41 @@ export const CartSidebar: React.FC = () => {
                         <h4 className="font-patriot font-bold text-white mb-2 line-clamp-2">
                           {item.title}
                         </h4>
+                        {currentVariantOutOfStock && (
+                          <p className="text-[11px] text-red-400 font-semibold mb-1">⚠ Variante agotada — cambia talla o color</p>
+                        )}
                         <div className="flex items-center gap-2">
                           <label className="text-xs text-slate-400 w-10">Talla:</label>
                           <select
-                            className="bg-slate-700 text-white text-xs rounded px-2 py-1"
+                            className={`bg-slate-700 text-white text-xs rounded px-2 py-1 ${currentVariantOutOfStock ? 'ring-1 ring-red-500' : ''}`}
                             value={item.size}
                             onChange={e => updateVariant(item.productId, item.variantId, e.target.value, item.color || '')}
                           >
-                            {sizeOptions.map(size => (
-                              <option key={size.id} value={size.title}>{size.title}</option>
-                            ))}
+                            {sizeOptions.map(size => {
+                              const inStock = isSizeInStock(size.title);
+                              return (
+                                <option key={size.id} value={size.title} disabled={!inStock}>
+                                  {size.title}{!inStock ? ' (Agotado)' : ''}
+                                </option>
+                              );
+                            })}
                           </select>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <label className="text-xs text-slate-400 w-10">Color:</label>
                           <select
-                            className="bg-slate-700 text-white text-xs rounded px-2 py-1"
+                            className={`bg-slate-700 text-white text-xs rounded px-2 py-1 ${currentVariantOutOfStock ? 'ring-1 ring-red-500' : ''}`}
                             value={item.color}
                             onChange={e => updateVariant(item.productId, item.variantId, item.size || '', e.target.value)}
                           >
-                            {colorOptions.map(color => (
-                              <option key={color.id} value={color.title}>{color.title}</option>
-                            ))}
+                            {colorOptions.map(color => {
+                              const inStock = isColorInStock(color.title);
+                              return (
+                                <option key={color.id} value={color.title} disabled={!inStock}>
+                                  {color.title}{!inStock ? ' (Agotado)' : ''}
+                                </option>
+                              );
+                            })}
                           </select>
                         </div>
                       </div>
