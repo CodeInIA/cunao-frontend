@@ -225,7 +225,7 @@ export const ContactPage: React.FC = () => {
 
             <div className="space-y-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center shrink-0">
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -241,7 +241,7 @@ export const ContactPage: React.FC = () => {
 
 
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center shrink-0">
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -256,7 +256,7 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-spanish-red rounded-lg flex items-center justify-center shrink-0">
                   <Clock className="w-6 h-6 text-white" />
                 </div>
                 <div>

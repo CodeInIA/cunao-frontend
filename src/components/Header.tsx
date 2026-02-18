@@ -319,7 +319,7 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Logo: left on desktop, centered on mobile */}
-          <div className="flex items-center flex-shrink-0 min-w-[180px]">
+          <div className="flex items-center shrink-0 min-w-[180px]">
             <BrandLogo size="md" showText={true} onClick={() => closeMenuThen(() => handleNavClick('/'))} />
           </div>
 

@@ -295,7 +295,7 @@ export const CheckoutPage: React.FC = () => {
                   </span>
                 </Listbox.Button>
                 
-                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-slate-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm border border-slate-700">
+                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-slate-800 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm border border-slate-700">
                   {shippingOptions.map((option) => (
                     <Listbox.Option
                       key={option.id}

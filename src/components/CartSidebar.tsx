@@ -52,14 +52,14 @@ export const CartSidebar: React.FC = () => {
     <>
       {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-60 z-50 animate-fade-in-fast"
+        className="fixed inset-0 bg-black/60 z-50 animate-fade-in-fast"
         onClick={closeCart}
       />
 
   {/* Sidebar - Ancho responsivo: full en móvil, md en tablet, más ancho en PC */}
   <div className="fixed right-0 top-0 h-full w-full sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-[45rem] bg-slate-900 z-50 shadow-2xl flex flex-col border-l border-slate-800 animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 shadow-sm flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-b border-slate-800 shadow-sm shrink-0">
           <h2 className="text-xl font-patriot font-bold text-white">
             Tu Carrito ({totalItems})
           </h2>
@@ -73,7 +73,7 @@ export const CartSidebar: React.FC = () => {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-2 lg:p-4 scrollbar-thin scrollbar-thumb-spanish-yellow scrollbar-track-slate-700">
+        <div className="flex-1 overflow-y-auto p-2 lg:p-4 scrollbar-spanish">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <ShoppingBag size={64} className="text-slate-600 mb-4" />
@@ -134,7 +134,7 @@ export const CartSidebar: React.FC = () => {
                   // Contenedor de item: espaciado responsivo
                   <div key={item.variantId} className="flex space-x-4 lg:space-x-6 p-2 md:p-3 bg-slate-800 rounded-lg border border-slate-700 items-start lg:items-center">
                     {/* Imagen: wrapper overflow-hidden con zoom por defecto */}
-                    <div className="w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-52 lg:h-52 xl:w-56 xl:h-56 overflow-hidden rounded-md flex-shrink-0">
+                    <div className="w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-52 lg:h-52 xl:w-56 xl:h-56 overflow-hidden rounded-md shrink-0">
                       {imageToUse ? (
                         <OptimizedImage
                           image={imageToUse}
@@ -213,7 +213,7 @@ export const CartSidebar: React.FC = () => {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-slate-800 p-4 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
+          <div className="border-t border-slate-800 p-4 bg-slate-900/80 backdrop-blur-sm shrink-0">
             <div className="mb-4 text-center">
               {shippingConfig.loading ? (
                 <p className="text-sm text-slate-300 mb-2">Cargando umbral de envío gratuito...</p>

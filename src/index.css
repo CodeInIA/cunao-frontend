@@ -1,8 +1,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Custom dark palette */
+  --color-dark-50: #f8f9fa;
+  --color-dark-100: #e9ecef;
+  --color-dark-200: #dee2e6;
+  --color-dark-300: #ced4da;
+  --color-dark-400: #adb5bd;
+  --color-dark-500: #6c757d;
+  --color-dark-600: #495057;
+  --color-dark-700: #343a40;
+  --color-dark-800: #212529;
+  --color-dark-900: #16181b;
+  --color-dark-950: #0d0f11;
+
+  /* Spanish patriotic accents */
+  --color-spanish-red: #AA151B;
+  --color-spanish-darkred: #8B1117;
+  --color-spanish-yellow: #F1BF00;
+  --color-spanish-gold: #D1A000;
+  --color-spanish-cream: #FFF8DC;
+
+  /* Slate palette override */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  /* Font families */
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Merriweather', serif;
+  --font-display: 'Playfair Display', serif;
+  --font-patriot: 'Merriweather', serif;
+
+  /* Background images */
+  --background-image-spain-flag: linear-gradient(to bottom, #AA151B 0%, #AA151B 25%, #F1BF00 25%, #F1BF00 75%, #AA151B 75%, #AA151B 100%);
+  --background-image-patriot-gradient: linear-gradient(135deg, #AA151B 0%, #F1BF00 50%, #AA151B 100%);
+  --background-image-dark-pattern: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+
+  /* Box shadows */
+  --shadow-dark: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-dark-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
 
 /* Base styles - Tema Oscuro */
 body {
@@ -278,7 +326,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 html {
-  @apply scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-spanish-yellow;
+  scrollbar-width: thin;
+  scrollbar-color: #F1BF00 #334155;
+}
+html::-webkit-scrollbar {
+  width: 10px;
+}
+html::-webkit-scrollbar-track {
+  background: #334155;
+}
+html::-webkit-scrollbar-thumb {
+  background: #F1BF00;
+  border-radius: 9999px;
+  border: 2px solid #334155;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: #d1a000;
 }
 
 /* Scrollbar amarillo consistente para controles que necesiten la estética principal */

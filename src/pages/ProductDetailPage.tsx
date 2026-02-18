@@ -663,7 +663,7 @@ export const ProductDetailPage: React.FC = () => {
                 {galleryImages.map((image, index) => (
                   <div 
                     key={image.src} 
-                    className="w-full h-full flex-shrink-0"
+                    className="w-full h-full shrink-0"
                   >
                     <OptimizedImage
                       image={image}
@@ -701,14 +701,14 @@ export const ProductDetailPage: React.FC = () => {
               flex flex-col gap-2
               overflow-y-auto 
               max-h-[500px] pr-2 
-              scrollbar-thin scrollbar-thumb-spanish-yellow scrollbar-track-slate-700
+              scrollbar-spanish
             `}>
               {galleryImages.map((image) => (
                 <button
                   key={image.src}
                   onClick={() => setCurrentImage(image)}
                   className={`
-                    w-20 h-20 flex-shrink-0
+                    w-20 h-20 shrink-0
                     rounded-lg overflow-hidden transition-all duration-200
                     ${
                       currentImage?.src === image.src
@@ -947,7 +947,7 @@ export const ProductDetailPage: React.FC = () => {
       {/* Modal de guía de tallas */}
       {isSizeGuideModalOpen && sizeTableHtml && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setIsSizeGuideModalOpen(false)}
         >
           <div 

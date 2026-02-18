@@ -79,25 +79,25 @@ export const PrivacyPage: React.FC = () => {
             
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 shrink-0"></span>
                 <span className="text-slate-300">
                   <strong>Procesar pedidos:</strong> Para enviarte tus camisetas cuñao a tiempo
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 shrink-0"></span>
                 <span className="text-slate-300">
                   <strong>Comunicación:</strong> Para enviarte confirmaciones de pedido y actualizaciones
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 shrink-0"></span>
                 <span className="text-slate-300">
                   <strong>Mejorar la experiencia:</strong> Para personalizar tu experiencia de compra
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 shrink-0"></span>
                 <span className="text-slate-300">
                   <strong>Newsletter:</strong> Solo si te suscribes voluntariamente
                 </span>

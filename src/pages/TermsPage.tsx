@@ -68,19 +68,19 @@ export const TermsPage: React.FC = () => {
             
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 shrink-0"></span>
                 <p className="text-slate-300">
                   <strong>Uso autorizado:</strong> Puedes navegar, comprar productos y compartir contenido de forma personal y no comercial.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 shrink-0"></span>
                 <p className="text-slate-300">
                   <strong>Edad mínima:</strong> Debes ser mayor de 18 años. Información adicional sobre menores y consentimiento disponible en nuestra <Link to="/privacidad" className="underline text-spanish-yellow">Política de Privacidad</Link>.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-spanish-red rounded-full mt-2 shrink-0"></span>
                 <p className="text-slate-300">
                   <strong>Cuenta responsable:</strong> Eres responsable de mantener segura tu información de acceso.
                 </p>

@@ -452,7 +452,7 @@ export default function DiscountManager() {
         <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto">
           <Link 
             to="/admin/dashboard" 
-            className="p-2 rounded bg-slate-800 hover:bg-slate-700 flex-shrink-0" 
+            className="p-2 rounded bg-slate-800 hover:bg-slate-700 shrink-0" 
             title="Volver al dashboard"
           >
             <ArrowLeft className="w-5 h-5 text-slate-300" />
@@ -466,7 +466,7 @@ export default function DiscountManager() {
         {!showCreate && (
           <button
             onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 w-full sm:w-auto justify-center flex-shrink-0"
+            className="inline-flex items-center gap-2 bg-yellow-400 text-slate-900 px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 w-full sm:w-auto justify-center shrink-0"
           >
             <Plus className="w-5 h-5" />
             <span className="whitespace-nowrap">Nuevo Cupón</span>
@@ -781,7 +781,7 @@ export default function DiscountManager() {
                       {formData.scheduledActivation && (
                         <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border-2 border-blue-500/30 rounded-xl p-3.5 shadow-inner">
                           <div className="flex items-start gap-2.5">
-                            <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                             </svg>
                             <div className="flex-1">
@@ -847,7 +847,7 @@ export default function DiscountManager() {
                           <div className="space-y-3">
                             {/* Opción: Todos los suscriptores */}
                             <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group p-2 sm:p-3 rounded-lg border-2 transition-all hover:bg-slate-600/20 border-slate-600 hover:border-blue-400/50 has-[:checked]:border-blue-400 has-[:checked]:bg-blue-400/10">
-                              <div className="relative flex-shrink-0">
+                              <div className="relative shrink-0">
                                 <input
                                   type="radio"
                                   name="emailRecipientType"
@@ -875,7 +875,7 @@ export default function DiscountManager() {
 
                             {/* Opción: Lista personalizada */}
                             <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group p-2 sm:p-3 rounded-lg border-2 transition-all hover:bg-slate-600/20 border-slate-600 hover:border-blue-400/50 has-[:checked]:border-blue-400 has-[:checked]:bg-blue-400/10">
-                              <div className="relative flex-shrink-0">
+                              <div className="relative shrink-0">
                                 <input
                                   type="radio"
                                   name="emailRecipientType"
@@ -956,7 +956,7 @@ export default function DiscountManager() {
                                               key={sub.email} 
                                               className="flex items-center gap-3 p-2.5 hover:bg-blue-500/10 rounded-lg cursor-pointer transition-all group border border-transparent hover:border-blue-500/20"
                                             >
-                                              <div className="relative flex-shrink-0">
+                                              <div className="relative shrink-0">
                                                 <input
                                                   type="checkbox"
                                                   checked={selectedEmails.includes(sub.email)}
@@ -985,13 +985,13 @@ export default function DiscountManager() {
                                                 </div>
                                               </div>
                                               <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                <Mail className="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-400 transition-colors flex-shrink-0" />
+                                                <Mail className="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-400 transition-colors shrink-0" />
                                                 <span className="text-sm text-slate-300 group-hover:text-white transition-colors truncate">
                                                   {sub.email}
                                                 </span>
                                               </div>
                                               {selectedEmails.includes(sub.email) && (
-                                                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
+                                                <div className="shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></div>
                                               )}
                                             </label>
                                           ))
@@ -1096,7 +1096,7 @@ export default function DiscountManager() {
                     <div className="space-y-3">
                       {/* Opción: Todos los suscriptores */}
                       <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group p-2 sm:p-3 rounded-lg border-2 transition-all hover:bg-slate-600/20 border-slate-600 hover:border-yellow-400/50 has-[:checked]:border-yellow-400 has-[:checked]:bg-yellow-400/10">
-                        <div className="relative flex-shrink-0">
+                        <div className="relative shrink-0">
                           <input
                             type="radio"
                             name="emailRecipientType"
@@ -1121,7 +1121,7 @@ export default function DiscountManager() {
 
                       {/* Opción: Lista personalizada */}
                       <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group p-2 sm:p-3 rounded-lg border-2 transition-all hover:bg-slate-600/20 border-slate-600 hover:border-yellow-400/50 has-[:checked]:border-yellow-400 has-[:checked]:bg-yellow-400/10">
-                        <div className="relative flex-shrink-0">
+                        <div className="relative shrink-0">
                           <input
                             type="radio"
                             name="emailRecipientType"
@@ -1188,7 +1188,7 @@ export default function DiscountManager() {
                                     key={sub.email} 
                                     className="flex items-center gap-3 p-2.5 hover:bg-yellow-500/10 rounded-lg cursor-pointer transition-all group border border-transparent hover:border-yellow-500/20"
                                   >
-                                    <div className="relative flex-shrink-0">
+                                    <div className="relative shrink-0">
                                       <input
                                         type="checkbox"
                                         checked={selectedEmails.includes(sub.email)}
@@ -1217,13 +1217,13 @@ export default function DiscountManager() {
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                                      <Mail className="w-3.5 h-3.5 text-slate-500 group-hover:text-yellow-400 transition-colors flex-shrink-0" />
+                                      <Mail className="w-3.5 h-3.5 text-slate-500 group-hover:text-yellow-400 transition-colors shrink-0" />
                                       <span className="text-sm text-slate-300 group-hover:text-white transition-colors truncate">
                                         {sub.email}
                                       </span>
                                     </div>
                                     {selectedEmails.includes(sub.email) && (
-                                      <div className="flex-shrink-0 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
+                                      <div className="shrink-0 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
                                     )}
                                   </label>
                                 ))
@@ -1492,14 +1492,14 @@ export default function DiscountManager() {
                   {/* Details Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mt-4">
                     <div className="flex items-center gap-2 text-slate-300 min-w-0">
-                      <Percent className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <Percent className="w-4 h-4 text-yellow-400 shrink-0" />
                       <span className="text-sm truncate">
                         <span className="font-semibold">{code.discountPercentage}%</span> de descuento
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2 text-slate-300 min-w-0">
-                      <TagIcon className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <TagIcon className="w-4 h-4 text-yellow-400 shrink-0" />
                       <span className="text-sm truncate">
                         Aplica a: <span className="font-semibold">
                           {code.appliesTo === 'subtotal' ? 'Subtotal' : 'Envío'}
@@ -1508,7 +1508,7 @@ export default function DiscountManager() {
                     </div>
 
                     <div className="flex items-center gap-2 text-slate-300 min-w-0">
-                      <Calendar className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <Calendar className="w-4 h-4 text-yellow-400 shrink-0" />
                       <span className="text-sm truncate">
                         {formatDate(code.expiryDate)}
                       </span>
@@ -1516,7 +1516,7 @@ export default function DiscountManager() {
 
                     {/* Usage Stats */}
                     <div className="flex items-center gap-2 text-slate-300 min-w-0">
-                      <svg className="w-4 h-4 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-yellow-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
                       <span className="text-sm truncate">
@@ -1603,7 +1603,7 @@ export default function DiscountManager() {
             {/* Header */}
             <div className="p-4 md:p-6 border-b border-slate-700">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
                   <Trash2 className="w-5 h-5 md:w-6 md:h-6 text-red-400" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -1625,7 +1625,7 @@ export default function DiscountManager() {
                 </div>
               </div>
               <p className="text-xs text-red-400 mt-4 flex items-start gap-2">
-                <span className="text-base md:text-lg flex-shrink-0">⚠️</span>
+                <span className="text-base md:text-lg shrink-0">⚠️</span>
                 <span>Los clientes ya no podrán usar este cupón de descuento.</span>
               </p>
             </div>
@@ -1695,7 +1695,7 @@ export default function DiscountManager() {
                 <div className="space-y-2">
                   {code.emailsSentTo?.map((email, index) => (
                     <div key={index} className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-indigo-500/30 transition-colors">
-                      <div className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center shrink-0">
                         <Mail className="w-4 h-4 text-indigo-400" />
                       </div>
                       <span className="text-sm text-slate-300 flex-1 break-all">{email}</span>
@@ -1767,7 +1767,7 @@ export default function DiscountManager() {
                   {code.usedBy?.map((usage, index) => (
                     <div key={index} className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:border-green-500/30 transition-colors">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center shrink-0">
                           <span className="text-green-400 font-semibold text-sm">{usage.name ? usage.name.charAt(0).toUpperCase() : '?'}</span>
                         </div>
                         <div className="flex-1 min-w-0">

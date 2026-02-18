@@ -285,7 +285,7 @@ export const Footer: React.FC = () => {
             <h4 className="text-lg font-semibold mb-4 text-white">Contacto</h4>
               <ul className="space-y-3">
               <li className="flex items-start gap-2">
-                <Mail size={16} className="text-spanish-yellow w-4 h-4 flex-shrink-0 mt-1" />
+                <Mail size={16} className="text-spanish-yellow w-4 h-4 shrink-0 mt-1" />
                 <a 
                   href={`mailto:${config.EMAILS.main}`}
                   className="text-slate-300 hover:text-spanish-yellow transition-colors duration-300 hover:underline max-w-full break-words"
@@ -322,7 +322,7 @@ export const Footer: React.FC = () => {
                   <button 
                     type="submit"
                     disabled={isSubscribing}
-                    className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md lg:rounded-l-none lg:rounded-r-md lg:-ml-px w-full lg:w-auto mt-3 lg:mt-0 flex-shrink-0 border-l-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-spanish-yellow text-slate-900 font-semibold hover:bg-yellow-400 transition-colors rounded-md lg:rounded-l-none lg:rounded-r-md lg:-ml-px w-full lg:w-auto mt-3 lg:mt-0 shrink-0 border-l-0 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{minWidth: 0}}
                   >
                     {isSubscribing ? 'Suscribiendo...' : 'Suscribirse'}

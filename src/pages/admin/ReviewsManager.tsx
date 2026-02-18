@@ -617,7 +617,7 @@ export default function ReviewsManager() {
             <div key={r._id} className="p-0 relative border rounded bg-slate-800 text-slate-100 w-full mx-auto min-w-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 32px)', boxSizing: 'border-box' }}>
               <div className="flex">
                 {/* Left: variant image full height */}
-                <div className="flex-shrink-0 w-28 sm:w-32 bg-slate-700 flex items-center justify-center">
+                <div className="shrink-0 w-28 sm:w-32 bg-slate-700 flex items-center justify-center">
                   <img src={r.imageUrl || '/logo/logo-sin-letras.png'} alt={r.productTitle || r.productId} className="w-full h-full object-contain p-2" style={{ maxHeight: '160px' }} />
                 </div>
                 <div className="p-4 flex-1 min-w-0">
@@ -851,7 +851,7 @@ export default function ReviewsManager() {
                   <div className="mt-3 admin-modal">
                       <div className="flex gap-3 px-1 py-2 overflow-x-auto" style={{ alignItems: 'center' }}>
                         {previews.map((u,i)=> (
-                          <div key={i} className={`relative rounded overflow-hidden bg-slate-700 flex-shrink-0 w-[60px] h-[60px] sm:w-[72px] sm:h-[72px]`} draggable data-thumb data-index={String(i)} onDragStart={(e)=>handlePreviewDragStart(i,e)} onDragOver={(e)=>handlePreviewDragOver(i,e)} onDrop={(e)=>handlePreviewDrop(i,e)} onTouchStart={(e)=>handleTouchStart(i,e)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+                          <div key={i} className={`relative rounded overflow-hidden bg-slate-700 shrink-0 w-[60px] h-[60px] sm:w-[72px] sm:h-[72px]`} draggable data-thumb data-index={String(i)} onDragStart={(e)=>handlePreviewDragStart(i,e)} onDragOver={(e)=>handlePreviewDragOver(i,e)} onDrop={(e)=>handlePreviewDrop(i,e)} onTouchStart={(e)=>handleTouchStart(i,e)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
                             <img src={u} className={`w-full h-full object-cover ${dragOverIndex===i? 'ring-4 ring-yellow-400 ring-inset':''}`} style={{ objectPosition: 'center' }} />
                           <div className="absolute top-1 left-1 bg-yellow-400 text-slate-900 rounded-full w-5 h-5 sm:w-5 sm:h-5 flex items-center justify-center text-xs font-semibold">{i+1}</div>
                           <button type="button" onClick={()=>removeFileAt(i)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 sm:w-5 sm:h-5 text-xs">×</button>

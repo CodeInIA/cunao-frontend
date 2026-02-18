@@ -33,7 +33,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
   const LogoComponent = () => (
     <div className={`flex items-center space-x-3 ${className}`}>
       {/* Logo de la marca */}
-      <div className={`${sizeClasses[size]} relative flex-shrink-0`}>
+      <div className={`${sizeClasses[size]} relative shrink-0`}>
         <img 
           src="/logo-sin-letras.webp" 
           alt="Cuñadismo Ilustrado Logo" 

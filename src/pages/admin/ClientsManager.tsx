@@ -433,7 +433,7 @@ export default function ClientsManager() {
                     </div>
 
                     <div className="flex items-center gap-2 ml-3">
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         {client.emailMarketing ? (
                           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-700"><Mail className="w-3 h-3" />Sí</span>
                         ) : (
@@ -463,7 +463,7 @@ export default function ClientsManager() {
       {selectedClient && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center md:p-4 z-50 overflow-y-auto">
           <div className="bg-slate-800 md:rounded-xl max-w-5xl w-full h-full md:h-auto md:max-h-[90vh] md:my-8 flex flex-col">
-            <div className="bg-slate-900 p-4 md:p-6 border-b border-slate-700 flex items-center justify-between md:rounded-t-xl flex-shrink-0">
+            <div className="bg-slate-900 p-4 md:p-6 border-b border-slate-700 flex items-center justify-between md:rounded-t-xl shrink-0">
               <h3 className="text-xl md:text-2xl font-bold text-white">Detalles del Cliente</h3>
               <button onClick={handleCloseModal} className="p-2 hover:bg-slate-800 rounded-lg transition">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -539,9 +539,9 @@ export default function ClientsManager() {
                               {order.items.map((item: any, itemIdx: number) => (
                                 <div key={itemIdx} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-slate-700/50 p-3 rounded-lg">
                                   {item.productImage ? (
-                                    <img src={item.productImage} alt={item.productTitle} className="w-20 h-20 object-cover rounded-lg border-2 border-slate-600 flex-shrink-0 mx-auto sm:mx-0" />
+                                    <img src={item.productImage} alt={item.productTitle} className="w-20 h-20 object-cover rounded-lg border-2 border-slate-600 shrink-0 mx-auto sm:mx-0" />
                                   ) : (
-                                    <div className="w-20 h-20 bg-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0"><Package className="w-8 h-8 text-slate-400" /></div>
+                                    <div className="w-20 h-20 bg-slate-600 rounded-lg flex items-center justify-center shrink-0 mx-auto sm:mx-0"><Package className="w-8 h-8 text-slate-400" /></div>
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <p className="text-base text-white font-medium truncate">{item.productTitle}</p>
@@ -563,7 +563,7 @@ export default function ClientsManager() {
                                       )}
                                     </div>
                                   </div>
-                                  <div className="text-center sm:text-right flex-shrink-0"><p className="text-lg text-white font-bold">{(item.price * item.quantity).toFixed(2)}€</p></div>
+                                  <div className="text-center sm:text-right shrink-0"><p className="text-lg text-white font-bold">{(item.price * item.quantity).toFixed(2)}€</p></div>
                                 </div>
                               ))}
                             </div>
