@@ -18,13 +18,13 @@ function PaymentMethodIcon({ method, size = 'md' }: { method?: PaymentMethodInfo
 
   if (!method) return <span className="text-sm text-slate-400">No disponible</span>;
 
-  const cfg: Record<string, { label: string; img?: string; whiteBg?: boolean }> = {
+  const cfg: Record<string, { label: string; img?: string }> = {
     card:       { label: 'Tarjeta' },
     visa:       { label: 'Visa',        img: '/payment-methods/visa.svg' },
     mastercard: { label: 'Mastercard',  img: '/payment-methods/mastercard.svg' },
     google_pay: { label: 'Google Pay',  img: '/payment-methods/google-pay.svg' },
     apple_pay:  { label: 'Apple Pay',   img: '/payment-methods/apple-pay.svg' },
-    link:       { label: 'Stripe Link', img: '/payment-methods/link.svg', whiteBg: true },
+    link:       { label: 'Stripe Link', img: '/payment-methods/link.svg' },
     paypal:     { label: 'PayPal',      img: '/payment-methods/paypal.svg' },
     klarna:     { label: 'Klarna',      img: '/payment-methods/klarna.svg' },
     amazon_pay: { label: 'Amazon Pay',  img: '/payment-methods/amazon-pay.svg' },
@@ -36,11 +36,9 @@ function PaymentMethodIcon({ method, size = 'md' }: { method?: PaymentMethodInfo
 
   if (!providerEntry) return <span className="text-sm text-slate-300 font-medium">{method.provider}</span>;
 
-  const renderImg = (entry: { label: string; img?: string; whiteBg?: boolean }) =>
+  const renderImg = (entry: { label: string; img?: string }) =>
     entry.img
-      ? entry.whiteBg
-        ? <span className="inline-flex items-center justify-center bg-white rounded-md px-2 py-0.5"><img src={entry.img} alt={entry.label} className={`${imgClass} object-contain`} /></span>
-        : <img src={entry.img} alt={entry.label} className={`${imgClass} object-contain`} />
+      ? <img src={entry.img} alt={entry.label} className={`${imgClass} object-contain`} />
       : <CreditCard className={`${iconClass} text-slate-200`} />;
 
   return (
@@ -91,6 +89,7 @@ interface ClientStats {
   ordersByStatus: { [key: string]: number };
   monthlyRevenue: Array<{ month: string; revenue: number; orders: number }>;
   topClients: Array<{ id: string; name: string; email: string; totalSpent: number; orderCount: number }>;
+  paymentMethodStats?: Array<{ provider: string; count: number }>;
 }
 
 export default function ClientsManager() {
@@ -357,6 +356,32 @@ export default function ClientsManager() {
                 }) : <p className="text-slate-400 text-center py-4">No hay datos</p>}
               </div>
             </div>
+
+            {/* Métodos de pago */}
+            {stats.paymentMethodStats && stats.paymentMethodStats.length > 0 && (
+              <div className="bg-slate-800 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><CreditCard className="w-5 h-5 text-yellow-400" />Métodos de Pago</h3>
+                <div className="space-y-3">
+                  {(() => {
+                    const total = stats.paymentMethodStats!.reduce((s, p) => s + p.count, 0);
+                    const max = Math.max(...stats.paymentMethodStats!.map(p => p.count));
+                    return stats.paymentMethodStats!.map((item) => (
+                      <div key={item.provider} className="flex items-center gap-2">
+                        <div className="w-10 flex-shrink-0">
+                          <PaymentMethodBadge method={{ provider: item.provider }} size="sm" />
+                        </div>
+                        <div className="flex-1 bg-slate-700 rounded-full h-5 overflow-hidden">
+                          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full flex items-center justify-end px-2" style={{ width: `${Math.max(10, (item.count / max) * 100)}%` }}>
+                            <span className="text-xs font-semibold text-white">{item.count}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-slate-400 w-10 text-right">{total > 0 ? ((item.count / total) * 100).toFixed(0) : 0}%</div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+            )}
 
             {/* Estado de pedidos */}
             <div className="bg-slate-800 rounded-lg p-6">

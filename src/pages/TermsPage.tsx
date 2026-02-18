@@ -142,15 +142,17 @@ export const TermsPage: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-semibold text-spanish-yellow mb-3">Métodos de Pago</h3>
-                  <ul className="space-y-1 text-slate-300">
-                    <li>✓ Tarjetas de crédito/débito (Visa, Mastercard)</li>
-                    <li>✓ Amazon Pay</li>
-                    <li>✓ Apple Pay</li>
-                    <li>✓ Google Pay</li>
-                    <li>✓ Link (Stripe)</li>
-                    <li>✓ PayPal</li>
-                    <li>✓ Klarna (pago a plazos — solo pedidos ≥ €65)</li>
-                  </ul>
+                  <div className="flex flex-wrap gap-4 items-center">
+                    <img src="/payment-methods/visa.svg" alt="Visa" title="Visa" className="h-12 w-20 object-contain" />
+                    <img src="/payment-methods/mastercard.svg" alt="Mastercard" title="Mastercard" className="h-12 w-20 object-contain" />
+                    <img src="/payment-methods/paypal.svg" alt="PayPal" title="PayPal" className="h-12 w-20 object-contain" />
+                    <img src="/payment-methods/google-pay.svg" alt="Google Pay" title="Google Pay" className="h-12 w-20 object-contain" />
+                    <img src="/payment-methods/apple-pay.svg" alt="Apple Pay" title="Apple Pay" className="h-12 w-20 object-contain" />
+                    <img src="/payment-methods/link.svg" alt="Stripe Link" title="Stripe Link" className="h-12 w-20 object-contain" />
+                    <img src="/payment-methods/klarna.svg" alt="Klarna" title="Klarna" className="h-12 w-20 object-contain" />
+                    <img src="/payment-methods/amazon-pay.svg" alt="Amazon Pay" title="Amazon Pay" className="h-12 w-20 object-contain" />
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">Klarna solo disponible en pedidos ≥ €65</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-spanish-yellow mb-3">Política de Precios</h3>
@@ -174,7 +176,7 @@ export const TermsPage: React.FC = () => {
             <div className="bg-slate-700 p-6 rounded-lg">
               <p className="text-slate-300 mb-3">La información detallada sobre plazos, costes y condiciones de envío está disponible en nuestra página de <Link to="/envios" className="underline text-spanish-yellow">Envíos y Devoluciones</Link>. Consulta allí los plazos por zona, tarifas actualizadas y la política de envío gratuito.</p>
               <div className="mt-4">
-                <button onClick={() => navigateTo('/envios')} className="px-5 py-3 bg-spanish-red text-white rounded-lg">Ver información de envíos</button>
+                <button onClick={() => navigateTo('/envios')} className="px-5 py-3 bg-spanish-red text-white rounded-lg font-semibold hover:bg-red-700 transition-colors cursor-pointer border-none">Ver información de envíos</button>
               </div>
             </div>
           </section>
