@@ -43,12 +43,12 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
       
       {showText && (
         <div className="flex flex-col">
-          <h1 className={`${textSizeClasses[size]} font-patriot font-bold text-white leading-tight`}>
+          <span className={`${textSizeClasses[size]} font-patriot font-bold text-white leading-tight`}>
             Cuñadismo
-          </h1>
-          <h2 className={`${size === 'sm' ? 'text-sm' : size === 'md' ? 'text-base' : 'text-lg'} font-patriot text-spanish-yellow leading-tight -mt-1`}>
+          </span>
+          <span className={`${size === 'sm' ? 'text-sm' : size === 'md' ? 'text-base' : 'text-lg'} font-patriot text-spanish-yellow leading-tight -mt-1`}>
             Ilustrado
-          </h2>
+          </span>
         </div>
       )}
     </div>
