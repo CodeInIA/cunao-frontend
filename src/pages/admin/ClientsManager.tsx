@@ -5,10 +5,74 @@ import { config } from '../../config';
 import { 
   Users, Search, Mail, ShoppingBag, ChevronLeft, ChevronRight,
   Eye, Filter, TrendingUp, UserCheck, Package, Euro, Calendar, BarChart3,
-  UserPlus, Repeat, Target, Award, Globe, Activity
+  UserPlus, Repeat, Target, Award, Globe, Activity, CreditCard
 } from 'lucide-react';
 
 axios.defaults.withCredentials = true;
+
+type PaymentMethodInfo = { provider: string; cardBrand?: string };
+
+function PaymentMethodIcon({ method, size = 'md' }: { method?: PaymentMethodInfo; size?: 'sm' | 'md' }) {
+  const imgClass = size === 'sm' ? 'w-10 h-10' : 'w-14 h-14';
+  const iconClass = size === 'sm' ? 'w-9 h-9' : 'w-12 h-12';
+
+  if (!method) return <span className="text-sm text-slate-400">No disponible</span>;
+
+  const cfg: Record<string, { label: string; img?: string; whiteBg?: boolean }> = {
+    card:       { label: 'Tarjeta' },
+    visa:       { label: 'Visa',        img: '/payment-methods/visa.svg' },
+    mastercard: { label: 'Mastercard',  img: '/payment-methods/mastercard.svg' },
+    google_pay: { label: 'Google Pay',  img: '/payment-methods/google-pay.svg' },
+    apple_pay:  { label: 'Apple Pay',   img: '/payment-methods/apple-pay.svg' },
+    link:       { label: 'Stripe Link', img: '/payment-methods/link.svg', whiteBg: true },
+    paypal:     { label: 'PayPal',      img: '/payment-methods/paypal.svg' },
+    klarna:     { label: 'Klarna',      img: '/payment-methods/klarna.svg' },
+    amazon_pay: { label: 'Amazon Pay',  img: '/payment-methods/amazon-pay.svg' },
+  };
+
+  const providerEntry = cfg[method.provider];
+  const brandEntry = method.cardBrand ? cfg[method.cardBrand] : undefined;
+  const tooltip = [providerEntry?.label ?? method.provider, brandEntry?.label].filter(Boolean).join(' · ');
+
+  if (!providerEntry) return <span className="text-sm text-slate-300 font-medium">{method.provider}</span>;
+
+  const renderImg = (entry: { label: string; img?: string; whiteBg?: boolean }) =>
+    entry.img
+      ? entry.whiteBg
+        ? <span className="inline-flex items-center justify-center bg-white rounded-md px-2 py-0.5"><img src={entry.img} alt={entry.label} className={`${imgClass} object-contain`} /></span>
+        : <img src={entry.img} alt={entry.label} className={`${imgClass} object-contain`} />
+      : <CreditCard className={`${iconClass} text-slate-200`} />;
+
+  return (
+    <span className="inline-flex items-center gap-1" title={tooltip}>
+      {renderImg(providerEntry)}
+      {brandEntry && renderImg(brandEntry)}
+    </span>
+  );
+}
+
+// Alias kept for call sites
+function PaymentMethodBadge({ method, size }: { method?: PaymentMethodInfo; size?: 'sm' | 'md' }) {
+  return <PaymentMethodIcon method={method} size={size} />;
+}
+
+function formatPhone(phone?: string): string {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  // Spanish numbers: +34 + 9 digits
+  if (phone.startsWith('+34') && digits.length === 11) {
+    const n = digits.slice(2); // 9 digits
+    return `+34 ${n.slice(0, 3)} ${n.slice(3, 5)} ${n.slice(5, 7)} ${n.slice(7, 9)}`;
+  }
+  // Generic: country code heuristic (2 digits) + group remaining in pairs
+  if (phone.startsWith('+') && digits.length >= 10) {
+    const cc = digits.slice(0, 2);
+    const rest = digits.slice(2);
+    const groups = rest.match(/.{1,2}/g)?.join(' ') ?? rest;
+    return `+${cc} ${groups}`;
+  }
+  return phone;
+}
 
 interface Client {
   _id: string; name: string; email: string; phone?: string;
@@ -394,7 +458,7 @@ export default function ClientsManager() {
                     <tr key={client._id} className="hover:bg-slate-700/50 transition">
                       <td className="px-4 py-4">
                         <div className="text-sm font-medium text-white">{client.name}</div>
-                        <div className="text-xs text-slate-400">{client.phone || 'Sin teléfono'}</div>
+                        <div className="text-xs text-slate-400">{formatPhone(client.phone) || 'Sin teléfono'}</div>
                       </td>
                       <td className="px-4 py-4"><div className="text-sm text-slate-300">{client.email}</div></td>
                       <td className="px-4 py-4"><div className="flex items-center gap-1 text-sm text-slate-300"><ShoppingBag className="w-4 h-4" />{client.orderIds.length}</div></td>
@@ -428,7 +492,7 @@ export default function ClientsManager() {
                       </div>
                       <div className="mt-2 flex items-center gap-3">
                         <div className="flex items-center gap-1 text-sm text-slate-300"><ShoppingBag className="w-4 h-4" /> <span className="text-sm">{client.orderIds.length}</span></div>
-                        <div className="text-xs text-slate-400">{client.phone || 'Sin teléfono'}</div>
+                        <div className="text-xs text-slate-400">{formatPhone(client.phone) || 'Sin teléfono'}</div>
                       </div>
                     </div>
 
@@ -477,8 +541,9 @@ export default function ClientsManager() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div><label className="text-sm text-slate-400">Nombre</label><p className="text-base text-white font-medium break-words">{selectedClient.name}</p></div>
                     <div><label className="text-sm text-slate-400">Email</label><p className="text-base text-white font-medium break-all">{selectedClient.email}</p></div>
-                    <div><label className="text-sm text-slate-400">Teléfono</label><p className="text-base text-white font-medium">{selectedClient.phone || 'No disponible'}</p></div>
+                    <div><label className="text-sm text-slate-400">Teléfono</label><p className="text-base text-white font-medium">{formatPhone(selectedClient.phone) || 'No disponible'}</p></div>
                     <div><label className="text-sm text-slate-400">Marketing</label><p className="text-base text-white font-medium">{selectedClient.emailMarketing ? <span className="text-green-400">✓ Activo</span> : <span className="text-slate-400">✗ Inactivo</span>}</p></div>
+                    <div><label className="text-sm text-slate-400">Último método de pago</label><p className="text-base text-white font-medium mt-1"><PaymentMethodBadge method={clientDetails.client?.paymentInfo?.lastPaymentMethod} /></p></div>
                   </div>
                 </div>
 
@@ -513,6 +578,7 @@ export default function ClientsManager() {
                             <div>
                               <p className="text-base text-white font-semibold">Pedido #{order.orderId}</p>
                               <p className="text-sm text-slate-400">{new Date(order.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                              {order.paymentMethod && <div className="mt-1"><PaymentMethodBadge method={order.paymentMethod} size="sm" /></div>}
                             </div>
                             <div className="flex items-center gap-2 sm:flex-col sm:items-end">
                               <p className="text-xl text-white font-bold">{order.total?.toFixed(2)}€</p>
