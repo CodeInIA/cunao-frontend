@@ -214,14 +214,14 @@ export const Footer: React.FC = () => {
                 rel="noopener noreferrer"
                 bgColor="#334155"
               />
-              <SocialIcon 
+              {/* <SocialIcon 
                 url={config.SOCIAL.x}
                 style={{ height: 40, width: 40 }}
                 className="hover:scale-110 transition-transform"
                 target="_blank"
                 rel="noopener noreferrer"
                 bgColor="#334155"
-              />
+              /> */}
               <SocialIcon 
                 url={config.SOCIAL.tiktok}
                 style={{ height: 40, width: 40 }}
