@@ -516,7 +516,22 @@ export default function ClientsManager() {
                             </div>
                             <div className="flex items-center gap-2 sm:flex-col sm:items-end">
                               <p className="text-xl text-white font-bold">{order.total?.toFixed(2)}€</p>
-                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-900/50 text-green-300 border border-green-700' : order.status === 'pending' ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-slate-700 text-slate-300'}`}>{order.status}</span>
+                              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                                order.status === 'completed' || order.status === 'delivered' ? 'bg-green-900/50 text-green-300 border border-green-700' :
+                                order.status === 'pending' ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' :
+                                order.status === 'shipped' ? 'bg-purple-900/50 text-purple-300 border border-purple-700' :
+                                order.status === 'processing' ? 'bg-blue-900/50 text-blue-300 border border-blue-700' :
+                                order.status === 'cancelled' ? 'bg-red-900/50 text-red-300 border border-red-700' :
+                                'bg-slate-700 text-slate-300'
+                              }`}>{
+                                order.status === 'pending' ? 'Pendiente' :
+                                order.status === 'processing' ? 'Procesando' :
+                                order.status === 'shipped' ? 'Enviado' :
+                                order.status === 'delivered' ? 'Entregado' :
+                                order.status === 'cancelled' ? 'Cancelado' :
+                                order.status === 'completed' ? 'Completado' :
+                                order.status
+                              }</span>
                             </div>
                           </div>
                           {order.items && order.items.length > 0 && (
@@ -551,6 +566,28 @@ export default function ClientsManager() {
                                   <div className="text-center sm:text-right flex-shrink-0"><p className="text-lg text-white font-bold">{(item.price * item.quantity).toFixed(2)}€</p></div>
                                 </div>
                               ))}
+                            </div>
+                          )}
+                          {(order.trackingNumber || order.trackingUrl) && (
+                            <div className="mt-3 p-3 bg-purple-900/20 border border-purple-700/50 rounded-lg">
+                              <p className="text-xs font-semibold text-purple-300 mb-2 uppercase tracking-wide">Información de seguimiento</p>
+                              {order.trackingNumber && (
+                                <div className="flex items-center gap-2 text-sm mb-1">
+                                  <span className="text-slate-400">Nº seguimiento:</span>
+                                  <span className="text-white font-mono font-medium">{order.trackingNumber}</span>
+                                </div>
+                              )}
+                              {order.trackingUrl && (
+                                <a
+                                  href={order.trackingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-purple-300 hover:text-purple-200 underline"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                  Ver seguimiento del envío
+                                </a>
+                              )}
                             </div>
                           )}
                           {order.shippingCost !== undefined && (
