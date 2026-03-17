@@ -21,16 +21,22 @@ export default defineConfig({
     // Eliminar warnings de desarrollo en producción
     __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
   },
-  // Eliminamos console/debugger en producción (aplica al transform de esbuild - dependencias no swc)
-  esbuild: {
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
-  },
+  // Configuramos la eliminación de console/debugger para el nuevo minificador de Vite 8
   build: {
     outDir: 'dist',
     sourcemap: false,
     cssCodeSplit: true,
-    minify: 'esbuild',
     target: 'es2020',
+    rolldownOptions: {
+      output: {
+        minify: {
+          compress: {
+            dropConsole: process.env.NODE_ENV === 'production',
+            dropDebugger: process.env.NODE_ENV === 'production',
+          },
+        },
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
