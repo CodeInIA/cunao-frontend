@@ -52,6 +52,12 @@
   --shadow-dark-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+@layer base {
+  button {
+    cursor: pointer;
+  }
+}
+
 /* Base styles - Tema Oscuro */
 body {
   font-family: 'Inter', sans-serif;
