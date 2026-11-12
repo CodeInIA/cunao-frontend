@@ -1,0 +1,34 @@
+Cuñadismo Ilustrado (frontend)
+Copyright (c) 2025-2026 Sergio Barrios Paz. All rights reserved.
+
+This repository is made public only as a portfolio piece, so that its source
+code can be read and reviewed.
+
+No license is granted to use, run, deploy, copy, modify, distribute or offer
+this software as a service, in whole or in part, without a separate written
+agreement with the copyright holder.
+
+This notice also covers every design, illustration, t-shirt artwork, product
+image, photograph, logo and other brand asset in this repository (including
+everything under public/). None of them may be reused, reproduced, printed or
+sold.
+
+Viewing or forking this repository on GitHub, as GitHub's Terms of Service
+allow, grants no right to use the software or the assets.
+
+"Cuñadismo Ilustrado" is a brand of Sergio Barrios Paz. No right to use it is
+granted.
+
+Third-party components
+----------------------
+
+The following parts are not covered by this notice and keep their own license:
+
+- Dependencies installed from npm, under their own licenses.
+- Payment method logos under public/payment-methods/, which belong to their
+  respective owners.
+
+Contact
+-------
+
+For any permission, contact the author through https://github.com/CodeInIA.

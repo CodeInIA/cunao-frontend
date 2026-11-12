@@ -2,6 +2,8 @@
   "name": "cunao-frontend",
   "private": true,
   "version": "1.0.0",
+  "license": "UNLICENSED",
+  "author": "Sergio Barrios Paz",
   "type": "module",
   "scripts": {
     "dev": "vite",
