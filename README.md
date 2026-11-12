@@ -2,13 +2,17 @@
 
 Storefront and admin panel for **Cuñadismo Ilustrado**, a small online shop selling Spanish-humour t-shirts and merch. Built and run solo, from design to production.
 
-![Home page hero](docs/screenshots/home-hero.webp)
+![Home page](docs/screenshots/home-hero.webp)
 
-| Home | About | Admin login |
-| --- | --- | --- |
-| ![Home page sections](docs/screenshots/home-sections.webp) | ![About page](docs/screenshots/about.webp) | ![Admin login](docs/screenshots/admin-login.webp) |
+| Catalogue | Product page |
+| --- | --- |
+| ![Product catalogue with filters](docs/screenshots/products.webp) | ![Product page with colour, size and gallery](docs/screenshots/product-detail.webp) |
 
-> Screenshots were taken locally with the backend offline, so product listings are not shown.
+| Cart | Mobile |
+| --- | --- |
+| ![Cart sidebar with free shipping progress](docs/screenshots/cart.webp) | <img src="docs/screenshots/mobile-home.webp" alt="Home on a phone" width="48%" /> <img src="docs/screenshots/mobile-product.webp" alt="Product page on a phone" width="48%" /> |
+
+> Screenshots taken locally against the real backend and the live Printify catalogue.
 
 ## Status
 
