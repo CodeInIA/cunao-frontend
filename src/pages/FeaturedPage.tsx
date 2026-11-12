@@ -82,10 +82,10 @@ export const FeaturedPage: React.FC = () => {
   };
 
   const cuñaoStats = [
-  { icon: Users, label: 'Cuñados satisfechos', value: '2,547', color: 'text-purple-400', bg: 'bg-purple-500/10' },
-    { icon: TrendingUp, label: 'Ventas este mes', value: '+189%', color: 'text-green-400', bg: 'bg-green-500/10' },
-    { icon: Award, label: 'Valoración media', value: '4.9★', color: 'text-spanish-yellow', bg: 'bg-spanish-yellow/10' },
-    { icon: Clock, label: 'Años de experiencia cuñao', value: '25+', color: 'text-spanish-red', bg: 'bg-spanish-red/10' }
+  { icon: Users, label: 'Clientes', value: '2', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { icon: TrendingUp, label: 'Pedidos entregados', value: '3', color: 'text-green-400', bg: 'bg-green-500/10' },
+    { icon: Award, label: 'Diseños originales', value: '5', color: 'text-spanish-yellow', bg: 'bg-spanish-yellow/10' },
+    { icon: Clock, label: 'Abierta desde', value: '2025', color: 'text-spanish-red', bg: 'bg-spanish-red/10' }
   ];
 
   const topPhrases = [
@@ -308,7 +308,7 @@ export const FeaturedPage: React.FC = () => {
                 ¿Preparado para ser la Estrella del Bar?
               </h2>
               <p className="text-xl text-white font-bold mb-8 drop-shadow-sm relative z-10">
-                Únete a miles de cuñados que ya causan sensación con nuestras camisetas más populares
+                Las camisetas más populares de la colección
               </p>
             
             

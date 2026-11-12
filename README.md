@@ -12,11 +12,11 @@ Storefront and admin panel for **Cuñadismo Ilustrado**, a small online shop sel
 | --- | --- |
 | ![Cart sidebar with free shipping progress](docs/screenshots/cart.webp) | <img src="docs/screenshots/mobile-home.webp" alt="Home on a phone" width="48%" /> <img src="docs/screenshots/mobile-product.webp" alt="Product page on a phone" width="48%" /> |
 
-> Screenshots taken locally against the real backend and the live Printify catalogue.
+> Screenshots taken locally against the real backend and the live Printify catalogue. Every screen, including the admin panel, is in [docs/SCREENS.md](docs/SCREENS.md).
 
 ## Status
 
-The shop ran in production from August 2025 to mid 2026 and is now closed (the domain `cunadismoilustrado.me` has expired). It processed real orders through Stripe; the revenue is verified on TrustMRR:
+The shop ran in production from August 2025 to mid 2026 and is now closed (the domain `cunadismoilustrado.me` has expired). It processed real orders through Stripe, and the revenue is verified on TrustMRR:
 
 <a href="https://trustmrr.com/startup/cunadismo-ilustrado"><img src="https://trustmrr.com/api/embed/cunadismo-ilustrado?format=svg&theme=dark" alt="TrustMRR verified revenue badge" width="220" /></a>
 
@@ -38,7 +38,7 @@ The repository is public for portfolio and review purposes only (see [License](#
 - Clients dashboard: customers, their orders and newsletter status, plus revenue, average order value, conversion and lifetime value stats by period.
 - Reviews manager: moderate, publish or delete reviews (photos are stored on Cloudinary).
 - Tag manager: edit product tags and sync them to Printify.
-- Discount manager: create, edit and delete coupon codes; view newsletter subscribers.
+- Discount manager: create, edit and delete coupon codes, and view newsletter subscribers.
 
 ## Tech stack
 
@@ -68,7 +68,7 @@ public/           # Static assets, PWA manifest, service worker, icons
 
 ## Running locally
 
-Requirements: Node.js 20.19+ or 22.12+ and npm. Most pages need the backend API running; without it the UI loads but product data is empty.
+Requirements: Node.js 20.19+ or 22.12+ and npm. Most pages need the backend API running. Without it the UI loads but product data is empty.
 
 ```bash
 npm ci
@@ -76,7 +76,7 @@ cp .env.example .env   # then set VITE_API_URL and VITE_STRIPE_PUBLIC_KEY
 npm run dev            # http://localhost:5173
 ```
 
-All environment variables are documented in [`.env.example`](.env.example). Only `VITE_API_URL` matters for local development; the rest have defaults in `src/config.ts`.
+All environment variables are documented in [`.env.example`](.env.example). Only `VITE_API_URL` matters for local development, the rest have defaults in `src/config.ts`.
 
 | Script | Description |
 | --- | --- |

@@ -143,16 +143,16 @@ export const HomePage: React.FC = () => {
               <div className="bg-slate-800 rounded-2xl p-8 mb-8">
                   <div className="grid grid-cols-3 gap-8 text-center items-stretch">
                     <div className="flex flex-col items-center justify-center">
-                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">2.547</div>
-                      <p className="text-slate-300 text-sm">Cuñados satisfechos</p>
+                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">3</div>
+                      <p className="text-slate-300 text-sm">Pedidos entregados</p>
                     </div>
                     <div className="flex flex-col items-center justify-center">
-                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">{storeAvg !== null ? `${storeAvg}★` : '—'}</div>
-                      <p className="text-slate-300 text-sm">Valoración media</p>
+                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">2</div>
+                      <p className="text-slate-300 text-sm">Clientes</p>
                     </div>
                     <div className="flex flex-col items-center justify-center">
-                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">15</div>
-                      <p className="text-slate-300 text-sm">Frases legendarias</p>
+                      <div className="text-2xl md:text-3xl font-bold text-spanish-yellow mb-2 leading-tight">5</div>
+                      <p className="text-slate-300 text-sm">Diseños originales</p>
                     </div>
                   </div>
               </div>
@@ -252,7 +252,7 @@ export const HomePage: React.FC = () => {
               ¿Listo para ser el cuñado más auténtico?
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              Únete a miles de cuñados que ya visten nuestras camisetas
+              Únete a los cuñados que ya visten nuestras camisetas
             </p>
             <button
               className="inline-block bg-white text-slate-900 hover:bg-slate-100 px-8 py-3 text-lg font-semibold rounded-lg shadow hover:shadow-lg transition-colors transition-shadow duration-300"
